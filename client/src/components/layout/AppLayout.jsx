@@ -17,12 +17,12 @@ const AppLayout = () => {
       <Sidebar onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-20 md:pb-8">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-28 md:pb-8">
         {/* Mobile Header */}
         <MobileHeader onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
 
         {/* Page View */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 md:p-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
       </div>
@@ -30,7 +30,7 @@ const AppLayout = () => {
       {/* Mobile Floating Action Button (FAB) */}
       <button
         onClick={() => setIsQuickAddOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 z-40 bg-planner-primary text-white p-4 rounded-full shadow-cozy-lg active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-20 right-4 z-40 bg-planner-primary text-white p-3.5 rounded-full shadow-lg border-2 border-white/20 active:scale-95 transition-transform"
         title="Quick Add"
       >
         <Plus className="w-6 h-6 stroke-[2.5]" />
