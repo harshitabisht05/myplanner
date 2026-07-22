@@ -18,6 +18,7 @@ const THEME_CARDS = [
   { id: 'blue', label: 'Sky Blue', colorBg: 'bg-sky-100 border-sky-300 text-sky-900', emoji: '☁️' },
   { id: 'peach', label: 'Soft Peach', colorBg: 'bg-orange-100 border-orange-300 text-orange-900', emoji: '🍑' },
   { id: 'dark', label: 'Cozy Dark', colorBg: 'bg-slate-800 border-slate-700 text-slate-100', emoji: '🌙' },
+  { id: 'gta', label: 'GTA Urban', colorBg: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 border-emerald-500 text-emerald-400 font-bold', emoji: '🌴' }
 ];
 
 const Settings = () => {
@@ -55,7 +56,7 @@ const Settings = () => {
     setTheme(newTheme);
     try {
       await updatePreferences({ theme: newTheme, weekStart, animations });
-      showSuccess(`Theme changed to ${newTheme}! ✨`);
+      showSuccess(`Theme changed to ${newTheme.toUpperCase()}! ✨`);
     } catch (err) {
       // Local state updated
     }
@@ -177,11 +178,11 @@ const Settings = () => {
           <Palette className="w-5 h-5 text-planner-primary" />
           <div>
             <h2 className="text-lg font-bold text-planner-text">Theme Selection</h2>
-            <p className="text-xs text-planner-muted">Choose your cozy color theme</p>
+            <p className="text-xs text-planner-muted">Choose your color theme (6 options)</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {THEME_CARDS.map((tCard) => {
             const isSelected = theme === tCard.id;
             return (
@@ -194,7 +195,7 @@ const Settings = () => {
                 } ${isSelected ? 'ring-2 ring-planner-primary scale-105 shadow-cozy' : 'opacity-80 hover:opacity-100'}`}
               >
                 <span className="text-2xl">{tCard.emoji}</span>
-                <span className="text-xs font-bold">{tCard.label}</span>
+                <span className="text-xs font-bold truncate max-w-full">{tCard.label}</span>
                 {isSelected && <Sparkles className="w-3.5 h-3.5 fill-current" />}
               </button>
             );

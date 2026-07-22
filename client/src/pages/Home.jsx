@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { taskApi } from '../api/taskApi';
 import { habitApi } from '../api/habitApi';
@@ -13,7 +14,6 @@ import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import ProgressBar from '../components/common/ProgressBar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorMessage from '../components/common/ErrorMessage';
 import TaskModal from '../components/modals/TaskModal';
 import {
   Sparkles,
@@ -38,6 +38,7 @@ const MOOD_OPTIONS = [
 
 const Home = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
   const queryClient = useQueryClient();
 
@@ -45,6 +46,8 @@ const Home = () => {
   const [dailyNoteText, setDailyNoteText] = useState('');
   const [isNoteSaving, setIsNoteSaving] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  const isGta = theme === 'gta';
 
   // Time-based greeting helper
   const getGreeting = () => {
@@ -142,17 +145,35 @@ const Home = () => {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Header Greeting Banner */}
-      <div className="bg-gradient-to-r from-planner-secondary/80 via-planner-card to-planner-secondary/40 rounded-3xl p-6 sm:p-8 border border-planner-border shadow-cozy relative overflow-hidden">
+      <div
+        className={`rounded-3xl p-6 sm:p-8 border border-planner-border shadow-cozy relative overflow-hidden ${
+          isGta
+            ? 'bg-gradient-to-r from-orange-600 via-pink-600 to-purple-900 text-white border-orange-500/40'
+            : 'bg-gradient-to-r from-planner-secondary/80 via-planner-card to-planner-secondary/40'
+        }`}
+      >
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-planner-card/80 text-planner-primary text-xs font-semibold mb-3 border border-planner-border">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${
+              isGta
+                ? 'bg-slate-900/60 border-orange-400/40 text-emerald-400 font-bold'
+                : 'bg-planner-card/80 text-planner-primary border-planner-border'
+            }`}
+          >
+            {isGta ? <span>🌴 Vinewood Sunset</span> : <Sparkles className="w-3.5 h-3.5" />}
             <span>{formattedDateStr}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-planner-text tracking-tight">
-            {getGreeting()}, {user?.name || 'Friend'} 🌷
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            {getGreeting()}, {user?.name || 'Friend'} {isGta ? '🌴' : '🌷'}
           </h1>
-          <p className="text-planner-muted text-sm sm:text-base mt-2 leading-relaxed">
-            Let's make today a little better than yesterday. Take things one gentle step at a time.
+          <p
+            className={`text-sm sm:text-base mt-2 leading-relaxed ${
+              isGta ? 'text-slate-200' : 'text-planner-muted'
+            }`}
+          >
+            {isGta
+              ? "Welcome to Los Santos. Complete your missions, build your habits, and own the day."
+              : "Let's make today a little better than yesterday. Take things one gentle step at a time."}
           </p>
         </div>
       </div>

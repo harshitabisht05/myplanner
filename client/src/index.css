@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Theme: Lavender (Default) */
+    /* Theme 1: Lavender (Default) */
     --color-bg: #f8f6fc;
     --color-card: #ffffff;
     --color-text: #2e263d;
@@ -64,6 +64,19 @@
     --color-border: #45475a;
   }
 
+  /* Theme 6: GTA Urban (Los Santos / Vinewood Sunset Aesthetic) */
+  [data-theme="gta"] {
+    --color-bg: #0b0c10;
+    --color-card: #14161f;
+    --color-text: #f1f5f9;
+    --color-muted: #94a3b8;
+    --color-primary: #10b981; /* Neon Lime/Emerald Green */
+    --color-primary-hover: #059669;
+    --color-secondary: #221c2e; /* Deep sunset purple tint */
+    --color-accent: #f97316; /* Vinewood sunset orange */
+    --color-border: #26293b;
+  }
+
   /* Prevent horizontal page scrolling on mobile devices */
   html, body {
     overflow-x: hidden;
@@ -80,6 +93,21 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Custom GTA Theme Visual Enhancements */
+[data-theme="gta"] h1,
+[data-theme="gta"] h2 {
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+[data-theme="gta"] button.bg-planner-primary {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="gta"] button.bg-planner-primary:hover {
+  box-shadow: 0 0 22px rgba(16, 185, 129, 0.55);
 }
 
 /* Touch friendly min size on interactive elements on small screens */
