@@ -34,7 +34,7 @@ import { Link } from 'react-router-dom';
 
 import gtaSunsetImg from '../assets/gta_sunset.jpg';
 import gtaCharacterImg from '../assets/gta_character.jpg';
-import strangeHeroImg from '../assets/strange_hero_bg.jpg';
+import { getLocalDateStr } from '../utils/dateUtils';
 
 const MOOD_OPTIONS = [
   { value: 'amazing', label: 'CLEAR', emoji: '😄', color: 'hover:bg-amber-100 dark:hover:bg-amber-950/60' },
@@ -50,7 +50,7 @@ const Home = () => {
   const { showSuccess, showError } = useToast();
   const queryClient = useQueryClient();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateStr();
   const [dailyNoteText, setDailyNoteText] = useState('');
   const [isNoteSaving, setIsNoteSaving] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);

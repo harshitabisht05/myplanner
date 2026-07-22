@@ -5,6 +5,7 @@ import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Select from '../common/Select';
 import Checkbox from '../common/Checkbox';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }) => {
   const [title, setTitle] = useState('');
@@ -29,7 +30,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
     } else {
       setTitle('');
       setDescription('');
-      setDueDate(new Date().toISOString().split('T')[0]);
+      setDueDate(getLocalDateStr());
       setDueTime('');
       setPriority('medium');
       setCategory('Personal');

@@ -12,6 +12,7 @@ import Textarea from '../common/Textarea';
 import Select from '../components/../common/Select';
 import Checkbox from '../components/../common/Checkbox';
 import { CheckSquare, StickyNote, Calendar as CalendarIcon, Plus, Sparkles, Shield, Crosshair, MapPin } from 'lucide-react';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 const QuickAddModal = ({ isOpen, onClose }) => {
   const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ const QuickAddModal = ({ isOpen, onClose }) => {
   // Form states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalDateStr());
   const [time, setTime] = useState('');
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('Personal');
@@ -37,7 +38,7 @@ const QuickAddModal = ({ isOpen, onClose }) => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(getLocalDateStr());
     setTime('');
     setPriority('medium');
     setCategory('Personal');

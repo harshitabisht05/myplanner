@@ -11,12 +11,13 @@ import Badge from '../components/common/Badge';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import TaskModal from '../components/modals/TaskModal';
 import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, Flame } from 'lucide-react';
+import { getLocalDateStr } from '../utils/dateUtils';
 
 const Today = () => {
   const queryClient = useQueryClient();
   const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateStr();
 
   const isGta = theme === 'gta';
 
