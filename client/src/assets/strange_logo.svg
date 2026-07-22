@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 120" width="100%" height="100%">
+  <defs>
+    <filter id="redGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark Atmospheric Backdrop -->
+  <rect x="5" y="5" width="330" height="110" rx="12" fill="#050608" stroke="#e11d48" stroke-width="1.5" filter="url(#redGlow)"/>
+
+  <!-- Top Title Bar -->
+  <text x="25" y="38" font-family="'Georgia', 'Times New Roman', serif" font-size="22" font-weight="900" fill="none" stroke="#e11d48" stroke-width="1.2" letter-spacing="6">STRANGE</text>
+  <text x="175" y="38" font-family="'Georgia', 'Times New Roman', serif" font-size="22" font-weight="900" fill="#f8fafc" letter-spacing="6">WORLD</text>
+
+  <!-- Horizontal Red Division Line -->
+  <line x1="25" y1="52" x2="315" y2="52" stroke="#e11d48" stroke-width="2" />
+
+  <!-- Subtitle Tagline -->
+  <text x="25" y="75" font-family="monospace" font-size="11" font-weight="bold" fill="#f59e0b" letter-spacing="3">MY LITTLE PLANNER</text>
+  <text x="25" y="94" font-family="monospace" font-size="10" font-weight="bold" fill="#e11d48" letter-spacing="4">THE OTHER SIDE ── 1980</text>
+</svg>

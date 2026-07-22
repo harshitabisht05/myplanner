@@ -6,17 +6,19 @@ import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Select from '../components/common/Select';
-import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Shield, Flame, Crosshair } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Shield, Flame, Crosshair, Eye } from 'lucide-react';
+import strangeOtherSideImg from '../assets/strange_otherside_bg.jpg';
 
 const TIMER_MODES = {
-  focus: { label: 'MISSION FOCUS', minutes: 25, color: 'text-emerald-400 border-emerald-500' },
-  shortBreak: { label: 'RECHARGE BREAK', minutes: 5, color: 'text-amber-400 border-amber-500' },
-  longBreak: { label: 'HQ REST', minutes: 15, color: 'text-sky-400 border-sky-500' }
+  focus: { label: 'THE OTHER SIDE', minutes: 25, color: 'text-rose-500 border-rose-600' },
+  shortBreak: { label: 'SAFE ZONE', minutes: 5, color: 'text-emerald-400 border-emerald-500' },
+  longBreak: { label: 'RETURN TO NORMAL', minutes: 15, color: 'text-sky-400 border-sky-500' }
 };
 
 const Focus = () => {
   const { theme } = useTheme();
   const isGta = theme === 'gta';
+  const isStrange = theme === 'strange';
 
   const [mode, setMode] = useState('focus');
   const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -49,7 +51,7 @@ const Focus = () => {
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
       if (typeof window !== 'undefined' && window.Notification && Notification.permission === 'granted') {
-        new Notification(isGta ? 'MISSION COMPLETED! 🎯' : 'Focus Timer Finished! 🎉', {
+        new Notification(isStrange ? 'OBJECTIVE COMPLETE! 🌲' : isGta ? 'MISSION COMPLETED! 🎯' : 'Focus Timer Finished! 🎉', {
           body: `Completed ${TIMER_MODES[mode].label}`
         });
       }
@@ -58,7 +60,7 @@ const Focus = () => {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, timeLeft, mode, isGta]);
+  }, [isRunning, timeLeft, mode, isGta, isStrange]);
 
   const handleReset = () => {
     setIsRunning(false);
@@ -71,77 +73,96 @@ const Focus = () => {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const totalSeconds = TIMER_MODES[mode].minutes * 60;
-  const progressPercentage = Math.round(((totalSeconds - timeLeft) / totalSeconds) * 100);
-
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader
-        title={isGta ? 'MISSION IN PROGRESS' : 'Focus Mode'}
+        title={isStrange ? 'ENTERING THE OTHER SIDE' : isGta ? 'MISSION IN PROGRESS' : 'Focus Mode'}
         subtitle={
-          isGta
+          isStrange
+            ? 'Deep parallel dimension environment for uninterrupted deep work'
+            : isGta
             ? 'Execute deep-work objectives without distraction'
             : 'Distraction-free timer for deep work and mindful breaks'
         }
-        icon={isGta ? Crosshair : Timer}
+        icon={isStrange ? Eye : isGta ? Crosshair : Timer}
       />
 
       {/* Mode Selector Tabs */}
-      <div className={`flex p-1.5 rounded-2xl border shadow-cozy ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
+      <div className={`flex p-1.5 rounded-2xl border shadow-cozy ${isStrange ? 'bg-slate-950 border-rose-900/50' : isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
         <button
           onClick={() => handleModeSwitch('focus')}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
             mode === 'focus'
-              ? isGta
+              ? isStrange
+                ? 'bg-rose-600 text-white font-serif shadow-[0_0_20px_rgba(225,29,72,0.5)]'
+                : isGta
                 ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
                 : 'bg-planner-primary text-white shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          {isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
+          {isStrange ? '25m THE OTHER SIDE 🌲' : isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
         </button>
         <button
           onClick={() => handleModeSwitch('shortBreak')}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
             mode === 'shortBreak'
-              ? isGta
+              ? isStrange
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                : isGta
                 ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
                 : 'bg-emerald-500 text-white shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          {isGta ? '5m RECHARGE ☕' : '5m Short Break ☕'}
+          {isStrange ? '5m SAFE ZONE ☕' : isGta ? '5m RECHARGE ☕' : '5m Short Break ☕'}
         </button>
         <button
           onClick={() => handleModeSwitch('longBreak')}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
             mode === 'longBreak'
-              ? isGta
+              ? isStrange
+                ? 'bg-sky-500 text-slate-950 font-bold shadow-xs'
+                : isGta
                 ? 'bg-sky-500 text-slate-950 font-black shadow-xs'
                 : 'bg-sky-500 text-white shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          {isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
+          {isStrange ? '15m RETURN TO NORMAL 🌿' : isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
         </button>
       </div>
 
       {/* Main Timer Dial */}
       <Card
-        className={`p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-8 ${
-          isGta
+        className={`p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-8 relative overflow-hidden ${
+          isStrange
+            ? 'strange-hud-card bg-slate-950 border-rose-600/40'
+            : isGta
             ? 'gta-hud-card bg-gradient-to-b from-slate-950 via-slate-950/90 to-purple-950/30 border-emerald-500/30'
             : 'bg-gradient-to-b from-planner-card via-planner-card to-planner-secondary/30'
         }`}
       >
+        {/* Background artwork overlay for Strange World */}
+        {isStrange && (
+          <div className="absolute inset-0 z-0">
+            <img
+              src={strangeOtherSideImg}
+              alt="The Other Side"
+              className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
+          </div>
+        )}
+
         {/* Task Selector */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md relative z-10">
           <Select
-            label={isGta ? 'CURRENT MISSION OBJECTIVE:' : 'Focusing On Task:'}
+            label={isStrange ? 'CURRENT CASE OBJECTIVE:' : isGta ? 'CURRENT MISSION OBJECTIVE:' : 'Focusing On Task:'}
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
             options={[
-              { value: '', label: isGta ? 'Select a mission objective...' : 'Select a task to focus on (Optional)...' },
+              { value: '', label: isStrange ? 'Select a case objective...' : isGta ? 'Select a mission objective...' : 'Select a task to focus on (Optional)...' },
               ...tasks.map((t) => ({ value: t._id, label: t.title }))
             ]}
           />
@@ -150,21 +171,25 @@ const Focus = () => {
         {/* Selected Task Highlight */}
         {selectedTask && (
           <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border ${
-              isGta
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold border relative z-10 ${
+              isStrange
+                ? 'bg-rose-600/20 text-rose-400 border-rose-600/50 shadow-[0_0_15px_rgba(225,29,72,0.3)]'
+                : isGta
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
                 : 'bg-planner-secondary text-planner-primary border-planner-border'
             }`}
           >
-            {isGta ? <Crosshair className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+            {isStrange ? <Eye className="w-4 h-4" /> : isGta ? <Crosshair className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             <span>{selectedTask.title}</span>
           </div>
         )}
 
         {/* Circular Display Dial */}
         <div
-          className={`relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg ${
-            isGta
+          className={`relative z-10 w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg ${
+            isStrange
+              ? 'bg-slate-950 border-rose-600/60 shadow-[0_0_35px_rgba(225,29,72,0.3)]'
+              : isGta
               ? 'bg-slate-950 border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
               : 'bg-planner-bg/60 border-planner-secondary'
           }`}
@@ -172,19 +197,19 @@ const Focus = () => {
           <div className="text-center">
             <span
               className={`text-5xl sm:text-6xl font-black tracking-tight font-mono ${
-                isGta ? 'text-emerald-400 text-shadow-emerald' : 'text-planner-text'
+                isStrange ? 'text-rose-400' : isGta ? 'text-emerald-400' : 'text-planner-text'
               }`}
             >
               {formatTime(timeLeft)}
             </span>
-            <p className="text-xs font-black uppercase tracking-widest text-planner-muted mt-2">
+            <p className="text-xs font-black uppercase tracking-widest text-planner-muted mt-2 font-serif">
               {TIMER_MODES[mode].label}
             </p>
           </div>
         </div>
 
         {/* Controls Bar */}
-        <div className="flex items-center justify-center gap-4 pt-4">
+        <div className="flex items-center justify-center gap-4 pt-4 relative z-10">
           <Button
             variant={isRunning ? 'secondary' : 'primary'}
             size="lg"
@@ -197,13 +222,13 @@ const Focus = () => {
               </>
             ) : (
               <>
-                <Play className="w-5 h-5 mr-2 fill-current" /> START MISSION
+                <Play className="w-5 h-5 mr-2 fill-current" /> {isStrange ? 'CONNECT TO OTHER SIDE' : isGta ? 'START MISSION' : 'Start Focus'}
               </>
             )}
           </Button>
 
           <Button variant="outline" size="lg" onClick={handleReset}>
-            <RotateCcw className="w-5 h-5 mr-2" /> RESET
+            <RotateCcw className="w-5 h-5 mr-2" /> {isStrange ? 'ABORT / RESET' : 'Reset'}
           </Button>
         </div>
       </Card>

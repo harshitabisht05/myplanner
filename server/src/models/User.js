@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     preferences: {
       theme: {
         type: String,
-        enum: ['lavender', 'pink', 'blue', 'peach', 'dark', 'gta'],
+        enum: ['lavender', 'pink', 'blue', 'peach', 'dark', 'gta', 'strange'],
         default: 'lavender'
       },
       weekStart: {

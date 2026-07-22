@@ -29,7 +29,7 @@
   }
 
   [data-theme="blue"] {
-    --color-bg: #f0f7ff;
+    --color-bg: #f0f0ff;
     --color-card: #ffffff;
     --color-text: #1e293b;
     --color-muted: #64748b;
@@ -70,11 +70,24 @@
     --color-card: #11131c;
     --color-text: #f8fafc;
     --color-muted: #94a3b8;
-    --color-primary: #10b981; /* Neon Emerald/Lime Green */
+    --color-primary: #10b981;
     --color-primary-hover: #059669;
-    --color-secondary: #1a1c2a; /* Translucent HUD dark slate */
-    --color-accent: #f97316; /* Vinewood sunset orange */
+    --color-secondary: #1a1c2a;
+    --color-accent: #f97316;
     --color-border: #232738;
+  }
+
+  /* Theme 7: STRANGE WORLD (1980s Supernatural Small-Town Mystery Aesthetic) */
+  [data-theme="strange"] {
+    --color-bg: #050608;
+    --color-card: #0d0e14;
+    --color-text: #f8fafc;
+    --color-muted: #94a3b8;
+    --color-primary: #e11d48; /* Supernatural Crimson Red Glow */
+    --color-primary-hover: #be123c;
+    --color-secondary: #181926; /* Dark translucent navy */
+    --color-accent: #f59e0b; /* Christmas light amber */
+    --color-border: #27293a;
   }
 
   /* Prevent horizontal page scrolling on mobile devices */
@@ -95,53 +108,89 @@
   }
 }
 
-/* PLANNER CITY V Theme Component Rules */
-[data-theme="gta"] h1,
-[data-theme="gta"] h2,
-[data-theme="gta"] h3 {
-  font-family: 'Impact', 'Arial Black', ui-sans-serif, system-ui;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+/* STRANGE WORLD Specific Typography & Component Rules */
+[data-theme="strange"] h1,
+[data-theme="strange"] h2,
+[data-theme="strange"] h3 {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.04em;
 }
 
-[data-theme="gta"] .gta-hud-card {
-  background-color: rgba(17, 19, 28, 0.9);
+[data-theme="strange"] .strange-hud-card {
+  background-color: rgba(13, 14, 20, 0.92);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(35, 39, 56, 0.95);
-  box-shadow: 0 10px 35px 0 rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  box-shadow: 0 10px 35px 0 rgba(0, 0, 0, 0.7);
   border-radius: 1rem;
 }
 
-/* Rectangular Game Menu Primary Buttons */
-[data-theme="gta"] button.bg-planner-primary {
+[data-theme="strange"] button.bg-planner-primary {
   border-radius: 0.75rem;
-  font-family: 'Impact', 'Arial Black', sans-serif;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
-  border: 1px solid #10b981;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 20px rgba(225, 29, 72, 0.45);
+  border: 1px solid #e11d48;
 }
 
-[data-theme="gta"] button.bg-planner-primary:hover {
-  box-shadow: 0 0 30px rgba(16, 185, 129, 0.75);
-  background-color: #059669;
+[data-theme="strange"] button.bg-planner-primary:hover {
+  box-shadow: 0 0 30px rgba(225, 29, 72, 0.75);
+  background-color: #be123c;
 }
 
-/* Mission Passed / Respect + Animation Banner */
-[data-theme="gta"] .gta-mission-passed {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(16, 185, 129, 0.25));
-  border: 1.5px solid #eab308;
-  color: #facc15;
-  text-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
-  font-family: 'Impact', 'Arial Black', sans-serif;
+[data-theme="strange"] .strange-case-closed {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(245, 158, 11, 0.2));
+  border: 1.5px solid #e11d48;
+  color: #fb7185;
+  text-shadow: 0 0 10px rgba(225, 29, 72, 0.6);
+  font-family: 'Georgia', 'Times New Roman', serif;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  animation: gtaPulse 2s infinite alternate;
 }
 
-@keyframes gtaPulse {
-  0% { box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
-  100% { box-shadow: 0 0 22px rgba(234, 179, 8, 0.7); }
+/* Decorative Christmas Light String Bulbs */
+.christmas-lights-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 12px;
+}
+
+.bulb-red {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: bulbFlicker 1.8s infinite alternate;
+}
+.bulb-amber {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  animation: bulbFlicker 2.3s infinite alternate 0.3s;
+}
+.bulb-green {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: bulbFlicker 1.5s infinite alternate 0.6s;
+}
+.bulb-blue {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #3b82f6;
+  box-shadow: 0 0 10px #3b82f6;
+  animation: bulbFlicker 2.1s infinite alternate 0.9s;
+}
+
+@keyframes bulbFlicker {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; filter: drop-shadow(0 0 8px currentColor); }
 }
 
 /* Touch friendly min size on interactive elements on small screens */
