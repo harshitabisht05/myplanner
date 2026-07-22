@@ -14,12 +14,8 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 
 const moreItems = [
-  { name: 'Habits', path: '/habits', icon: Sparkles, gtaName: 'STATS' },
   { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE' },
-  { name: 'Goals', path: '/goals', icon: Target, gtaName: 'CAMPAIGN' },
-  { name: 'Brain Dump', path: '/braindump', icon: Brain, gtaName: 'PLANNING' },
   { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'MISSION MODE' },
-  { name: 'Reflections', path: '/reflections', icon: Heart, gtaName: 'JOURNAL' },
   { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'OPTIONS' },
 ];
 

@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { taskApi } from '../api/taskApi';
-import { habitApi } from '../api/habitApi';
 import { eventApi } from '../api/eventApi';
 import { moodApi } from '../api/moodApi';
 import { dailyNoteApi } from '../api/dailyNoteApi';
@@ -79,10 +78,7 @@ const Home = () => {
     queryFn: () => taskApi.getTasks({ date: todayStr, view: 'today' })
   });
 
-  const { data: habitsData, isLoading: isHabitsLoading } = useQuery({
-    queryKey: ['habits', todayStr],
-    queryFn: () => habitApi.getHabits({ startDate: todayStr, endDate: todayStr })
-  });
+
 
   const { data: eventsData, isLoading: isEventsLoading } = useQuery({
     queryKey: ['events', 'upcoming'],
@@ -118,14 +114,7 @@ const Home = () => {
     }
   });
 
-  // Habit completion toggle mutation
-  const toggleHabitMutation = useMutation({
-    mutationFn: ({ habitId }) => habitApi.toggleHabitCompletion(habitId, todayStr),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
-      if (isStrange) showSuccess('SIGNAL STRENGTH INCREASED! ⚡');
-    }
-  });
+
 
   // Mood update mutation
   const setMoodMutation = useMutation({
@@ -151,7 +140,6 @@ const Home = () => {
   };
 
   const tasks = tasksData?.tasks || [];
-  const habits = habitsData?.habits || [];
   const events = eventsData?.events || [];
   const currentMood = moodData?.mood?.mood || null;
 
@@ -354,70 +342,6 @@ const Home = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Habit Snapshot / Survival Stats Widget */}
-          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${isStrange ? 'bg-amber-500/20 text-amber-400' : isGta ? 'bg-orange-500/20 text-orange-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300'}`}>
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-planner-text">
-                    {isStrange ? 'Survival Stats & Routines' : isGta ? 'Daily Habits & Routines' : 'Habit Snapshot'}
-                  </h2>
-                  <p className="text-xs text-planner-muted">Track today's routines</p>
-                </div>
-              </div>
-              <Link to="/habits">
-                <Button variant="ghost" size="sm">
-                  View Tracker <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              </Link>
-            </div>
-
-            {isHabitsLoading ? (
-              <LoadingSpinner message="Loading habits..." />
-            ) : habits.length === 0 ? (
-              <div className="text-center py-6 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                <p className="text-sm font-medium">Start with one daily routine 🌱</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {habits.map((habit) => {
-                  const isDoneToday = habit.completions?.includes(todayStr);
-                  return (
-                    <div
-                      key={habit._id}
-                      onClick={() => toggleHabitMutation.mutate({ habitId: habit._id })}
-                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                        isDoneToday
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800'
-                          : 'bg-planner-bg/60 border-planner-border hover:border-planner-primary/40'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{habit.emoji || '✨'}</span>
-                        <div>
-                          <p className="text-sm font-bold text-planner-text">{habit.name}</p>
-                          <span className="text-xs text-planner-muted">⚡ {habit.currentStreak || 0} day streak</span>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-6 h-6 rounded-full border flex items-center justify-center ${
-                          isDoneToday
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-planner-border bg-planner-card'
-                        }`}
-                      >
-                        {isDoneToday && <CheckCircle2 className="w-4 h-4" />}
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             )}
           </Card>

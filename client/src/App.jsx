@@ -13,12 +13,8 @@ import Home from './pages/Home';
 import Today from './pages/Today';
 import Tasks from './pages/Tasks';
 import CalendarPage from './pages/CalendarPage';
-import Habits from './pages/Habits';
 import Notes from './pages/Notes';
-import Goals from './pages/Goals';
-import BrainDump from './pages/BrainDump';
 import Focus from './pages/Focus';
-import Reflections from './pages/Reflections';
 import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children }) => {
@@ -99,12 +95,8 @@ const App = () => {
         <Route path="today" element={<Today />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="calendar" element={<CalendarPage />} />
-        <Route path="habits" element={<Habits />} />
         <Route path="notes" element={<Notes />} />
-        <Route path="goals" element={<Goals />} />
-        <Route path="braindump" element={<BrainDump />} />
         <Route path="focus" element={<Focus />} />
-        <Route path="reflections" element={<Reflections />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
