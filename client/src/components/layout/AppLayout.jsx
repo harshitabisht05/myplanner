@@ -3,11 +3,13 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MobileHeader from './MobileHeader';
 import MobileBottomNav from './MobileBottomNav';
+import MobileMoreBottomSheet from './MobileMoreBottomSheet';
 import QuickAddModal from '../quickadd/QuickAddModal';
 import { Plus } from 'lucide-react';
 
 const AppLayout = () => {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-planner-bg text-planner-text flex flex-col md:flex-row antialiased">
@@ -35,7 +37,10 @@ const AppLayout = () => {
       </button>
 
       {/* Mobile Bottom Bar Navigation */}
-      <MobileBottomNav />
+      <MobileBottomNav onOpenMore={() => setIsMoreOpen(true)} />
+
+      {/* Mobile More Bottom Sheet */}
+      <MobileMoreBottomSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)} />
 
       {/* Global Quick Add Modal */}
       <QuickAddModal isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} />
