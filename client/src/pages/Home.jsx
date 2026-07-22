@@ -34,6 +34,7 @@ import { Link } from 'react-router-dom';
 
 import gtaSunsetImg from '../assets/gta_sunset.jpg';
 import gtaCharacterImg from '../assets/gta_character.jpg';
+import strangeHeroImg from '../assets/strange_hero_bg.jpg';
 import { getLocalDateStr } from '../utils/dateUtils';
 
 const MOOD_OPTIONS = [
