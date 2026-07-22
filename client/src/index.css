@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Theme: Lavender (Default) */
+    --color-bg: #f8f6fc;
+    --color-card: #ffffff;
+    --color-text: #2e263d;
+    --color-muted: #6e6481;
+    --color-primary: #9061f9;
+    --color-primary-hover: #7e46f6;
+    --color-secondary: #f3ebff;
+    --color-accent: #f472b6;
+    --color-border: #ede7f6;
+  }
+
+  [data-theme="pink"] {
+    --color-bg: #fff5f7;
+    --color-card: #ffffff;
+    --color-text: #4a202c;
+    --color-muted: #8c5b6b;
+    --color-primary: #ec4899;
+    --color-primary-hover: #db2777;
+    --color-secondary: #fce7f3;
+    --color-accent: #fb7185;
+    --color-border: #fbcfe8;
+  }
+
+  [data-theme="blue"] {
+    --color-bg: #f0f7ff;
+    --color-card: #ffffff;
+    --color-text: #1e293b;
+    --color-muted: #64748b;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-secondary: #e0f2fe;
+    --color-accent: #38bdf8;
+    --color-border: #bae6fd;
+  }
+
+  [data-theme="peach"] {
+    --color-bg: #fff8f5;
+    --color-card: #ffffff;
+    --color-text: #432818;
+    --color-muted: #855a45;
+    --color-primary: #f97316;
+    --color-primary-hover: #ea580c;
+    --color-secondary: #ffedd5;
+    --color-accent: #fb923c;
+    --color-border: #fed7aa;
+  }
+
+  [data-theme="dark"] {
+    --color-bg: #181825;
+    --color-card: #1e1e2e;
+    --color-text: #cdd6f4;
+    --color-muted: #a6adc8;
+    --color-primary: #cba6f7;
+    --color-primary-hover: #b4befe;
+    --color-secondary: #313244;
+    --color-accent: #f5c2e7;
+    --color-border: #45475a;
+  }
+
+  /* Disable animations if animation preference is off */
+  [data-animations="false"] *,
+  [data-animations="false"] *::before,
+  [data-animations="false"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom cozy scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(160, 150, 180, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 150, 180, 0.45);
+}
