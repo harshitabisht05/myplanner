@@ -7,7 +7,11 @@ if (!cached) {
 }
 
 const connectDB = async () => {
-  const connStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/mylittleplanner';
+  const connStr = process.env.MONGODB_URI;
+
+  if (!connStr) {
+    throw new Error('MONGODB_URI environment variable is missing in Vercel Project Settings.');
+  }
 
   if (cached.conn) {
     return cached.conn;

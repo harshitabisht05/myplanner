@@ -10,6 +10,15 @@ const axiosClient = axios.create({
   }
 });
 
+// Request interceptor to attach Bearer token if present
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('planner_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Response interceptor for consistent error handling
 axiosClient.interceptors.response.use(
   (response) => response,
