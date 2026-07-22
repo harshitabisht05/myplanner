@@ -1,0 +1,22 @@
+{
+  "short_name": "MyPlanner",
+  "name": "My Little Planner 🌸",
+  "icons": [
+    {
+      "src": "pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FAF7fd",
+  "theme_color": "#8B5CF6",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "A cozy, personal, multi-user productivity and life-planning app."
+}
