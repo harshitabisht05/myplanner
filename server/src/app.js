@@ -44,7 +44,7 @@ app.use(cookieParser());
 
 // Database connection middleware for Vercel Serverless
 app.use(async (req, res, next) => {
-  if (req.path === '/api/health') return next();
+  if (req.url === '/api/health' || req.url === '/health') return next();
   try {
     await connectDB();
     next();
@@ -55,6 +55,14 @@ app.use(async (req, res, next) => {
       message: err.message || 'Database connection failure. Please check MONGODB_URI in Vercel environment variables.'
     });
   }
+});
+
+// Path normalization for Vercel Serverless Function rewrites
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api')) {
+    req.url = '/api' + (req.url.startsWith('/') ? '' : '/') + req.url;
+  }
+  next();
 });
 
 // API Routes
@@ -70,7 +78,7 @@ app.use('/api/braindump', brainDumpRoutes);
 app.use('/api/dailynote', dailyNoteRoutes);
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
