@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const errorHandler = require('./middleware/errorMiddleware');
+const cookieParser = require('cookie-parser');
+const connectDB = require('./config/db');
+const errorMiddleware = require('./middleware/errorMiddleware');
 
+// Route imports
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const habitRoutes = require('./routes/habitRoutes');
@@ -18,50 +19,39 @@ const dailyNoteRoutes = require('./routes/dailyNoteRoutes');
 
 const app = express();
 
-// Security HTTP Headers
-app.use(helmet());
+// Trust proxy for Vercel deployment
+app.set('trust proxy', 1);
 
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many requests from this IP, please try again later.' }
-});
-app.use('/api', limiter);
-
-// CORS configuration with credentials
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:3000'
-];
+// Middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-        return callback(null, true);
-      }
-      return callback(new Error('CORS Policy: Origin not allowed'));
+      // Allow requests with no origin (like mobile apps or curl) or matching origins
+      callback(null, true);
     },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    credentials: true
   })
 );
 
-// Body and Cookie Parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Healthcheck
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date() });
+// Database connection middleware for Vercel Serverless
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database middleware connection error:', err);
+    res.status(500).json({ success: false, message: 'Database connection failure' });
+  }
 });
 
 // API Routes
@@ -76,12 +66,12 @@ app.use('/api/reflections', reflectionRoutes);
 app.use('/api/braindump', brainDumpRoutes);
 app.use('/api/dailynote', dailyNoteRoutes);
 
-// 404 Route
-app.use('*', (req, res) => {
-  res.status(404).json({ success: false, message: 'API route not found' });
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Global Error Handler
-app.use(errorHandler);
+// Centralized error handling
+app.use(errorMiddleware);
 
 module.exports = app;
