@@ -36,12 +36,9 @@ exports.getTasks = async (req, res, next) => {
       query.completed = true;
     }
 
-    let sort = { createdAt: -1 };
+    let sort = { createdAt: 1 };
     if (sortBy === 'dueDate') {
-      sort = { dueDate: 1, dueTime: 1, createdAt: -1 };
-    } else if (sortBy === 'priority') {
-      // Custom sorting done in memory or via match
-      sort = { createdAt: -1 };
+      sort = { dueDate: 1, dueTime: 1, createdAt: 1 };
     } else if (sortBy === 'recentlyCreated') {
       sort = { createdAt: -1 };
     }
@@ -51,6 +48,14 @@ exports.getTasks = async (req, res, next) => {
     if (sortBy === 'priority') {
       const priorityOrder = { high: 1, medium: 2, low: 3 };
       tasks.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+    } else {
+      // Default smart sort: Uncompleted & Top 3 first, then by creation order (first task created first)
+      tasks.sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        if (a.isTop3 !== b.isTop3) return a.isTop3 ? -1 : 1;
+        if (a.dueTime && b.dueTime && a.dueTime !== b.dueTime) return a.dueTime.localeCompare(b.dueTime);
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      });
     }
 
     res.status(200).json({
