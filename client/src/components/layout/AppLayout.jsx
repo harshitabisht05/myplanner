@@ -37,7 +37,7 @@ const AppLayout = () => {
       </button>
 
       {/* Mobile Bottom Bar Navigation */}
-      <MobileBottomNav onOpenMore={() => setIsMoreOpen(true)} />
+      <MobileBottomNav onOpenMore={() => setIsMoreOpen((prev) => !prev)} />
 
       {/* Mobile More Bottom Sheet */}
       <MobileMoreBottomSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)} />
