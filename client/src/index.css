@@ -64,6 +64,13 @@
     --color-border: #45475a;
   }
 
+  /* Prevent horizontal page scrolling on mobile devices */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Disable animations if animation preference is off */
   [data-animations="false"] *,
   [data-animations="false"] *::before,
@@ -72,6 +79,13 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Touch friendly min size on interactive elements on small screens */
+@media (max-width: 640px) {
+  button, input, select, textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS inputs */
   }
 }
 
