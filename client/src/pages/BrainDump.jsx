@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { brainDumpApi } from '../api/brainDumpApi';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
@@ -11,11 +12,14 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
 import BrainDumpConvertModal from '../components/modals/BrainDumpConvertModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
-import { Brain, Plus, Sparkles, Archive, Trash2, ArrowRight } from 'lucide-react';
+import { Brain, Plus, Sparkles, Archive, Trash2, ArrowRight, Smartphone, FileText } from 'lucide-react';
 
 const BrainDump = () => {
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
+
+  const isGta = theme === 'gta';
 
   const [inputContent, setInputContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +44,7 @@ const BrainDump = () => {
       await brainDumpApi.createBrainDumpItem({ content: inputContent });
       setInputContent('');
       queryClient.invalidateQueries({ queryKey: ['braindump'] });
-      showSuccess('Thought captured! 🧠');
+      showSuccess(isGta ? 'Intel note logged!' : 'Thought captured! 🧠');
     } catch (err) {
       showError(err.message || 'Failed to capture thought');
     } finally {
@@ -91,9 +95,13 @@ const BrainDump = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Brain Dump"
-        subtitle="Unclutter your mind. Capture raw thoughts, ideas, or reminders instantly and convert them later"
-        icon={Brain}
+        title={isGta ? 'MISSION IDEAS & INTEL' : 'Brain Dump'}
+        subtitle={
+          isGta
+            ? 'Jot down raw mission ideas, heist notes, or city intel on your phone notepad'
+            : 'Unclutter your mind. Capture raw thoughts, ideas, or reminders instantly and convert them later'
+        }
+        icon={isGta ? FileText : Brain}
         action={
           <Button
             variant="outline"
@@ -107,17 +115,27 @@ const BrainDump = () => {
       />
 
       {/* Low-Friction Quick Input Box */}
-      <Card className="p-4 bg-gradient-to-r from-purple-500/10 via-planner-card to-purple-500/5 border-purple-200 dark:border-purple-900/60">
+      <Card
+        className={`p-4 ${
+          isGta
+            ? 'gta-hud-card bg-gradient-to-r from-purple-950/40 via-slate-950 to-slate-950 border-emerald-500/40'
+            : 'bg-gradient-to-r from-purple-500/10 via-planner-card to-purple-500/5 border-purple-200 dark:border-purple-900/60'
+        }`}
+      >
         <form onSubmit={handleCreate} className="space-y-3">
           <Textarea
-            placeholder="Type anything on your mind... thoughts, tasks, ideas, groceries..."
+            placeholder={
+              isGta
+                ? 'Type raw mission thoughts, heist notes, target coordinates...'
+                : 'Type anything on your mind... thoughts, tasks, ideas, groceries...'
+            }
             rows={3}
             value={inputContent}
             onChange={(e) => setInputContent(e.target.value)}
           />
           <div className="flex justify-end">
             <Button type="submit" variant="primary" isLoading={isSubmitting} disabled={!inputContent.trim()}>
-              Dump Thought <Sparkles className="w-4 h-4 ml-1.5" />
+              {isGta ? 'Log Intel' : 'Dump Thought'} <Sparkles className="w-4 h-4 ml-1.5" />
             </Button>
           </div>
         </form>
@@ -125,12 +143,12 @@ const BrainDump = () => {
 
       {/* Captured Items Grid */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching your brain dump..." fullPage />
+        <LoadingSpinner message="Fetching items..." fullPage />
       ) : items.length === 0 ? (
         <EmptyState
           icon={Brain}
-          title="Mind is clear ✨"
-          message="No unorganized thoughts captured right now. Got something on your mind? Type it above!"
+          title={isGta ? 'No mission intel logged' : 'Mind is clear ✨'}
+          message={isGta ? 'No raw notes on your iFruit notepad. Log your next big heist idea above!' : 'No unorganized thoughts captured right now. Got something on your mind? Type it above!'}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,8 +156,8 @@ const BrainDump = () => {
             <Card
               key={item._id}
               className={`p-4 flex flex-col justify-between gap-3 ${
-                item.archived ? 'opacity-60 bg-planner-bg/40' : ''
-              }`}
+                isGta ? 'gta-hud-card' : ''
+              } ${item.archived ? 'opacity-60 bg-planner-bg/40' : ''}`}
             >
               <p className="text-sm font-medium text-planner-text whitespace-pre-wrap leading-relaxed">
                 {item.content}
@@ -191,7 +209,7 @@ const BrainDump = () => {
         onClose={() => setDeleteConfirmItem(null)}
         onConfirm={handleDelete}
         title="Delete Thought"
-        message="Are you sure you want to delete this brain dump item?"
+        message="Are you sure you want to delete this item?"
         confirmText="Delete"
         isLoading={isDeleting}
       />

@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Checkbox from '../components/common/Checkbox';
-import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles } from 'lucide-react';
+import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles, Smartphone, Download, CheckCircle2 } from 'lucide-react';
 
 const THEME_CARDS = [
   { id: 'lavender', label: 'Lavender', colorBg: 'bg-purple-100 border-purple-300 text-purple-900', emoji: '🪻' },
@@ -17,11 +18,13 @@ const THEME_CARDS = [
   { id: 'blue', label: 'Sky Blue', colorBg: 'bg-sky-100 border-sky-300 text-sky-900', emoji: '☁️' },
   { id: 'peach', label: 'Soft Peach', colorBg: 'bg-orange-100 border-orange-300 text-orange-900', emoji: '🍑' },
   { id: 'dark', label: 'Cozy Dark', colorBg: 'bg-slate-800 border-slate-700 text-slate-100', emoji: '🌙' },
+  { id: 'gta', label: 'GTA Urban', colorBg: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 border-emerald-500 text-emerald-400 font-bold', emoji: '🌴' }
 ];
 
 const Settings = () => {
   const { user, updateProfile, updatePreferences, logout } = useAuth();
   const { theme, setTheme, weekStart, setWeekStart, animations, setAnimations } = useTheme();
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
@@ -53,9 +56,9 @@ const Settings = () => {
     setTheme(newTheme);
     try {
       await updatePreferences({ theme: newTheme, weekStart, animations });
-      showSuccess(`Theme changed to ${newTheme}! ✨`);
+      showSuccess(`Theme changed to ${newTheme.toUpperCase()}! ✨`);
     } catch (err) {
-      // Local state is already updated
+      // Local state updated
     }
   };
 
@@ -65,7 +68,7 @@ const Settings = () => {
       await updatePreferences({ theme, weekStart: newWeekStart, animations });
       showSuccess(`Week start changed to ${newWeekStart}!`);
     } catch (err) {
-      // Local state is already updated
+      // Local state updated
     }
   };
 
@@ -75,7 +78,14 @@ const Settings = () => {
       await updatePreferences({ theme, weekStart, animations: val });
       showSuccess(`Animations ${val ? 'enabled' : 'disabled'}`);
     } catch (err) {
-      // Local state is already updated
+      // Local state updated
+    }
+  };
+
+  const handleInstallClick = async () => {
+    const installed = await promptInstall();
+    if (installed) {
+      showSuccess('App installed successfully! 📲');
     }
   };
 
@@ -87,10 +97,49 @@ const Settings = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Settings & Themes"
-        subtitle="Personalize your planner appearance, start of week, and account settings"
+        title="Settings & Personalization"
+        subtitle="Personalize your planner appearance, install mobile app, and manage account settings"
         icon={SettingsIcon}
       />
+
+      {/* PWA Download / Mobile App Card */}
+      <Card className="p-6 bg-gradient-to-r from-purple-500/10 via-planner-card to-pink-500/10 border-purple-200 dark:border-purple-900/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="p-3 rounded-2xl bg-planner-primary text-white shrink-0 mt-0.5">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-planner-text flex items-center gap-2">
+                <span>Download & Install Mobile App</span> 📲
+              </h2>
+              <p className="text-sm text-planner-muted mt-1 leading-relaxed">
+                Use My Little Planner as a native standalone app on your iPhone or Android home screen with offline access.
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            {isInstalled ? (
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
+                <CheckCircle2 className="w-4 h-4" /> App Installed
+              </div>
+            ) : isInstallable ? (
+              <Button variant="primary" onClick={handleInstallClick} size="lg">
+                <Download className="w-4 h-4 mr-1.5" /> Install App Now
+              </Button>
+            ) : (
+              <div className="text-xs bg-planner-bg/80 p-3 rounded-2xl border border-planner-border max-w-xs text-planner-muted">
+                <strong>To install on phone:</strong>
+                <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                  <li><strong>iPhone/Safari:</strong> Tap Share icon → <em>"Add to Home Screen"</em>.</li>
+                  <li><strong>Android/Chrome:</strong> Tap Menu (3 dots) → <em>"Add to Home Screen"</em>.</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* Profile Section */}
       <Card className="p-6 space-y-4">
@@ -129,11 +178,11 @@ const Settings = () => {
           <Palette className="w-5 h-5 text-planner-primary" />
           <div>
             <h2 className="text-lg font-bold text-planner-text">Theme Selection</h2>
-            <p className="text-xs text-planner-muted">Choose your cozy color theme</p>
+            <p className="text-xs text-planner-muted">Choose your color theme (6 options)</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {THEME_CARDS.map((tCard) => {
             const isSelected = theme === tCard.id;
             return (
@@ -146,7 +195,7 @@ const Settings = () => {
                 } ${isSelected ? 'ring-2 ring-planner-primary scale-105 shadow-cozy' : 'opacity-80 hover:opacity-100'}`}
               >
                 <span className="text-2xl">{tCard.emoji}</span>
-                <span className="text-xs font-bold">{tCard.label}</span>
+                <span className="text-xs font-bold truncate max-w-full">{tCard.label}</span>
                 {isSelected && <Sparkles className="w-3.5 h-3.5 fill-current" />}
               </button>
             );

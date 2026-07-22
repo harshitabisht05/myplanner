@@ -1,266 +1,248 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { taskApi } from '../../api/taskApi';
+import { noteApi } from '../../api/noteApi';
+import { eventApi } from '../../api/eventApi';
+import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
-import Select from '../common/Select';
-import { useToast } from '../../context/ToastContext';
-import { taskApi } from '../../api/taskApi';
-import { noteApi } from '../../api/noteApi';
-import { eventApi } from '../../api/eventApi';
-import { CheckSquare, StickyNote, Calendar as CalendarIcon } from 'lucide-react';
+import Select from '../components/../common/Select';
+import Checkbox from '../components/../common/Checkbox';
+import { CheckSquare, StickyNote, Calendar as CalendarIcon, Plus, Sparkles, Shield, Crosshair, MapPin } from 'lucide-react';
 
 const QuickAddModal = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState('task'); // 'task' | 'note' | 'event'
-  const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
 
-  // Task form state
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskDesc, setTaskDesc] = useState('');
-  const [taskDueDate, setTaskDueDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [taskPriority, setTaskPriority] = useState('medium');
-  const [taskCategory, setTaskCategory] = useState('Personal');
+  const isGta = theme === 'gta';
 
-  // Note form state
-  const [noteTitle, setNoteTitle] = useState('');
-  const [noteContent, setNoteContent] = useState('');
+  const [activeTab, setActiveTab] = useState('task'); // 'task' | 'note' | 'event'
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form states
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState('');
+  const [priority, setPriority] = useState('medium');
+  const [category, setCategory] = useState('Personal');
+  const [isTop3, setIsTop3] = useState(false);
   const [noteColor, setNoteColor] = useState('lavender');
+  const [tagsInput, setTagsInput] = useState('');
 
-  // Event form state
-  const [eventTitle, setEventTitle] = useState('');
-  const [eventDate, setEventDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [eventStartTime, setEventStartTime] = useState('09:00');
-  const [eventEndTime, setEventEndTime] = useState('10:00');
-
-  const resetForms = () => {
-    setTaskTitle('');
-    setTaskDesc('');
-    setNoteTitle('');
-    setNoteContent('');
-    setEventTitle('');
-    setLoading(false);
-  };
-
-  const handleClose = () => {
-    resetForms();
-    onClose();
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setTime('');
+    setPriority('medium');
+    setCategory('Personal');
+    setIsTop3(false);
+    setNoteColor('lavender');
+    setTagsInput('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!title.trim()) return;
 
+    setIsSubmitting(true);
     try {
       if (activeTab === 'task') {
-        if (!taskTitle.trim()) {
-          showError('Task title is required');
-          setLoading(false);
-          return;
-        }
         await taskApi.createTask({
-          title: taskTitle,
-          description: taskDesc,
-          dueDate: taskDueDate,
-          priority: taskPriority,
-          category: taskCategory
+          title,
+          description,
+          dueDate: date,
+          dueTime: time,
+          priority,
+          category,
+          isTop3
         });
-        await queryClient.invalidateQueries({ queryKey: ['tasks'] });
-        showSuccess('Task created! 🌸');
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        showSuccess(isGta ? 'MISSION ADDED TO LOG! 🎯' : 'Task added successfully! 🌸');
       } else if (activeTab === 'note') {
-        if (!noteTitle.trim() && !noteContent.trim()) {
-          showError('Please write something for your note');
-          setLoading(false);
-          return;
-        }
+        const tags = tagsInput
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean);
         await noteApi.createNote({
-          title: noteTitle || 'Untitled Note',
-          content: noteContent,
-          color: noteColor
+          title,
+          content: description,
+          color: noteColor,
+          tags
         });
-        await queryClient.invalidateQueries({ queryKey: ['notes'] });
-        showSuccess('Note saved! 📝');
+        queryClient.invalidateQueries({ queryKey: ['notes'] });
+        showSuccess(isGta ? 'INTEL NOTE CREATED! 📓' : 'Note created successfully! 📝');
       } else if (activeTab === 'event') {
-        if (!eventTitle.trim()) {
-          showError('Event title is required');
-          setLoading(false);
-          return;
-        }
         await eventApi.createEvent({
-          title: eventTitle,
-          date: eventDate,
-          startTime: eventStartTime,
-          endTime: eventEndTime
+          title,
+          description,
+          date,
+          startTime: time,
+          category
         });
-        await queryClient.invalidateQueries({ queryKey: ['events'] });
-        showSuccess('Event added to calendar! 📅');
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        showSuccess(isGta ? 'EVENT SCHEDULED! 📅' : 'Event scheduled successfully! 📅');
       }
-      handleClose();
-    } catch (error) {
-      showError(error.message || 'Failed to create item');
-    } finally {
-      setLoading(false);
+
+      resetForm();
+      onClose();
+    } catch (err) {
+      showError(err.message || 'Failed to create item');
+    } fontFinally: {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Quick Add ✨" maxWidth="max-w-md">
-      {/* Tab Switcher */}
-      <div className="flex bg-planner-secondary/60 p-1 rounded-2xl mb-5">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isGta ? 'MISSION ACTION WHEEL' : 'Quick Add'}
+      size="md"
+    >
+      {/* Action Wheel Tab Switcher */}
+      <div className={`flex p-1.5 rounded-2xl border mb-6 ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-secondary'}`}>
         <button
           type="button"
           onClick={() => setActiveTab('task')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
             activeTab === 'task'
-              ? 'bg-planner-card text-planner-primary shadow-xs'
+              ? isGta
+                ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                : 'bg-planner-card text-planner-primary shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          <CheckSquare className="w-4 h-4" /> Task
+          <CheckSquare className="w-4 h-4" />
+          <span>{isGta ? 'MISSION (TASK)' : 'Task'}</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('note')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
             activeTab === 'note'
-              ? 'bg-planner-card text-planner-primary shadow-xs'
+              ? isGta
+                ? 'bg-orange-500 text-slate-950 font-black shadow-xs'
+                : 'bg-planner-card text-planner-primary shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          <StickyNote className="w-4 h-4" /> Note
+          <StickyNote className="w-4 h-4" />
+          <span>{isGta ? 'INTEL (NOTE)' : 'Note'}</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('event')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
             activeTab === 'event'
-              ? 'bg-planner-card text-planner-primary shadow-xs'
+              ? isGta
+                ? 'bg-sky-500 text-slate-950 font-black shadow-xs'
+                : 'bg-planner-card text-planner-primary shadow-xs'
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          <CalendarIcon className="w-4 h-4" /> Event
+          <CalendarIcon className="w-4 h-4" />
+          <span>{isGta ? 'SCHEDULE (EVENT)' : 'Event'}</span>
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {activeTab === 'task' && (
-          <>
+        <Input
+          label={activeTab === 'task' ? 'Mission Title' : activeTab === 'note' ? 'Intel Title' : 'Event Title'}
+          placeholder={
+            activeTab === 'task'
+              ? 'e.g. Complete project proposal'
+              : activeTab === 'note'
+              ? 'e.g. Brainstorming campaign ideas'
+              : 'e.g. Team sync meeting'
+          }
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        <Textarea
+          label={activeTab === 'note' ? 'Content' : 'Description (Optional)'}
+          placeholder="Add details..."
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        {activeTab !== 'note' && (
+          <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Task Title"
-              placeholder="What needs to be done?"
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
+              type="date"
+              label="Date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               required
-              autoFocus
             />
-            <Textarea
-              label="Description (Optional)"
-              placeholder="Add details or subtasks..."
-              rows={2}
-              value={taskDesc}
-              onChange={(e) => setTaskDesc(e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Due Date"
-                type="date"
-                value={taskDueDate}
-                onChange={(e) => setTaskDueDate(e.target.value)}
-              />
-              <Select
-                label="Priority"
-                value={taskPriority}
-                onChange={(e) => setTaskPriority(e.target.value)}
-                options={[
-                  { value: 'low', label: 'Low 🌱' },
-                  { value: 'medium', label: 'Medium 🌸' },
-                  { value: 'high', label: 'High 🔥' }
-                ]}
-              />
-            </div>
             <Input
-              label="Category"
-              placeholder="Personal, Work, Health..."
-              value={taskCategory}
-              onChange={(e) => setTaskCategory(e.target.value)}
+              type="time"
+              label="Time (Optional)"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
             />
-          </>
+          </div>
+        )}
+
+        {activeTab === 'task' && (
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              options={[
+                { value: 'low', label: 'Low Priority 🌱' },
+                { value: 'medium', label: 'Medium Priority 🌸' },
+                { value: 'high', label: 'High Priority 🔥' }
+              ]}
+            />
+            <Select
+              label="Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { value: 'Personal', label: 'Personal' },
+                { value: 'Work', label: 'Work' },
+                { value: 'Study', label: 'Study' },
+                { value: 'Health', label: 'Health' }
+              ]}
+            />
+          </div>
+        )}
+
+        {activeTab === 'task' && (
+          <div className="p-3 bg-planner-secondary/60 rounded-2xl border border-planner-border flex items-center justify-between">
+            <span className="text-sm font-semibold text-planner-text">
+              {isGta ? 'Mark as MAIN MISSION (Top 3 Priority)' : 'Mark as Top 3 Priority for Today'}
+            </span>
+            <Checkbox checked={isTop3} onChange={setIsTop3} />
+          </div>
         )}
 
         {activeTab === 'note' && (
-          <>
-            <Input
-              label="Note Title"
-              placeholder="Title for your note..."
-              value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              autoFocus
-            />
-            <Textarea
-              label="Content"
-              placeholder="Write your thoughts..."
-              rows={4}
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-            />
-            <Select
-              label="Color Theme"
-              value={noteColor}
-              onChange={(e) => setNoteColor(e.target.value)}
-              options={[
-                { value: 'lavender', label: 'Lavender 🪻' },
-                { value: 'pink', label: 'Baby Pink 🌸' },
-                { value: 'blue', label: 'Sky Blue ☁️' },
-                { value: 'peach', label: 'Peach 🍑' },
-                { value: 'mint', label: 'Mint 🌿' },
-                { value: 'yellow', label: 'Sunshine ☀️' }
-              ]}
-            />
-          </>
+          <Input
+            label="Tags (comma separated)"
+            placeholder="work, ideas, design"
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+          />
         )}
 
-        {activeTab === 'event' && (
-          <>
-            <Input
-              label="Event Title"
-              placeholder="Meeting, Birthday, Appointment..."
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-              required
-              autoFocus
-            />
-            <Input
-              label="Date"
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              required
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Start Time"
-                type="time"
-                value={eventStartTime}
-                onChange={(e) => setEventStartTime(e.target.value)}
-              />
-              <Input
-                label="End Time"
-                type="time"
-                value={eventEndTime}
-                onChange={(e) => setEventEndTime(e.target.value)}
-              />
-            </div>
-          </>
-        )}
-
-        <div className="flex items-center justify-end gap-3 pt-3">
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
+        <div className="flex justify-end gap-3 pt-4 border-t border-planner-border">
+          <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={loading}>
-            Create {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+          <Button type="submit" variant="primary" isLoading={isSubmitting}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            {activeTab === 'task' ? 'Create Task' : activeTab === 'note' ? 'Save Note' : 'Schedule Event'}
           </Button>
         </div>
       </form>

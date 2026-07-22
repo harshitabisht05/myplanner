@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { goalApi } from '../api/goalApi';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
@@ -14,11 +15,14 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
 import GoalModal from '../components/modals/GoalModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
-import { Target, Plus, Edit2, Trash2, Calendar, CheckCircle2 } from 'lucide-react';
+import { Target, Plus, Edit2, Trash2, Calendar, Trophy, Shield } from 'lucide-react';
 
 const Goals = () => {
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
+
+  const isGta = theme === 'gta';
 
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -103,9 +107,13 @@ const Goals = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Goals & Milestones"
-        subtitle="Set long-term objectives, break them down into actionable milestones, and track your progress"
-        icon={Target}
+        title={isGta ? 'Campaign Goals & Milestones' : 'Goals & Milestones'}
+        subtitle={
+          isGta
+            ? 'Track overall campaign progression and game completion statistics'
+            : 'Set long-term objectives, break them down into actionable milestones, and track your progress'
+        }
+        icon={isGta ? Trophy : Target}
         action={
           <Button
             variant="primary"
@@ -114,7 +122,7 @@ const Goals = () => {
               setIsGoalModalOpen(true);
             }}
           >
-            <Plus className="w-4 h-4 mr-1.5" /> New Goal
+            <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Campaign Goal' : 'New Goal'}
           </Button>
         }
       />
@@ -125,9 +133,9 @@ const Goals = () => {
       ) : goals.length === 0 ? (
         <EmptyState
           icon={Target}
-          title="No goals set yet"
-          message="Dream big! Create your first objective and track your milestones."
-          actionText="Create Goal"
+          title={isGta ? 'No campaign goals set' : 'No goals set yet'}
+          message={isGta ? 'Start a campaign! Define your major objectives and milestones.' : 'Dream big! Create your first objective and track your milestones.'}
+          actionText={isGta ? 'Create Campaign Goal' : 'Create Goal'}
           onAction={() => {
             setEditingGoal(null);
             setIsGoalModalOpen(true);
@@ -136,7 +144,7 @@ const Goals = () => {
       ) : (
         <div className="space-y-6">
           {goals.map((goal) => (
-            <Card key={goal._id} className="p-5 sm:p-6 space-y-4">
+            <Card key={goal._id} className={`p-5 sm:p-6 space-y-4 ${isGta ? 'gta-hud-card' : ''}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-planner-border">
                 <div>
                   <div className="flex items-center gap-3">
@@ -166,20 +174,30 @@ const Goals = () => {
               {/* Progress Bar */}
               <ProgressBar
                 value={goal.progress || 0}
-                label={`Milestones Completed (${goal.completedMilestones || 0}/${goal.totalMilestones || 0})`}
+                label={
+                  isGta
+                    ? `CAMPAIGN STATS (${goal.completedMilestones || 0}/${goal.totalMilestones || 0} MILESTONES PASSED)`
+                    : `Milestones Completed (${goal.completedMilestones || 0}/${goal.totalMilestones || 0})`
+                }
                 showPercentage
               />
 
               {/* Milestones Checklist */}
               <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold text-planner-muted uppercase tracking-wider">Milestones Checklist</h4>
+                <h4 className="text-xs font-bold text-planner-muted uppercase tracking-wider">
+                  {isGta ? 'CAMPAIGN CHECKPOINTS' : 'Milestones Checklist'}
+                </h4>
 
                 {goal.milestones && goal.milestones.length > 0 && (
                   <div className="space-y-2">
                     {goal.milestones.map((m) => (
                       <div
                         key={m._id}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 border border-planner-border"
+                        className={`flex items-center justify-between p-3 rounded-2xl border ${
+                          m.completed && isGta
+                            ? 'gta-mission-passed'
+                            : 'bg-planner-bg/60 border-planner-border'
+                        }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <Checkbox
@@ -220,7 +238,7 @@ const Goals = () => {
                   className="flex items-center gap-2 pt-1"
                 >
                   <Input
-                    placeholder="Add a milestone step..."
+                    placeholder={isGta ? 'Add campaign checkpoint...' : 'Add a milestone step...'}
                     value={newMilestoneText[goal._id] || ''}
                     onChange={(e) =>
                       setNewMilestoneText((prev) => ({ ...prev, [goal._id]: e.target.value }))

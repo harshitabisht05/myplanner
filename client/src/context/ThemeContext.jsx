@@ -12,7 +12,7 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
+    if (theme === 'dark' || theme === 'gta') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
