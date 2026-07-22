@@ -14,6 +14,7 @@ import EventModal from '../components/modals/EventModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Clock, MapPin } from 'lucide-react';
 import gtaMapPattern from '../assets/gta_map_pattern.svg';
+import { getLocalDateStr } from '../utils/dateUtils';
 
 const CalendarPage = () => {
   const queryClient = useQueryClient();
@@ -23,7 +24,7 @@ const CalendarPage = () => {
   const isGta = theme === 'gta';
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDateStr, setSelectedDateStr] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedDateStr, setSelectedDateStr] = useState(() => getLocalDateStr());
 
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -38,8 +39,8 @@ const CalendarPage = () => {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
 
-  const startDateStr = firstDayOfMonth.toISOString().split('T')[0];
-  const endDateStr = lastDayOfMonth.toISOString().split('T')[0];
+  const startDateStr = getLocalDateStr(firstDayOfMonth);
+  const endDateStr = getLocalDateStr(lastDayOfMonth);
 
   // Fetch events for month
   const { data: eventsData } = useQuery({

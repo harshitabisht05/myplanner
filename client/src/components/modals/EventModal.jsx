@@ -3,6 +3,7 @@ import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 const EventModal = ({ isOpen, onClose, onSubmit, event = null, initialDate = '', isLoading = false }) => {
   const [title, setTitle] = useState('');
@@ -16,14 +17,14 @@ const EventModal = ({ isOpen, onClose, onSubmit, event = null, initialDate = '',
     if (event) {
       setTitle(event.title || '');
       setDescription(event.description || '');
-      setDate(event.date || initialDate || new Date().toISOString().split('T')[0]);
+      setDate(event.date || initialDate || getLocalDateStr());
       setStartTime(event.startTime || '09:00');
       setEndTime(event.endTime || '10:00');
       setCategory(event.category || 'General');
     } else {
       setTitle('');
       setDescription('');
-      setDate(initialDate || new Date().toISOString().split('T')[0]);
+      setDate(initialDate || getLocalDateStr());
       setStartTime('09:00');
       setEndTime('10:00');
       setCategory('General');
