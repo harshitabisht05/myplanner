@@ -10,7 +10,7 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Checkbox from '../components/common/Checkbox';
-import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles, Smartphone, Download, CheckCircle2 } from 'lucide-react';
+import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles, Smartphone, Download, CheckCircle2, Shield } from 'lucide-react';
 
 const THEME_CARDS = [
   { id: 'lavender', label: 'Lavender', colorBg: 'bg-purple-100 border-purple-300 text-purple-900', emoji: '🪻' },
@@ -18,7 +18,8 @@ const THEME_CARDS = [
   { id: 'blue', label: 'Sky Blue', colorBg: 'bg-sky-100 border-sky-300 text-sky-900', emoji: '☁️' },
   { id: 'peach', label: 'Soft Peach', colorBg: 'bg-orange-100 border-orange-300 text-orange-900', emoji: '🍑' },
   { id: 'dark', label: 'Cozy Dark', colorBg: 'bg-slate-800 border-slate-700 text-slate-100', emoji: '🌙' },
-  { id: 'gta', label: 'GTA Urban', colorBg: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 border-emerald-500 text-emerald-400 font-bold', emoji: '🌴' }
+  { id: 'gta', label: 'GTA Urban', colorBg: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 border-emerald-500 text-emerald-400 font-bold', emoji: '🌴' },
+  { id: 'strange', label: 'Strange World', colorBg: 'bg-gradient-to-br from-slate-950 via-rose-950 to-black border-rose-600 text-rose-400 font-serif font-bold', emoji: '🚲' }
 ];
 
 const Settings = () => {
@@ -31,6 +32,8 @@ const Settings = () => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const isStrange = theme === 'strange';
 
   useEffect(() => {
     if (user) {
@@ -97,16 +100,20 @@ const Settings = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Settings & Personalization"
-        subtitle="Personalize your planner appearance, install mobile app, and manage account settings"
-        icon={SettingsIcon}
+        title={isStrange ? 'SYSTEM CONTROL & OPTIONS' : 'Settings & Personalization'}
+        subtitle={
+          isStrange
+            ? 'Configure parallel dimension preferences, install app, and account system'
+            : 'Personalize your planner appearance, install mobile app, and manage account settings'
+        }
+        icon={isStrange ? Shield : SettingsIcon}
       />
 
       {/* PWA Download / Mobile App Card */}
-      <Card className="p-6 bg-gradient-to-r from-purple-500/10 via-planner-card to-pink-500/10 border-purple-200 dark:border-purple-900/60">
+      <Card className={`p-6 ${isStrange ? 'strange-hud-card border-rose-500/40' : 'bg-gradient-to-r from-purple-500/10 via-planner-card to-pink-500/10 border-purple-200 dark:border-purple-900/60'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-3 rounded-2xl bg-planner-primary text-white shrink-0 mt-0.5">
+            <div className={`p-3 rounded-2xl shrink-0 mt-0.5 ${isStrange ? 'bg-rose-600 text-white' : 'bg-planner-primary text-white'}`}>
               <Smartphone className="w-6 h-6" />
             </div>
             <div>
@@ -142,7 +149,7 @@ const Settings = () => {
       </Card>
 
       {/* Profile Section */}
-      <Card className="p-6 space-y-4">
+      <Card className={`p-6 space-y-4 ${isStrange ? 'strange-hud-card' : ''}`}>
         <div className="flex items-center gap-2.5 pb-3 border-b border-planner-border">
           <User className="w-5 h-5 text-planner-primary" />
           <h2 className="text-lg font-bold text-planner-text">Profile Information</h2>
@@ -173,16 +180,16 @@ const Settings = () => {
       </Card>
 
       {/* Theme Personalization Section */}
-      <Card className="p-6 space-y-4">
+      <Card className={`p-6 space-y-4 ${isStrange ? 'strange-hud-card' : ''}`}>
         <div className="flex items-center gap-2.5 pb-3 border-b border-planner-border">
           <Palette className="w-5 h-5 text-planner-primary" />
           <div>
             <h2 className="text-lg font-bold text-planner-text">Theme Selection</h2>
-            <p className="text-xs text-planner-muted">Choose your color theme (6 options)</p>
+            <p className="text-xs text-planner-muted">Choose your color theme (7 options)</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3">
           {THEME_CARDS.map((tCard) => {
             const isSelected = theme === tCard.id;
             return (
@@ -190,7 +197,7 @@ const Settings = () => {
                 key={tCard.id}
                 type="button"
                 onClick={() => handleThemeChange(tCard.id)}
-                className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${
                   tCard.colorBg
                 } ${isSelected ? 'ring-2 ring-planner-primary scale-105 shadow-cozy' : 'opacity-80 hover:opacity-100'}`}
               >
@@ -204,7 +211,7 @@ const Settings = () => {
       </Card>
 
       {/* Display & Layout Preferences */}
-      <Card className="p-6 space-y-4">
+      <Card className={`p-6 space-y-4 ${isStrange ? 'strange-hud-card' : ''}`}>
         <div className="flex items-center gap-2.5 pb-3 border-b border-planner-border">
           <Sliders className="w-5 h-5 text-planner-primary" />
           <h2 className="text-lg font-bold text-planner-text">Display & Motion Preferences</h2>
@@ -234,7 +241,7 @@ const Settings = () => {
       </Card>
 
       {/* Account Section */}
-      <Card className="p-6">
+      <Card className={`p-6 ${isStrange ? 'strange-hud-card' : ''}`}>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-planner-text">Account Session</h2>

@@ -25,22 +25,24 @@ import {
   ArrowRight,
   Save,
   CheckCircle2,
+  Radio,
+  RadioTower,
   Shield,
-  MapPin,
-  Trophy,
-  Zap
+  Zap,
+  Activity
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import gtaSunsetImg from '../assets/gta_sunset.jpg';
 import gtaCharacterImg from '../assets/gta_character.jpg';
+import strangeHeroImg from '../assets/strange_hero_bg.jpg';
 
 const MOOD_OPTIONS = [
-  { value: 'amazing', label: 'Amazing', emoji: '😄', color: 'hover:bg-amber-100 dark:hover:bg-amber-950/60' },
-  { value: 'good', label: 'Good', emoji: '🙂', color: 'hover:bg-emerald-100 dark:hover:bg-emerald-950/60' },
-  { value: 'okay', label: 'Okay', emoji: '😐', color: 'hover:bg-sky-100 dark:hover:bg-sky-950/60' },
-  { value: 'low', label: 'Low', emoji: '😔', color: 'hover:bg-purple-100 dark:hover:bg-purple-950/60' },
-  { value: 'tired', label: 'Tired', emoji: '😴', color: 'hover:bg-rose-100 dark:hover:bg-rose-950/60' }
+  { value: 'amazing', label: 'CLEAR', emoji: '😄', color: 'hover:bg-amber-100 dark:hover:bg-amber-950/60' },
+  { value: 'good', label: 'STABLE', emoji: '🙂', color: 'hover:bg-emerald-100 dark:hover:bg-emerald-950/60' },
+  { value: 'okay', label: 'UNCERTAIN', emoji: '😐', color: 'hover:bg-sky-100 dark:hover:bg-sky-950/60' },
+  { value: 'low', label: 'LOW SIGNAL', emoji: '😔', color: 'hover:bg-purple-100 dark:hover:bg-purple-950/60' },
+  { value: 'tired', label: 'OFFLINE', emoji: '😴', color: 'hover:bg-rose-100 dark:hover:bg-rose-950/60' }
 ];
 
 const Home = () => {
@@ -55,6 +57,7 @@ const Home = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const isGta = theme === 'gta';
+  const isStrange = theme === 'strange';
 
   // Time-based greeting helper
   const getGreeting = () => {
@@ -107,7 +110,9 @@ const Home = () => {
     mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      if (isGta && data.task?.completed) {
+      if (isStrange && data.task?.completed) {
+        showSuccess('CASE CLOSED / OBJECTIVE COMPLETE 🎯');
+      } else if (isGta && data.task?.completed) {
         showSuccess('MISSION PASSED! 🎯 +100 EXP');
       }
     }
@@ -118,6 +123,7 @@ const Home = () => {
     mutationFn: ({ habitId }) => habitApi.toggleHabitCompletion(habitId, todayStr),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habits'] });
+      if (isStrange) showSuccess('SIGNAL STRENGTH INCREASED! ⚡');
     }
   });
 
@@ -126,7 +132,7 @@ const Home = () => {
     mutationFn: (moodValue) => moodApi.setMood({ date: todayStr, mood: moodValue }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mood', todayStr] });
-      showSuccess('Mood updated! ✨');
+      showSuccess('Signal Status updated!');
     }
   });
 
@@ -136,7 +142,7 @@ const Home = () => {
     try {
       await dailyNoteApi.saveDailyNote(todayStr, dailyNoteText);
       queryClient.invalidateQueries({ queryKey: ['dailynote', todayStr] });
-      showSuccess('Daily note saved! 📓');
+      showSuccess('Field log saved! 📓');
     } catch (err) {
       showError('Failed to save daily note');
     } finally {
@@ -155,9 +161,58 @@ const Home = () => {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Header Greeting Hero Banner */}
-      {isGta ? (
+      {isStrange ? (
+        <div className="relative rounded-3xl overflow-hidden border border-rose-600/50 shadow-2xl bg-slate-950">
+          <div className="absolute inset-0 z-0">
+            <img
+              src={strangeHeroImg}
+              alt="Strange World Hero"
+              className="w-full h-full object-cover opacity-40 mix-blend-luminosity"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />
+          </div>
+
+          <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-xl space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-rose-600/20 text-rose-400 border border-rose-600/40 text-xs font-bold tracking-wider uppercase flex items-center gap-1 font-mono">
+                  <RadioTower className="w-3.5 h-3.5" /> SIGNAL STATUS: CONNECTED
+                </span>
+                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-bold tracking-wider uppercase font-mono">
+                  1980 SMALL TOWN HAWKINS DIST
+                </span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight font-serif">
+                {getGreeting()}, {user?.name || 'Operative'} 🚲
+              </h1>
+
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-sans">
+                Your planner exists between two worlds. Track mysterious cases, monitor walkie-talkie signals, and investigate local incidents.
+              </p>
+
+              <div className="pt-2 flex items-center gap-4 text-xs font-mono text-rose-400">
+                <span>DATE: {formattedDateStr}</span>
+                <span>•</span>
+                <span>FREQUENCY: 140.85 MHz</span>
+              </div>
+            </div>
+
+            {/* Christmas Light String Banner Decor */}
+            <div className="shrink-0 p-4 rounded-2xl bg-slate-900/80 border border-rose-900/60 text-center space-y-2">
+              <span className="text-xs font-mono text-amber-400 block font-bold">DECORATIVE SIGNAL LIGHTS</span>
+              <div className="christmas-lights-bar justify-center">
+                <span className="bulb-red" />
+                <span className="bulb-amber" />
+                <span className="bulb-green" />
+                <span className="bulb-blue" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : isGta ? (
         <div className="relative rounded-3xl overflow-hidden border border-emerald-500/40 shadow-2xl bg-slate-950">
-          {/* Background Sunset Graphic with Overlay */}
           <div className="absolute inset-0 z-0">
             <img
               src={gtaSunsetImg}
@@ -170,16 +225,12 @@ const Home = () => {
 
           <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="max-w-xl space-y-3">
-              {/* GTA Player HUD Badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black tracking-widest uppercase">
                   PLAYER: {user?.name || 'BOSS'}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-bold tracking-wider uppercase flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" /> LOS SANTOS
-                </span>
-                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold tracking-wider uppercase flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5" /> ACTIVE
+                <span className="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-bold tracking-wider uppercase">
+                  LOS SANTOS
                 </span>
               </div>
 
@@ -190,15 +241,8 @@ const Home = () => {
               <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
                 Welcome to Los Santos District. Complete your daily missions, build your street reputation, and execute your campaign goals.
               </p>
-
-              <div className="pt-2 flex items-center gap-4 text-xs font-mono text-emerald-400">
-                <span>DATE: {formattedDateStr}</span>
-                <span>•</span>
-                <span>STATUS: READY</span>
-              </div>
             </div>
 
-            {/* Fictional Character Artwork Avatar Frame */}
             <div className="relative shrink-0 w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
               <img
                 src={gtaCharacterImg}
@@ -206,9 +250,6 @@ const Home = () => {
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[10px] font-black text-center text-emerald-400 py-0.5 tracking-wider uppercase">
-                RANK: PRODUCTIVE
-              </div>
             </div>
           </div>
         </div>
@@ -231,18 +272,18 @@ const Home = () => {
 
       {/* Grid Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols on Desktop) */}
+        {/* Left Column */}
         <div className="md:col-span-2 space-y-6">
-          {/* Today's Tasks / Missions Card */}
-          <Card className={isGta ? 'gta-hud-card' : ''}>
+          {/* Today's Tasks / Cases Card */}
+          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${isGta ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300'}`}>
+                <div className={`p-2 rounded-xl ${isStrange ? 'bg-rose-600/20 text-rose-400' : isGta ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300'}`}>
                   <CheckSquare className="w-5 h-5" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-planner-text">
-                    {isGta ? "Today's Active Missions" : "Today's Tasks"}
+                    {isStrange ? "Today's Active Cases" : isGta ? "Today's Active Missions" : "Today's Tasks"}
                   </h2>
                   <p className="text-xs text-planner-muted">{completedTasksCount} of {totalTasksCount} completed</p>
                 </div>
@@ -264,11 +305,10 @@ const Home = () => {
             )}
 
             {isTasksLoading ? (
-              <LoadingSpinner message="Loading today's tasks..." />
+              <LoadingSpinner message="Loading tasks..." />
             ) : tasks.length === 0 ? (
               <div className="text-center py-8 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                <Sparkles className="w-6 h-6 mx-auto mb-2 text-planner-primary" />
-                <p className="text-sm font-medium">Nothing here yet. Your day is a blank page ✨</p>
+                <p className="text-sm font-medium">No active cases logged today ✨</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
@@ -276,7 +316,9 @@ const Home = () => {
                   <div
                     key={task._id}
                     className={`flex items-center justify-between p-3 rounded-2xl border transition-colors group ${
-                      task.completed && isGta
+                      task.completed && isStrange
+                        ? 'strange-case-closed'
+                        : task.completed && isGta
                         ? 'gta-mission-passed'
                         : 'bg-planner-bg/60 hover:bg-planner-secondary/40 border-planner-border'
                     }`}
@@ -295,9 +337,9 @@ const Home = () => {
                           >
                             {task.title}
                           </p>
-                          {task.completed && isGta && (
-                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-yellow-400 text-black uppercase tracking-wider">
-                              MISSION PASSED
+                          {task.completed && isStrange && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-600 text-white uppercase tracking-wider font-mono">
+                              CASE CLOSED
                             </span>
                           )}
                         </div>
@@ -307,7 +349,7 @@ const Home = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {task.isTop3 && <Badge variant="primary">{isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
+                      {task.isTop3 && <Badge variant="primary">{isStrange ? 'CRITICAL CASE' : isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
                       <Badge variant={task.priority}>{task.priority}</Badge>
                     </div>
                   </div>
@@ -316,16 +358,16 @@ const Home = () => {
             )}
           </Card>
 
-          {/* Habit Snapshot Widget */}
-          <Card className={isGta ? 'gta-hud-card' : ''}>
+          {/* Habit Snapshot / Survival Stats Widget */}
+          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${isGta ? 'bg-orange-500/20 text-orange-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300'}`}>
-                  <Sparkles className="w-5 h-5" />
+                <div className={`p-2 rounded-xl ${isStrange ? 'bg-amber-500/20 text-amber-400' : isGta ? 'bg-orange-500/20 text-orange-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300'}`}>
+                  <Activity className="w-5 h-5" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-planner-text">
-                    {isGta ? 'Daily Habits & Routines' : 'Habit Snapshot'}
+                    {isStrange ? 'Survival Stats & Routines' : isGta ? 'Daily Habits & Routines' : 'Habit Snapshot'}
                   </h2>
                   <p className="text-xs text-planner-muted">Track today's routines</p>
                 </div>
@@ -341,7 +383,7 @@ const Home = () => {
               <LoadingSpinner message="Loading habits..." />
             ) : habits.length === 0 ? (
               <div className="text-center py-6 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                <p className="text-sm font-medium">Start with one tiny habit 🌱</p>
+                <p className="text-sm font-medium">Start with one daily routine 🌱</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -361,7 +403,7 @@ const Home = () => {
                         <span className="text-2xl">{habit.emoji || '✨'}</span>
                         <div>
                           <p className="text-sm font-bold text-planner-text">{habit.name}</p>
-                          <span className="text-xs text-planner-muted">🔥 {habit.currentStreak || 0} day streak</span>
+                          <span className="text-xs text-planner-muted">⚡ {habit.currentStreak || 0} day streak</span>
                         </div>
                       </div>
                       <div
@@ -381,16 +423,18 @@ const Home = () => {
           </Card>
         </div>
 
-        {/* Right Column (Sidebar Widgets) */}
+        {/* Right Column */}
         <div className="space-y-6">
-          {/* Mood Tracker Widget */}
-          <Card className={isGta ? 'gta-hud-card' : ''}>
+          {/* Mood / Signal Status Widget */}
+          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center gap-2.5 mb-4">
               <div className="p-2 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-300">
                 <Smile className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-planner-text">How are you feeling today?</h2>
+                <h2 className="text-lg font-bold text-planner-text">
+                  {isStrange ? 'Signal Status' : 'How are you feeling today?'}
+                </h2>
                 <p className="text-xs text-planner-muted">Log today's mood</p>
               </div>
             </div>
@@ -409,22 +453,26 @@ const Home = () => {
                     }`}
                   >
                     <span className="text-2xl mb-1">{item.emoji}</span>
-                    <span className="text-[10px] font-semibold text-planner-text">{item.label}</span>
+                    <span className="text-[9px] font-semibold text-planner-text truncate max-w-full">
+                      {isStrange ? item.label : item.label}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </Card>
 
-          {/* Upcoming Events Widget */}
-          <Card className={isGta ? 'gta-hud-card' : ''}>
+          {/* Upcoming Events / Incidents */}
+          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300">
                   <CalendarIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-planner-text">Upcoming Events</h2>
+                  <h2 className="text-lg font-bold text-planner-text">
+                    {isStrange ? 'Upcoming Incidents' : 'Upcoming Events'}
+                  </h2>
                   <p className="text-xs text-planner-muted">Nearest schedule</p>
                 </div>
               </div>
@@ -456,15 +504,17 @@ const Home = () => {
             )}
           </Card>
 
-          {/* Daily Note Widget */}
-          <Card className={isGta ? 'gta-hud-card' : ''}>
+          {/* Daily Note / Field Log */}
+          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-planner-text">Today's Daily Note</h2>
+                  <h2 className="text-lg font-bold text-planner-text">
+                    {isStrange ? 'Field Journal Log' : "Today's Daily Note"}
+                  </h2>
                   <p className="text-xs text-planner-muted">Persisted note for {todayStr}</p>
                 </div>
               </div>
@@ -477,7 +527,7 @@ const Home = () => {
               rows={4}
               value={dailyNoteText}
               onChange={(e) => setDailyNoteText(e.target.value)}
-              placeholder="Jot down quick thoughts, ideas, or notes for today..."
+              placeholder={isStrange ? 'Record observations, walkie-talkie logs, or strange occurrences for today...' : 'Jot down quick thoughts, ideas, or notes for today...'}
               className="w-full bg-planner-bg/60 dark:bg-planner-card text-planner-text text-sm rounded-2xl border border-planner-border p-3 focus:outline-none focus:ring-2 focus:ring-planner-primary/40"
             />
           </Card>
