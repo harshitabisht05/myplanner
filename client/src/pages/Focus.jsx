@@ -100,10 +100,10 @@ const Focus = () => {
       />
 
       {/* Mode Selector Tabs */}
-      <div className={`flex p-1.5 rounded-2xl border shadow-cozy ${isStrange ? 'bg-slate-950 border-rose-900/50' : isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
+      <div className={`grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 rounded-2xl border shadow-cozy ${isStrange ? 'bg-slate-950 border-rose-900/50' : isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
         <button
           onClick={() => handleModeSwitch('focus')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
             mode === 'focus'
               ? isStrange
                 ? 'bg-rose-600 text-white font-serif shadow-[0_0_20px_rgba(225,29,72,0.5)]'
@@ -113,11 +113,11 @@ const Focus = () => {
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          {isStrange ? '25m THE OTHER SIDE 🌲' : isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
+          {isStrange ? '25m OTHER SIDE 🌲' : isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
         </button>
         <button
           onClick={() => handleModeSwitch('shortBreak')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
             mode === 'shortBreak'
               ? isStrange
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
@@ -131,7 +131,7 @@ const Focus = () => {
         </button>
         <button
           onClick={() => handleModeSwitch('longBreak')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
             mode === 'longBreak'
               ? isStrange
                 ? 'bg-sky-500 text-slate-950 font-bold shadow-xs'
@@ -145,7 +145,7 @@ const Focus = () => {
         </button>
         <button
           onClick={() => handleModeSwitch('custom')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
             mode === 'custom'
               ? isStrange
                 ? 'bg-purple-600 text-white font-bold shadow-xs'

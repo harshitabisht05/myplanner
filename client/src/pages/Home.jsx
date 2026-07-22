@@ -264,20 +264,20 @@ const Home = () => {
         {/* Left Column */}
         <div className="md:col-span-2 space-y-6">
           {/* Today's Tasks / Cases Card */}
-          <Card className={isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}>
-            <div className="flex items-center justify-between mb-4">
+          <Card className={`p-5 sm:p-6 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${isStrange ? 'bg-rose-600/20 text-rose-400' : isGta ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300'}`}>
+                <div className={`p-2 rounded-xl shrink-0 ${isStrange ? 'bg-rose-600/20 text-rose-400' : isGta ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300'}`}>
                   <CheckSquare className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-planner-text">
+                  <h2 className="text-base sm:text-lg font-bold text-planner-text">
                     {isStrange ? "Today's Active Cases" : isGta ? "Today's Active Missions" : "Today's Tasks"}
                   </h2>
                   <p className="text-xs text-planner-muted">{completedTasksCount} of {totalTasksCount} completed</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-end sm:self-auto">
                 <Button variant="ghost" size="sm" onClick={() => setIsTaskModalOpen(true)}>
                   <Plus className="w-4 h-4 mr-1" /> Add
                 </Button>
@@ -300,28 +300,30 @@ const Home = () => {
                 <p className="text-sm font-medium">No active cases logged today ✨</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                 {tasks.map((task) => (
                   <div
                     key={task._id}
-                    className={`flex items-center justify-between p-3 rounded-2xl border transition-colors group ${
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl border gap-2.5 transition-all group ${
                       task.completed && isStrange
                         ? 'strange-case-closed'
                         : task.completed && isGta
                         ? 'gta-mission-passed'
-                        : 'bg-planner-bg/60 hover:bg-planner-secondary/40 border-planner-border'
+                        : 'bg-planner-bg/60 hover:bg-planner-secondary/40 border-planner-border shadow-xs'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Checkbox
-                        checked={task.completed}
-                        onChange={() => toggleTaskMutation.mutate(task._id)}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start sm:items-center gap-3 min-w-0">
+                      <div className="mt-0.5 sm:mt-0">
+                        <Checkbox
+                          checked={task.completed}
+                          onChange={() => toggleTaskMutation.mutate(task._id)}
+                        />
+                      </div>
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p
-                            className={`text-sm font-semibold truncate ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
+                            className={`text-sm font-bold text-planner-text leading-snug ${
+                              task.completed ? 'line-through text-planner-muted' : ''
                             }`}
                           >
                             {task.title}
@@ -333,11 +335,11 @@ const Home = () => {
                           )}
                         </div>
                         {task.dueTime && (
-                          <span className="text-xs text-planner-muted">⏰ {task.dueTime}</span>
+                          <span className="text-xs text-planner-muted block">⏰ {task.dueTime}</span>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto pt-1 sm:pt-0">
                       {task.isTop3 && <Badge variant="primary">{isStrange ? 'CRITICAL CASE' : isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
                       <Badge variant={task.priority}>{task.priority}</Badge>
                     </div>
