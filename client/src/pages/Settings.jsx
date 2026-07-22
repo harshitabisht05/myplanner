@@ -97,6 +97,21 @@ const Settings = () => {
     navigate('/login');
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showError('File size must be under 5MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result);
+      showSuccess('Avatar loaded from device! Click Save Profile to apply. 📸');
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
@@ -155,7 +170,47 @@ const Settings = () => {
           <h2 className="text-lg font-bold text-planner-text">Profile Information</h2>
         </div>
 
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
+        <form onSubmit={handleProfileSubmit} className="space-y-5">
+          {/* Avatar Preview & Device Upload */}
+          <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-planner-secondary/40 rounded-2xl border border-planner-border">
+            <div className="relative w-20 h-20 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-bold text-2xl overflow-hidden border-2 border-planner-primary shrink-0 shadow-md">
+              {avatar ? (
+                <img src={avatar} alt="Profile Avatar" className="w-full h-full object-cover" />
+              ) : name ? (
+                name.charAt(0).toUpperCase()
+              ) : (
+                <User className="w-8 h-8" />
+              )}
+            </div>
+
+            <div className="flex-1 space-y-2 text-center sm:text-left">
+              <span className="text-sm font-bold text-planner-text block">Profile Avatar</span>
+              <p className="text-xs text-planner-muted">Upload an image directly from your phone/computer device or paste a URL below.</p>
+              
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-planner-primary hover:bg-planner-primaryHover text-white text-xs font-bold transition-all shadow-xs active:scale-95">
+                  <Download className="w-4 h-4 rotate-180" /> Upload from Device
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+
+                {avatar && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatar('')}
+                    className="px-3 py-2 rounded-xl border border-rose-300 dark:border-rose-900 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-semibold transition-all"
+                  >
+                    Remove Avatar
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Full Name"
@@ -164,7 +219,7 @@ const Settings = () => {
               required
             />
             <Input
-              label="Avatar Image URL (Optional)"
+              label="Or Avatar Image URL (Optional)"
               placeholder="https://..."
               value={avatar}
               onChange={(e) => setAvatar(e.target.value)}

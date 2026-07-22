@@ -51,8 +51,14 @@ const MobileHeader = ({ onOpenQuickAdd }) => {
         >
           <Plus className="w-5 h-5 stroke-[2.5]" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-bold text-xs">
-          {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+        <div className="w-8 h-8 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-planner-border">
+          {user?.avatar ? (
+            <img src={user.avatar} alt={user.name || 'Avatar'} className="w-full h-full object-cover" />
+          ) : user?.name ? (
+            user.name.charAt(0).toUpperCase()
+          ) : (
+            'U'
+          )}
         </div>
       </div>
     </header>

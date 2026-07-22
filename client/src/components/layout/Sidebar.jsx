@@ -30,12 +30,8 @@ const navItems = [
   { name: 'Today', path: '/today', icon: Sun, gtaName: 'ACTIVE MISSIONS', strangeName: 'CURRENT CASE' },
   { name: 'Tasks', path: '/tasks', icon: CheckSquare, gtaName: 'MISSIONS', strangeName: 'OBJECTIVES' },
   { name: 'Calendar', path: '/calendar', icon: CalendarIcon, gtaName: 'MAP', strangeName: 'INCIDENT MAP' },
-  { name: 'Habits', path: '/habits', icon: Sparkles, gtaName: 'STATS', strangeName: 'SURVIVAL STATS' },
   { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE', strangeName: 'CASE FILES' },
-  { name: 'Goals', path: '/goals', icon: Target, gtaName: 'CAMPAIGN', strangeName: 'INVESTIGATION' },
-  { name: 'Brain Dump', path: '/braindump', icon: Brain, gtaName: 'PLANNING', strangeName: 'SIGNAL LOG' },
   { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'MISSION MODE', strangeName: 'OTHER SIDE' },
-  { name: 'Reflections', path: '/reflections', icon: Heart, gtaName: 'JOURNAL', strangeName: 'JOURNAL' },
   { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'OPTIONS', strangeName: 'SYSTEM' },
 ];
 
@@ -175,8 +171,14 @@ const Sidebar = ({ onOpenQuickAdd }) => {
             isStrange || isGta ? 'bg-slate-900/80 border border-slate-800' : 'bg-planner-bg/60'
           } ${collapsed ? 'justify-center p-2' : ''}`}
         >
-          <div className="w-9 h-9 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-bold shrink-0">
-            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="w-5 h-5" />}
+          <div className="w-9 h-9 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-bold shrink-0 overflow-hidden border border-planner-border">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name || 'Avatar'} className="w-full h-full object-cover" />
+            ) : user?.name ? (
+              user.name.charAt(0).toUpperCase()
+            ) : (
+              <UserIcon className="w-5 h-5" />
+            )}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">

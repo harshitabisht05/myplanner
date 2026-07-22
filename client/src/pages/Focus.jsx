@@ -12,7 +12,8 @@ import strangeOtherSideImg from '../assets/strange_otherside_bg.jpg';
 const TIMER_MODES = {
   focus: { label: 'THE OTHER SIDE', minutes: 25, color: 'text-rose-500 border-rose-600' },
   shortBreak: { label: 'SAFE ZONE', minutes: 5, color: 'text-emerald-400 border-emerald-500' },
-  longBreak: { label: 'RETURN TO NORMAL', minutes: 15, color: 'text-sky-400 border-sky-500' }
+  longBreak: { label: 'RETURN TO NORMAL', minutes: 15, color: 'text-sky-400 border-sky-500' },
+  custom: { label: 'CUSTOM SESSION', minutes: 45, color: 'text-purple-400 border-purple-500' }
 };
 
 const Focus = () => {
@@ -21,6 +22,7 @@ const Focus = () => {
   const isStrange = theme === 'strange';
 
   const [mode, setMode] = useState('focus');
+  const [customMinutes, setCustomMinutes] = useState(45);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState('');
@@ -35,10 +37,20 @@ const Focus = () => {
   const selectedTask = tasks.find((t) => t._id === selectedTaskId);
 
   // Mode switch
-  const handleModeSwitch = (newMode) => {
+  const handleModeSwitch = (newMode, minutesOverride) => {
     setMode(newMode);
     setIsRunning(false);
-    setTimeLeft(TIMER_MODES[newMode].minutes * 60);
+    const targetMins = minutesOverride || (newMode === 'custom' ? customMinutes : TIMER_MODES[newMode].minutes);
+    setTimeLeft(targetMins * 60);
+  };
+
+  const handleCustomMinutesChange = (newMins) => {
+    const mins = Math.max(1, Math.min(180, Number(newMins) || 1));
+    setCustomMinutes(mins);
+    if (mode === 'custom') {
+      setIsRunning(false);
+      setTimeLeft(mins * 60);
+    }
   };
 
   // Timer Countdown Effect
@@ -129,9 +141,45 @@ const Focus = () => {
               : 'text-planner-muted hover:text-planner-text'
           }`}
         >
-          {isStrange ? '15m RETURN TO NORMAL 🌿' : isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
+          {isStrange ? '15m RETURN 🌿' : isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
+        </button>
+        <button
+          onClick={() => handleModeSwitch('custom')}
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            mode === 'custom'
+              ? isStrange
+                ? 'bg-purple-600 text-white font-bold shadow-xs'
+                : isGta
+                ? 'bg-purple-500 text-slate-950 font-black shadow-xs'
+                : 'bg-purple-600 text-white shadow-xs'
+              : 'text-planner-muted hover:text-planner-text'
+          }`}
+        >
+          ⚙️ Custom
         </button>
       </div>
+
+      {/* Custom Minutes Input when Custom Mode active */}
+      {mode === 'custom' && (
+        <div className="flex items-center justify-center gap-3 p-4 bg-planner-card rounded-2xl border border-planner-border shadow-xs max-w-sm mx-auto">
+          <span className="text-xs font-bold text-planner-text">Custom Time (mins):</span>
+          <input
+            type="number"
+            min="1"
+            max="180"
+            value={customMinutes}
+            onChange={(e) => handleCustomMinutesChange(e.target.value)}
+            className="w-20 px-3 py-1.5 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-center text-sm focus:outline-none focus:ring-2 focus:ring-planner-primary"
+          />
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => handleModeSwitch('custom', customMinutes)}
+          >
+            Set Time
+          </Button>
+        </div>
+      )}
 
       {/* Main Timer Dial */}
       <Card
