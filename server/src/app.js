@@ -32,7 +32,6 @@ app.use(
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl) or matching origins
       callback(null, true);
     },
     credentials: true
@@ -45,12 +44,16 @@ app.use(cookieParser());
 
 // Database connection middleware for Vercel Serverless
 app.use(async (req, res, next) => {
+  if (req.path === '/api/health') return next();
   try {
     await connectDB();
     next();
   } catch (err) {
-    console.error('Database middleware connection error:', err);
-    res.status(500).json({ success: false, message: 'Database connection failure' });
+    console.error('Database connection error:', err.message);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Database connection failure. Please check MONGODB_URI in Vercel environment variables.'
+    });
   }
 });
 
