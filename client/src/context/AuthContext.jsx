@@ -41,6 +41,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const data = await authApi.login(credentials);
     if (data.success && data.user) {
+      if (data.token) {
+        localStorage.setItem('planner_token', data.token);
+      }
       setUser(data.user);
       if (data.user.preferences) {
         updatePreferencesFromUser(data.user.preferences);
@@ -52,6 +55,9 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const data = await authApi.register(userData);
     if (data.success && data.user) {
+      if (data.token) {
+        localStorage.setItem('planner_token', data.token);
+      }
       setUser(data.user);
       if (data.user.preferences) {
         updatePreferencesFromUser(data.user.preferences);
@@ -64,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authApi.logout();
     } finally {
+      localStorage.removeItem('planner_token');
       setUser(null);
     }
   };
