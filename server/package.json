@@ -7,7 +7,8 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "check": "node --check src/index.js",
-    "build": "echo Server build complete"
+    "build": "echo Server build complete",
+    "build:client": "npm install --prefix ../client && npm run build --prefix ../client"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
