@@ -16,10 +16,10 @@ const MobileBottomNav = ({ onOpenMore }) => {
 
   return (
     <nav
-      className={`md:hidden fixed bottom-0 left-0 right-0 z-30 backdrop-blur-md border-t px-2 py-1.5 flex items-center justify-around ${
+      className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md border-t px-2 py-1.5 flex items-center justify-around ${
         isGta
           ? 'bg-slate-950/95 border-emerald-900/40 text-slate-100'
-          : 'bg-planner-card/90 border-planner-border'
+          : 'bg-planner-card/95 border-planner-border shadow-cozy-lg'
       }`}
     >
       {navs.map((item) => {
@@ -45,8 +45,12 @@ const MobileBottomNav = ({ onOpenMore }) => {
       })}
 
       <button
-        onClick={onOpenMore}
-        className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold text-planner-muted hover:text-planner-text transition-all"
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          onOpenMore && onOpenMore();
+        }}
+        className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold text-planner-muted hover:text-planner-text cursor-pointer select-none active:scale-95 transition-all touch-manipulation"
       >
         <MoreHorizontal className="w-5 h-5" />
         <span>{isGta ? 'PHONE' : 'More'}</span>
