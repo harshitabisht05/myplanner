@@ -18,23 +18,24 @@ import {
   LogOut,
   User as UserIcon,
   Shield,
-  Compass
+  MapPin
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import gtaLogoV from '../../assets/gta_logo_v.svg';
 
 const navItems = [
-  { name: 'Home', path: '/', icon: Home, gtaName: 'HQ / Profile' },
-  { name: 'Today', path: '/today', icon: Sun, gtaName: 'Main Missions' },
-  { name: 'Tasks', path: '/tasks', icon: CheckSquare, gtaName: 'Mission Log' },
-  { name: 'Calendar', path: '/calendar', icon: CalendarIcon, gtaName: 'City Schedule' },
-  { name: 'Habits', path: '/habits', icon: Sparkles, gtaName: 'Daily Routines' },
-  { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'Intel & Notes' },
-  { name: 'Goals', path: '/goals', icon: Target, gtaName: 'Campaign Goals' },
-  { name: 'Brain Dump', path: '/braindump', icon: Brain, gtaName: 'Raw Ideas' },
-  { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'Mission Focus' },
-  { name: 'Reflections', path: '/reflections', icon: Heart, gtaName: 'Journal' },
-  { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'System / Themes' },
+  { name: 'Home', path: '/', icon: Home, gtaName: 'PLAYER' },
+  { name: 'Today', path: '/today', icon: Sun, gtaName: 'ACTIVE MISSIONS' },
+  { name: 'Tasks', path: '/tasks', icon: CheckSquare, gtaName: 'MISSIONS' },
+  { name: 'Calendar', path: '/calendar', icon: CalendarIcon, gtaName: 'MAP' },
+  { name: 'Habits', path: '/habits', icon: Sparkles, gtaName: 'STATS' },
+  { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE' },
+  { name: 'Goals', path: '/goals', icon: Target, gtaName: 'CAMPAIGN' },
+  { name: 'Brain Dump', path: '/braindump', icon: Brain, gtaName: 'PLANNING' },
+  { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'MISSION MODE' },
+  { name: 'Reflections', path: '/reflections', icon: Heart, gtaName: 'JOURNAL' },
+  { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'OPTIONS' },
 ];
 
 const Sidebar = ({ onOpenQuickAdd }) => {
@@ -72,24 +73,25 @@ const Sidebar = ({ onOpenQuickAdd }) => {
       <div className="flex items-center justify-between p-4 border-b border-planner-border">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <span className="text-xl">{isGta ? '🌴' : '🌸'}</span>
-            <div>
-              <span className={`font-black text-sm tracking-wider uppercase block ${isGta ? 'text-emerald-400 font-mono' : 'text-planner-text'}`}>
-                {isGta ? 'My Little Planner' : 'My Little Planner'}
-              </span>
-              {isGta && (
-                <span className="text-[10px] font-extrabold tracking-widest text-orange-400 uppercase block -mt-0.5">
-                  Los Santos Edition
+            {isGta ? (
+              <div className="h-10 w-44 overflow-hidden">
+                <img src={gtaLogoV} alt="PLANNER CITY V" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <>
+                <span className="text-xl">🌸</span>
+                <span className="font-extrabold text-sm tracking-tight text-planner-text">
+                  My Little Planner
                 </span>
-              )}
-            </div>
+              </>
+            )}
           </div>
         )}
         {collapsed && <div className="mx-auto text-xl">{isGta ? '🌴' : '🌸'}</div>}
         <button
           onClick={toggleCollapsed}
           className="p-1.5 rounded-xl hover:bg-planner-secondary text-planner-muted transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand menu' : 'Collapse menu'}
         >
           {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
@@ -99,15 +101,15 @@ const Sidebar = ({ onOpenQuickAdd }) => {
       <div className="p-3">
         <button
           onClick={onOpenQuickAdd}
-          className={`w-full rounded-2xl p-3 font-bold shadow-cozy flex items-center justify-center gap-2 transition-all active:scale-95 ${
+          className={`w-full p-3 font-bold shadow-cozy flex items-center justify-center gap-2 transition-all active:scale-95 ${
             isGta
-              ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-              : 'bg-planner-primary hover:bg-planner-primaryHover text-white'
+              ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] uppercase font-mono'
+              : 'bg-planner-primary hover:bg-planner-primaryHover text-white rounded-2xl'
           } ${collapsed ? 'px-0' : ''}`}
-          title="Global Quick Add"
+          title="Global Action Wheel"
         >
           <Plus className="w-5 h-5 stroke-[2.5]" />
-          {!collapsed && <span>{isGta ? 'Quick Mission' : 'Quick Add'}</span>}
+          {!collapsed && <span>{isGta ? 'NEW MISSION' : 'Quick Add'}</span>}
         </button>
       </div>
 
@@ -124,7 +126,7 @@ const Sidebar = ({ onOpenQuickAdd }) => {
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium transition-all ${
                   isActive
                     ? isGta
-                      ? 'bg-emerald-500/15 text-emerald-400 font-extrabold border border-emerald-500/30'
+                      ? 'bg-emerald-500/15 text-emerald-400 font-extrabold border border-emerald-500/40 shadow-xs'
                       : 'bg-planner-secondary text-planner-primary font-bold'
                     : 'text-planner-muted hover:text-planner-text hover:bg-planner-secondary/50'
                 } ${collapsed ? 'justify-center px-0' : ''}`
@@ -132,7 +134,11 @@ const Sidebar = ({ onOpenQuickAdd }) => {
               title={collapsed ? label : undefined}
             >
               <Icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{label}</span>}
+              {!collapsed && (
+                <span className={isGta ? 'font-black tracking-wider font-mono text-xs' : ''}>
+                  {label}
+                </span>
+              )}
             </NavLink>
           );
         })}
@@ -150,7 +156,7 @@ const Sidebar = ({ onOpenQuickAdd }) => {
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-black uppercase text-planner-text truncate">
+              <p className="text-xs font-black uppercase text-planner-text truncate font-mono">
                 {isGta ? `PLAYER: ${user?.name}` : user?.name || 'User'}
               </p>
               <p className="text-[10px] text-planner-muted truncate">{user?.email || ''}</p>
