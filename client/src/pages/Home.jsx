@@ -24,9 +24,16 @@ import {
   Plus,
   ArrowRight,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  Shield,
+  MapPin,
+  Trophy,
+  Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import gtaSunsetImg from '../assets/gta_sunset.jpg';
+import gtaCharacterImg from '../assets/gta_character.jpg';
 
 const MOOD_OPTIONS = [
   { value: 'amazing', label: 'Amazing', emoji: '😄', color: 'hover:bg-amber-100 dark:hover:bg-amber-950/60' },
@@ -98,8 +105,11 @@ const Home = () => {
   // Task complete toggle mutation
   const toggleTaskMutation = useMutation({
     mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      if (isGta && data.task?.completed) {
+        showSuccess('MISSION PASSED! 🎯 +100 EXP');
+      }
     }
   });
 
@@ -144,53 +154,96 @@ const Home = () => {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Header Greeting Banner */}
-      <div
-        className={`rounded-3xl p-6 sm:p-8 border border-planner-border shadow-cozy relative overflow-hidden ${
-          isGta
-            ? 'bg-gradient-to-r from-orange-600 via-pink-600 to-purple-900 text-white border-orange-500/40'
-            : 'bg-gradient-to-r from-planner-secondary/80 via-planner-card to-planner-secondary/40'
-        }`}
-      >
-        <div className="relative z-10 max-w-2xl">
-          <div
-            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${
-              isGta
-                ? 'bg-slate-900/60 border-orange-400/40 text-emerald-400 font-bold'
-                : 'bg-planner-card/80 text-planner-primary border-planner-border'
-            }`}
-          >
-            {isGta ? <span>🌴 Vinewood Sunset</span> : <Sparkles className="w-3.5 h-3.5" />}
-            <span>{formattedDateStr}</span>
+      {/* Header Greeting Hero Banner */}
+      {isGta ? (
+        <div className="relative rounded-3xl overflow-hidden border border-emerald-500/40 shadow-2xl bg-slate-950">
+          {/* Background Sunset Graphic with Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={gtaSunsetImg}
+              alt="Vinewood Sunset"
+              className="w-full h-full object-cover opacity-40 mix-blend-luminosity"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            {getGreeting()}, {user?.name || 'Friend'} {isGta ? '🌴' : '🌷'}
-          </h1>
-          <p
-            className={`text-sm sm:text-base mt-2 leading-relaxed ${
-              isGta ? 'text-slate-200' : 'text-planner-muted'
-            }`}
-          >
-            {isGta
-              ? "Welcome to Los Santos. Complete your missions, build your habits, and own the day."
-              : "Let's make today a little better than yesterday. Take things one gentle step at a time."}
-          </p>
+
+          <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-xl space-y-3">
+              {/* GTA Player HUD Badge */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black tracking-widest uppercase">
+                  PLAYER: {user?.name || 'BOSS'}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-bold tracking-wider uppercase flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" /> LOS SANTOS
+                </span>
+                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold tracking-wider uppercase flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" /> ACTIVE
+                </span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                {getGreeting()}, {user?.name || 'Player'} 🌴
+              </h1>
+
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                Welcome to Los Santos District. Complete your daily missions, build your street reputation, and execute your campaign goals.
+              </p>
+
+              <div className="pt-2 flex items-center gap-4 text-xs font-mono text-emerald-400">
+                <span>DATE: {formattedDateStr}</span>
+                <span>•</span>
+                <span>STATUS: READY</span>
+              </div>
+            </div>
+
+            {/* Fictional Character Artwork Avatar Frame */}
+            <div className="relative shrink-0 w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+              <img
+                src={gtaCharacterImg}
+                alt="Los Santos Character"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[10px] font-black text-center text-emerald-400 py-0.5 tracking-wider uppercase">
+                RANK: PRODUCTIVE
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-gradient-to-r from-planner-secondary/80 via-planner-card to-planner-secondary/40 rounded-3xl p-6 sm:p-8 border border-planner-border shadow-cozy relative overflow-hidden">
+          <div className="relative z-10 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-planner-card/80 text-planner-primary text-xs font-semibold mb-3 border border-planner-border">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{formattedDateStr}</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-planner-text tracking-tight">
+              {getGreeting()}, {user?.name || 'Friend'} 🌷
+            </h1>
+            <p className="text-planner-muted text-sm sm:text-base mt-2 leading-relaxed">
+              Let's make today a little better than yesterday. Take things one gentle step at a time.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Grid Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column (2 Cols on Desktop) */}
         <div className="md:col-span-2 space-y-6">
-          {/* Today's Tasks Card */}
-          <Card>
+          {/* Today's Tasks / Missions Card */}
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300">
+                <div className={`p-2 rounded-xl ${isGta ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300'}`}>
                   <CheckSquare className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-planner-text">Today's Tasks</h2>
+                  <h2 className="text-lg font-bold text-planner-text">
+                    {isGta ? "Today's Active Missions" : "Today's Tasks"}
+                  </h2>
                   <p className="text-xs text-planner-muted">{completedTasksCount} of {totalTasksCount} completed</p>
                 </div>
               </div>
@@ -222,7 +275,11 @@ const Home = () => {
                 {tasks.map((task) => (
                   <div
                     key={task._id}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 hover:bg-planner-secondary/40 border border-planner-border transition-colors group"
+                    className={`flex items-center justify-between p-3 rounded-2xl border transition-colors group ${
+                      task.completed && isGta
+                        ? 'gta-mission-passed'
+                        : 'bg-planner-bg/60 hover:bg-planner-secondary/40 border-planner-border'
+                    }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <Checkbox
@@ -230,20 +287,27 @@ const Home = () => {
                         onChange={() => toggleTaskMutation.mutate(task._id)}
                       />
                       <div className="min-w-0">
-                        <p
-                          className={`text-sm font-semibold truncate ${
-                            task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                          }`}
-                        >
-                          {task.title}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p
+                            className={`text-sm font-semibold truncate ${
+                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
+                            }`}
+                          >
+                            {task.title}
+                          </p>
+                          {task.completed && isGta && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-yellow-400 text-black uppercase tracking-wider">
+                              MISSION PASSED
+                            </span>
+                          )}
+                        </div>
                         {task.dueTime && (
                           <span className="text-xs text-planner-muted">⏰ {task.dueTime}</span>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {task.isTop3 && <Badge variant="primary">Top 3</Badge>}
+                      {task.isTop3 && <Badge variant="primary">{isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
                       <Badge variant={task.priority}>{task.priority}</Badge>
                     </div>
                   </div>
@@ -253,14 +317,16 @@ const Home = () => {
           </Card>
 
           {/* Habit Snapshot Widget */}
-          <Card>
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300">
+                <div className={`p-2 rounded-xl ${isGta ? 'bg-orange-500/20 text-orange-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300'}`}>
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-planner-text">Habit Snapshot</h2>
+                  <h2 className="text-lg font-bold text-planner-text">
+                    {isGta ? 'Daily Habits & Routines' : 'Habit Snapshot'}
+                  </h2>
                   <p className="text-xs text-planner-muted">Track today's routines</p>
                 </div>
               </div>
@@ -318,7 +384,7 @@ const Home = () => {
         {/* Right Column (Sidebar Widgets) */}
         <div className="space-y-6">
           {/* Mood Tracker Widget */}
-          <Card>
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center gap-2.5 mb-4">
               <div className="p-2 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-300">
                 <Smile className="w-5 h-5" />
@@ -351,7 +417,7 @@ const Home = () => {
           </Card>
 
           {/* Upcoming Events Widget */}
-          <Card>
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300">
@@ -391,7 +457,7 @@ const Home = () => {
           </Card>
 
           {/* Daily Note Widget */}
-          <Card>
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300">

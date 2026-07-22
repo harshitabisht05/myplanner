@@ -64,17 +64,17 @@
     --color-border: #45475a;
   }
 
-  /* Theme 6: GTA Urban (Los Santos / Vinewood Sunset Aesthetic) */
+  /* Theme 6: GTA City Edition (Los Santos Urban Gaming Aesthetic) */
   [data-theme="gta"] {
-    --color-bg: #0b0c10;
-    --color-card: #14161f;
-    --color-text: #f1f5f9;
+    --color-bg: #090a0f;
+    --color-card: #12141e;
+    --color-text: #f8fafc;
     --color-muted: #94a3b8;
-    --color-primary: #10b981; /* Neon Lime/Emerald Green */
+    --color-primary: #10b981; /* Neon Emerald/Lime Green */
     --color-primary-hover: #059669;
-    --color-secondary: #221c2e; /* Deep sunset purple tint */
+    --color-secondary: #1a1b29; /* Dark slate blue */
     --color-accent: #f97316; /* Vinewood sunset orange */
-    --color-border: #26293b;
+    --color-border: #232738;
   }
 
   /* Prevent horizontal page scrolling on mobile devices */
@@ -95,19 +95,40 @@
   }
 }
 
-/* Custom GTA Theme Visual Enhancements */
+/* Custom GTA Urban Theme Visual & HUD Enhancements */
 [data-theme="gta"] h1,
-[data-theme="gta"] h2 {
-  letter-spacing: -0.02em;
+[data-theme="gta"] h2,
+[data-theme="gta"] h3 {
+  letter-spacing: -0.03em;
   font-weight: 800;
 }
 
+[data-theme="gta"] .gta-hud-card {
+  background-color: rgba(18, 20, 30, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(35, 39, 56, 0.9);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
 [data-theme="gta"] button.bg-planner-primary {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 [data-theme="gta"] button.bg-planner-primary:hover {
-  box-shadow: 0 0 22px rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.65);
+}
+
+[data-theme="gta"] .gta-mission-passed {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(16, 185, 129, 0.2));
+  border: 1px solid #eab308;
+  color: #facc15;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+  letter-spacing: 0.1em;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 /* Touch friendly min size on interactive elements on small screens */

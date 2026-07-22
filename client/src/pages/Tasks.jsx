@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../api/taskApi';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
@@ -14,11 +15,14 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
 import TaskModal from '../components/modals/TaskModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
-import { CheckSquare, Plus, Search, Edit2, Trash2, Calendar, Star } from 'lucide-react';
+import { CheckSquare, Plus, Search, Edit2, Trash2, Calendar, Star, Shield, Award } from 'lucide-react';
 
 const Tasks = () => {
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
+
+  const isGta = theme === 'gta';
 
   const [view, setView] = useState('all'); // 'all' | 'today' | 'upcoming' | 'completed'
   const [search, setSearch] = useState('');
@@ -50,8 +54,11 @@ const Tasks = () => {
   // Mutations
   const toggleCompleteMutation = useMutation({
     mutationFn: (id) => taskApi.toggleTaskComplete(id),
-    onSuccess: () => {
+    onSuccess: (resData) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      if (isGta && resData.task?.completed) {
+        showSuccess('MISSION PASSED! 🎯');
+      }
     }
   });
 
@@ -99,30 +106,36 @@ const Tasks = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Tasks & To-Dos"
-        subtitle="Manage, filter and organize all your daily and upcoming tasks"
-        icon={CheckSquare}
+        title={isGta ? 'Mission Log' : 'Tasks & To-Dos'}
+        subtitle={
+          isGta
+            ? 'Manage active city missions, side tasks, and objective priority levels'
+            : 'Manage, filter and organize all your daily and upcoming tasks'
+        }
+        icon={isGta ? Shield : CheckSquare}
         action={
           <Button variant="primary" onClick={handleOpenCreate}>
-            <Plus className="w-4 h-4 mr-1.5" /> Add Task
+            <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Mission' : 'Add Task'}
           </Button>
         }
       />
 
       {/* Main View Tabs */}
-      <div className="flex bg-planner-card p-1.5 rounded-2xl border border-planner-border shadow-cozy overflow-x-auto">
+      <div className={`flex p-1.5 rounded-2xl border shadow-cozy overflow-x-auto ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
         {[
-          { key: 'all', label: 'All Tasks' },
-          { key: 'today', label: "Today's Tasks" },
-          { key: 'upcoming', label: 'Upcoming' },
-          { key: 'completed', label: 'Completed' }
+          { key: 'all', label: isGta ? 'All Missions' : 'All Tasks' },
+          { key: 'today', label: isGta ? "Today's Missions" : "Today's Tasks" },
+          { key: 'upcoming', label: isGta ? 'Upcoming Heists' : 'Upcoming' },
+          { key: 'completed', label: isGta ? 'Passed Missions' : 'Completed' }
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setView(tab.key)}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               view === tab.key
-                ? 'bg-planner-primary text-white shadow-xs'
+                ? isGta
+                  ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                  : 'bg-planner-primary text-white shadow-xs'
                 : 'text-planner-muted hover:text-planner-text hover:bg-planner-secondary/50'
             }`}
           >
@@ -132,10 +145,10 @@ const Tasks = () => {
       </div>
 
       {/* Filters & Search Controls Bar */}
-      <Card className="p-4">
+      <Card className={`p-4 ${isGta ? 'gta-hud-card' : ''}`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Input
-            placeholder="Search tasks..."
+            placeholder={isGta ? 'Search mission name...' : 'Search tasks...'}
             leftIcon={Search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -179,15 +192,21 @@ const Tasks = () => {
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title="No tasks found"
-          message="Nothing here yet. Your day is a blank page ✨"
-          actionText="Create a Task"
+          title={isGta ? 'No active missions' : 'No tasks found'}
+          message={isGta ? 'Your mission log is clear. Take on new city objectives!' : 'Nothing here yet. Your day is a blank page ✨'}
+          actionText={isGta ? 'Create Mission' : 'Create Task'}
           onAction={handleOpenCreate}
         />
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
-            <Card key={task._id} hover className="p-4 flex items-center justify-between gap-3">
+            <Card
+              key={task._id}
+              hover
+              className={`p-4 flex items-center justify-between gap-3 ${
+                task.completed && isGta ? 'gta-mission-passed' : isGta ? 'gta-hud-card' : ''
+              }`}
+            >
               <div className="flex items-center gap-3.5 min-w-0">
                 <Checkbox
                   checked={task.completed}
@@ -202,9 +221,14 @@ const Tasks = () => {
                     >
                       {task.title}
                     </h3>
+                    {task.completed && isGta && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded bg-amber-400 text-slate-950 uppercase tracking-widest">
+                        <Award className="w-3 h-3" /> MISSION PASSED
+                      </span>
+                    )}
                     {task.isTop3 && (
                       <Badge variant="primary" className="text-[10px]">
-                        <Star className="w-3 h-3 fill-planner-primary mr-1" /> Top 3
+                        <Star className="w-3 h-3 fill-planner-primary mr-1" /> {isGta ? 'MAIN MISSION' : 'Top 3'}
                       </Badge>
                     )}
                   </div>

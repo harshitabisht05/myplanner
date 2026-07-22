@@ -12,12 +12,15 @@ import Badge from '../components/common/Badge';
 import Checkbox from '../components/common/Checkbox';
 import EventModal from '../components/modals/EventModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Edit2, Trash2, Clock, MapPin } from 'lucide-react';
+import gtaMapPattern from '../assets/gta_map_pattern.svg';
 
 const CalendarPage = () => {
   const queryClient = useQueryClient();
-  const { weekStart } = useTheme();
+  const { weekStart, theme } = useTheme();
   const { showSuccess, showError } = useToast();
+
+  const isGta = theme === 'gta';
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState(() => new Date().toISOString().split('T')[0]);
@@ -139,9 +142,13 @@ const CalendarPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Calendar & Schedule"
-        subtitle="Navigate monthly schedule, events and scheduled tasks"
-        icon={CalendarIcon}
+        title={isGta ? 'City Schedule & Map' : 'Calendar & Schedule'}
+        subtitle={
+          isGta
+            ? 'Track Los Santos operations, meetings, and scheduled missions'
+            : 'Navigate monthly schedule, events and scheduled tasks'
+        }
+        icon={isGta ? MapPin : CalendarIcon}
         action={
           <Button
             variant="primary"
@@ -150,96 +157,112 @@ const CalendarPage = () => {
               setIsEventModalOpen(true);
             }}
           >
-            <Plus className="w-4 h-4 mr-1.5" /> Add Event
+            <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Event' : 'Add Event'}
           </Button>
         }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Navigable Calendar Grid (2 Cols on Desktop) */}
-        <Card className="lg:col-span-2 p-4 sm:p-6">
-          {/* Calendar Header Controls */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-planner-text">{monthNameStr}</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleToday}>
-                Today
-              </Button>
-              <IconButton size="sm" onClick={handlePrevMonth} title="Previous Month">
-                <ChevronLeft className="w-5 h-5" />
-              </IconButton>
-              <IconButton size="sm" onClick={handleNextMonth} title="Next Month">
-                <ChevronRight className="w-5 h-5" />
-              </IconButton>
-            </div>
-          </div>
+        {/* Navigable Calendar Grid */}
+        <Card
+          className={`lg:col-span-2 p-4 sm:p-6 relative overflow-hidden ${
+            isGta ? 'gta-hud-card' : ''
+          }`}
+        >
+          {/* Subtle Street Map Texture Background overlay */}
+          {isGta && (
+            <div
+              className="absolute inset-0 pointer-events-none opacity-20 bg-repeat z-0"
+              style={{ backgroundImage: `url(${gtaMapPattern})` }}
+            />
+          )}
 
-          {/* Weekday Headers */}
-          <div className="grid grid-cols-7 text-center text-xs font-bold text-planner-muted mb-2">
-            {weekdays.map((w) => (
-              <div key={w} className="py-2">
-                {w}
+          <div className="relative z-10">
+            {/* Calendar Header Controls */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-planner-text">{monthNameStr}</h2>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleToday}>
+                  Today
+                </Button>
+                <IconButton size="sm" onClick={handlePrevMonth} title="Previous Month">
+                  <ChevronLeft className="w-5 h-5" />
+                </IconButton>
+                <IconButton size="sm" onClick={handleNextMonth} title="Next Month">
+                  <ChevronRight className="w-5 h-5" />
+                </IconButton>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {daysArray.map((item, idx) => {
-              if (!item) {
-                return <div key={`empty-${idx}`} className="h-16 sm:h-20 rounded-2xl bg-planner-bg/20" />;
-              }
-
-              const isSelected = item.dateStr === selectedDateStr;
-              const isTodayStr = item.dateStr === new Date().toISOString().split('T')[0];
-
-              const dayEvents = events.filter((e) => e.date === item.dateStr);
-              const dayTasks = tasks.filter((t) => t.dueDate === item.dateStr);
-
-              return (
-                <div
-                  key={item.dateStr}
-                  onClick={() => setSelectedDateStr(item.dateStr)}
-                  className={`h-16 sm:h-20 p-1.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${
-                    isSelected
-                      ? 'border-planner-primary bg-planner-secondary shadow-cozy font-bold'
-                      : isTodayStr
-                      ? 'border-planner-primary/40 bg-planner-primary/5'
-                      : 'border-planner-border bg-planner-card hover:bg-planner-secondary/40'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-xs sm:text-sm font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
-                        isTodayStr ? 'bg-planner-primary text-white font-bold' : 'text-planner-text'
-                      }`}
-                    >
-                      {item.day}
-                    </span>
-                  </div>
-
-                  {/* Indicators */}
-                  <div className="flex flex-col gap-0.5 mt-1 overflow-hidden">
-                    {dayEvents.length > 0 && (
-                      <span className="text-[10px] bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold px-1 py-0.5 rounded truncate">
-                        🗓️ {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
-                      </span>
-                    )}
-                    {dayTasks.length > 0 && (
-                      <span className="text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-semibold px-1 py-0.5 rounded truncate">
-                        ✓ {dayTasks.length} {dayTasks.length === 1 ? 'task' : 'tasks'}
-                      </span>
-                    )}
-                  </div>
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 text-center text-xs font-bold text-planner-muted mb-2">
+              {weekdays.map((w) => (
+                <div key={w} className="py-2">
+                  {w}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {daysArray.map((item, idx) => {
+                if (!item) {
+                  return <div key={`empty-${idx}`} className="h-16 sm:h-20 rounded-2xl bg-planner-bg/20" />;
+                }
+
+                const isSelected = item.dateStr === selectedDateStr;
+                const isTodayStr = item.dateStr === new Date().toISOString().split('T')[0];
+
+                const dayEvents = events.filter((e) => e.date === item.dateStr);
+                const dayTasks = tasks.filter((t) => t.dueDate === item.dateStr);
+
+                return (
+                  <div
+                    key={item.dateStr}
+                    onClick={() => setSelectedDateStr(item.dateStr)}
+                    className={`h-16 sm:h-20 p-1.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${
+                      isSelected
+                        ? isGta
+                          ? 'border-emerald-500 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)] font-black'
+                          : 'border-planner-primary bg-planner-secondary shadow-cozy font-bold'
+                        : isTodayStr
+                        ? 'border-planner-primary/40 bg-planner-primary/5'
+                        : 'border-planner-border bg-planner-card/90 hover:bg-planner-secondary/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-xs sm:text-sm font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
+                          isTodayStr ? 'bg-planner-primary text-white font-bold' : 'text-planner-text'
+                        }`}
+                      >
+                        {item.day}
+                      </span>
+                    </div>
+
+                    {/* Indicators */}
+                    <div className="flex flex-col gap-0.5 mt-1 overflow-hidden">
+                      {dayEvents.length > 0 && (
+                        <span className="text-[10px] bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold px-1 py-0.5 rounded truncate">
+                          🗓️ {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
+                        </span>
+                      )}
+                      {dayTasks.length > 0 && (
+                        <span className="text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-semibold px-1 py-0.5 rounded truncate">
+                          ✓ {dayTasks.length} {dayTasks.length === 1 ? 'task' : 'tasks'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </Card>
 
         {/* Selected Day Details Panel */}
         <div className="space-y-4">
-          <Card>
+          <Card className={isGta ? 'gta-hud-card' : ''}>
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-planner-border">
               <div>
                 <h3 className="font-bold text-planner-text text-base">Selected Day</h3>
