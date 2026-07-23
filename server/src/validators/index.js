@@ -26,7 +26,8 @@ const taskSchema = z.object({
     completed: z.boolean().optional(),
     isTop3: z.boolean().optional(),
     top3Date: z.string().optional(),
-    timeBlock: z.enum(['morning', 'afternoon', 'evening', 'none']).optional()
+    timeBlock: z.enum(['morning', 'afternoon', 'evening', 'night', 'none']).optional(),
+    isRecurringDaily: z.boolean().optional()
   })
 });
 
