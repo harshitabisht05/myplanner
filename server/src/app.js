@@ -59,23 +59,28 @@ app.use(async (req, res, next) => {
 
 // Path normalization for Vercel Serverless Function rewrites
 app.use((req, res, next) => {
-  if (!req.url.startsWith('/api')) {
-    req.url = '/api' + (req.url.startsWith('/') ? '' : '/') + req.url;
-  }
+  req.url = req.url.replace(/^\/api\/api/, '/api');
   next();
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/habits', habitRoutes);
-app.use('/api/notes', noteRoutes);
-app.use('/api/goals', goalRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/moods', moodRoutes);
-app.use('/api/reflections', reflectionRoutes);
-app.use('/api/braindump', brainDumpRoutes);
-app.use('/api/dailynote', dailyNoteRoutes);
+// API Routes - registered with both /api/path and /path for Vercel compatibility
+const apiRoutes = [
+  { path: '/auth', handler: authRoutes },
+  { path: '/tasks', handler: taskRoutes },
+  { path: '/habits', handler: habitRoutes },
+  { path: '/notes', handler: noteRoutes },
+  { path: '/goals', handler: goalRoutes },
+  { path: '/events', handler: eventRoutes },
+  { path: '/moods', handler: moodRoutes },
+  { path: '/reflections', handler: reflectionRoutes },
+  { path: '/braindump', handler: brainDumpRoutes },
+  { path: '/dailynote', handler: dailyNoteRoutes }
+];
+
+apiRoutes.forEach(({ path, handler }) => {
+  app.use(`/api${path}`, handler);
+  app.use(path, handler);
+});
 
 // Health check endpoint
 app.get(['/api/health', '/health'], (req, res) => {
