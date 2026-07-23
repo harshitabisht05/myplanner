@@ -21,7 +21,9 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const showSuccess = useCallback((msg) => addToast(msg, 'success'), [addToast]);
+  const showSuccess = useCallback(() => {
+    // Success popups disabled per user preference
+  }, []);
   const showError = useCallback((msg) => addToast(msg, 'error'), [addToast]);
   const showInfo = useCallback((msg) => addToast(msg, 'info'), [addToast]);
 
