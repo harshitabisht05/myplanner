@@ -53,7 +53,7 @@ const Tasks = () => {
 
   // Mutations with Optimistic Updates
   const toggleCompleteMutation = useMutation({
-    mutationFn: (id) => taskApi.toggleTaskComplete(id),
+    mutationFn: (id) => taskApi.toggleTaskComplete(id, getLocalDateStr()),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
       queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
@@ -244,6 +244,11 @@ const Tasks = () => {
                       <Badge variant="primary" className="text-[10px]">
                         <Star className="w-3 h-3 fill-planner-primary mr-1" /> {isGta ? 'MAIN MISSION' : 'Top 3'}
                       </Badge>
+                    )}
+                    {task.isRecurringDaily && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shrink-0">
+                        Daily 🔄
+                      </span>
                     )}
                   </div>
                   {task.description && (

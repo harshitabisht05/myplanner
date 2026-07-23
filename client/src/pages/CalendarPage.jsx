@@ -97,11 +97,26 @@ const CalendarPage = () => {
 
   // Selected Day Items
   const selectedDayEvents = events.filter((e) => e.date === selectedDateStr);
-  const selectedDayTasks = tasks.filter((t) => t.dueDate === selectedDateStr);
+  const selectedDayTasks = tasks
+    .filter((t) => {
+      if (t.isRecurringDaily) {
+        return !t.dueDate || selectedDateStr >= t.dueDate;
+      }
+      return t.dueDate === selectedDateStr;
+    })
+    .map((t) => {
+      if (t.isRecurringDaily) {
+        return {
+          ...t,
+          completed: Array.isArray(t.completedDates) && t.completedDates.includes(selectedDateStr)
+        };
+      }
+      return t;
+    });
 
   // Mutations
   const toggleTaskMutation = useMutation({
-    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
+    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId, selectedDateStr),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
@@ -215,7 +230,12 @@ const CalendarPage = () => {
                 const isTodayStr = item.dateStr === new Date().toISOString().split('T')[0];
 
                 const dayEvents = events.filter((e) => e.date === item.dateStr);
-                const dayTasks = tasks.filter((t) => t.dueDate === item.dateStr);
+                const dayTasks = tasks.filter((t) => {
+                  if (t.isRecurringDaily) {
+                    return !t.dueDate || item.dateStr >= t.dueDate;
+                  }
+                  return t.dueDate === item.dateStr;
+                });
 
                 return (
                   <div

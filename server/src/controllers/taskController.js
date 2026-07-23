@@ -24,15 +24,31 @@ exports.getTasks = async (req, res, next) => {
       const dateFilter = {
         $or: [
           { dueDate: targetDate },
-          { isRecurringDaily: true }
+          {
+            isRecurringDaily: true,
+            $or: [
+              { dueDate: { $lte: targetDate } },
+              { dueDate: '' },
+              { dueDate: { $exists: false } }
+            ]
+          }
         ]
       };
       rawTasks = await Task.find({ ...baseQuery, ...dateFilter });
     } else if (view === 'upcoming') {
       rawTasks = await Task.find({
         ...baseQuery,
-        dueDate: { $gt: targetDate },
-        completed: false
+        $or: [
+          { dueDate: { $gt: targetDate }, completed: false },
+          {
+            isRecurringDaily: true,
+            $or: [
+              { dueDate: { $lte: targetDate } },
+              { dueDate: '' },
+              { dueDate: { $exists: false } }
+            ]
+          }
+        ]
       });
     } else if (view === 'completed') {
       rawTasks = await Task.find({ ...baseQuery, completed: true });

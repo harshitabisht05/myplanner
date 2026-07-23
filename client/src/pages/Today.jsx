@@ -10,7 +10,7 @@ import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import TaskModal from '../components/modals/TaskModal';
-import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, Flame } from 'lucide-react';
+import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getLocalDateStr } from '../utils/dateUtils';
 
 const Today = () => {
@@ -18,6 +18,7 @@ const Today = () => {
   const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
   const todayStr = getLocalDateStr();
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDateStr());
 
   const isGta = theme === 'gta';
 
@@ -25,10 +26,26 @@ const Today = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [defaultTimeBlock, setDefaultTimeBlock] = useState('none');
 
-  // Fetch Today's tasks
+  const handlePrevDay = () => {
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(getLocalDateStr(d));
+  };
+
+  const handleNextDay = () => {
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(getLocalDateStr(d));
+  };
+
+  const handleGoToday = () => {
+    setSelectedDate(todayStr);
+  };
+
+  // Fetch tasks for selected date
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['tasks', 'today', todayStr],
-    queryFn: () => taskApi.getTasks({ date: todayStr, view: 'today' })
+    queryKey: ['tasks', 'today', selectedDate],
+    queryFn: () => taskApi.getTasks({ date: selectedDate, view: 'today' })
   });
 
   const tasks = data?.tasks || [];
@@ -41,10 +58,10 @@ const Today = () => {
 
   // Toggle complete mutation with Optimistic Updates
   const toggleCompleteMutation = useMutation({
-    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
+    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId, selectedDate),
     onMutate: async (taskId) => {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
-      const previousTasksData = queryClient.getQueryData(['tasks', 'today', todayStr]);
+      const previousTasksData = queryClient.getQueryData(['tasks', 'today', selectedDate]);
 
       queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
         if (!old || !Array.isArray(old.tasks)) return old;
@@ -60,7 +77,7 @@ const Today = () => {
     },
     onError: (err, taskId, context) => {
       if (context?.previousTasksData) {
-        queryClient.setQueryData(['tasks', 'today', todayStr], context.previousTasksData);
+        queryClient.setQueryData(['tasks', 'today', selectedDate], context.previousTasksData);
       }
     },
     onSuccess: (resData) => {
@@ -92,7 +109,7 @@ const Today = () => {
       } else {
         await taskApi.createTask({
           ...taskData,
-          dueDate: todayStr,
+          dueDate: taskData.dueDate || selectedDate,
           timeBlock: taskData.timeBlock !== 'none' ? taskData.timeBlock : defaultTimeBlock
         });
         showSuccess('Task created! 🌸');
@@ -107,11 +124,12 @@ const Today = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={isGta ? 'Main Missions Schedule' : "Today's Planner"}
+        title={isGta ? 'Main Missions Schedule' : "Daily Planner"}
         subtitle={
           isGta
             ? 'Execute top city objectives and daily timeline operations'
-            : `Focus on what matters most for ${new Date().toLocaleDateString('en-US', {
+            : `Plan and focus on tasks for ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long',
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric'
@@ -124,6 +142,39 @@ const Today = () => {
           </Button>
         }
       />
+
+      {/* Date Navigation Bar */}
+      <div className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl border shadow-cozy ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handlePrevDay} title="Previous Day">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-sm font-bold text-planner-text min-w-[140px] text-center">
+            {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </span>
+          <Button variant="ghost" size="sm" onClick={handleNextDay} title="Next Day">
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+          {selectedDate !== todayStr && (
+            <Button variant="outline" size="sm" onClick={handleGoToday}>
+              Today
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+            className="px-3 py-1.5 rounded-xl border border-planner-border bg-planner-bg text-planner-text text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-planner-primary"
+          />
+        </div>
+      </div>
 
       {isLoading ? (
         <LoadingSpinner message="Loading daily schedule..." fullPage />
