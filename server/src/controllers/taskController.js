@@ -1,10 +1,25 @@
 const Task = require('../models/Task');
 
+const getRequestLocalDate = (req) => {
+  if (req.query && req.query.date) return req.query.date;
+  if (req.body && req.body.date) return req.body.date;
+  if (req.headers && req.headers['x-client-date']) return req.headers['x-client-date'];
+  
+  const tzOffsetMins = req.headers && req.headers['x-timezone-offset'] !== undefined
+    ? -parseInt(req.headers['x-timezone-offset'], 10)
+    : 330;
+  
+  const now = new Date();
+  const localMs = now.getTime() + tzOffsetMins * 60 * 1000;
+  const localDate = new Date(localMs);
+  return localDate.toISOString().split('T')[0];
+};
+
 // @route GET /api/tasks
 exports.getTasks = async (req, res, next) => {
   try {
     const { view, category, priority, completed, search, sortBy, date } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = getRequestLocalDate(req);
 
     const baseQuery = { user: req.user._id };
 
@@ -125,7 +140,7 @@ exports.createTask = async (req, res, next) => {
   try {
     const { title, description, dueDate, dueTime, priority, category, isTop3, top3Date, timeBlock, isRecurringDaily } = req.body;
 
-    const targetTop3Date = top3Date || dueDate || new Date().toISOString().split('T')[0];
+    const targetTop3Date = top3Date || dueDate || getRequestLocalDate(req);
 
     // Backend enforcement of Max 3 Top 3 tasks per user per date
     if (isTop3) {
@@ -173,7 +188,7 @@ exports.updateTask = async (req, res, next) => {
 
     const { title, description, dueDate, dueTime, priority, category, completed, isTop3, top3Date, timeBlock, isRecurringDaily } = req.body;
 
-    const targetTop3Date = top3Date !== undefined ? top3Date : (dueDate || task.top3Date || task.dueDate || new Date().toISOString().split('T')[0]);
+    const targetTop3Date = top3Date !== undefined ? top3Date : (dueDate || task.top3Date || task.dueDate || getRequestLocalDate(req));
 
     // Top 3 validation check if enabling isTop3
     if (isTop3 === true && (!task.isTop3 || task.top3Date !== targetTop3Date)) {
@@ -224,7 +239,7 @@ exports.toggleTaskComplete = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
-    const targetDate = req.query.date || req.body.date || new Date().toISOString().split('T')[0];
+    const targetDate = req.query.date || req.body.date || getRequestLocalDate(req);
 
     if (task.isRecurringDaily) {
       if (!Array.isArray(task.completedDates)) {

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../api/taskApi';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { getLocalDateStr } from '../utils/dateUtils';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -36,16 +37,19 @@ const Tasks = () => {
   const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const todayStr = getLocalDateStr();
+
   // Fetch tasks query
   const { data, isLoading } = useQuery({
-    queryKey: ['tasks', view, search, categoryFilter, priorityFilter, sortBy],
+    queryKey: ['tasks', view, search, categoryFilter, priorityFilter, sortBy, todayStr],
     queryFn: () =>
       taskApi.getTasks({
         view,
         search,
         category: categoryFilter,
         priority: priorityFilter,
-        sortBy
+        sortBy,
+        date: todayStr
       })
   });
 

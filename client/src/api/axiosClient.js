@@ -10,12 +10,18 @@ const axiosClient = axios.create({
   }
 });
 
-// Request interceptor to attach Bearer token if present
+// Request interceptor to attach Bearer token and client date headers
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('planner_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  config.headers['X-Client-Date'] = `${year}-${month}-${day}`;
+  config.headers['X-Timezone-Offset'] = now.getTimezoneOffset();
   return config;
 });
 
