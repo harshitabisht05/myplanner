@@ -55,8 +55,16 @@ const taskSchema = new mongoose.Schema(
     },
     timeBlock: {
       type: String,
-      enum: ['morning', 'afternoon', 'evening', 'none'],
+      enum: ['morning', 'afternoon', 'evening', 'night', 'none'],
       default: 'none'
+    },
+    isRecurringDaily: {
+      type: Boolean,
+      default: false
+    },
+    completedDates: {
+      type: [String],
+      default: []
     }
   },
   {

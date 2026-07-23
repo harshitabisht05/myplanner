@@ -15,7 +15,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('Personal');
   const [timeBlock, setTimeBlock] = useState('none');
-  const [isTop3, setIsTop3] = useState(false);
+  const [isRecurringDaily, setIsRecurringDaily] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -27,6 +27,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
       setCategory(task.category || 'Personal');
       setTimeBlock(task.timeBlock || 'none');
       setIsTop3(!!task.isTop3);
+      setIsRecurringDaily(!!task.isRecurringDaily);
     } else {
       setTitle('');
       setDescription('');
@@ -36,6 +37,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
       setCategory('Personal');
       setTimeBlock('none');
       setIsTop3(false);
+      setIsRecurringDaily(false);
     }
   }, [task, isOpen]);
 
@@ -51,6 +53,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
       category,
       timeBlock,
       isTop3,
+      isRecurringDaily,
       top3Date: dueDate || new Date().toISOString().split('T')[0]
     });
   };
@@ -111,7 +114,8 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
               { value: 'none', label: 'None' },
               { value: 'morning', label: 'Morning 🌅' },
               { value: 'afternoon', label: 'Afternoon ☀️' },
-              { value: 'evening', label: 'Evening 🌙' }
+              { value: 'evening', label: 'Evening 🌆' },
+              { value: 'night', label: 'Night 🌃' }
             ]}
           />
         </div>
@@ -122,12 +126,22 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
           onChange={(e) => setCategory(e.target.value)}
         />
 
-        <div className="p-3 bg-planner-secondary/50 rounded-2xl border border-planner-border flex items-center justify-between">
-          <div>
-            <span className="text-sm font-bold text-planner-text">Mark as Top 3 Priority</span>
-            <p className="text-xs text-planner-muted">Enforced max 3 priorities per day</p>
+        <div className="space-y-2">
+          <div className="p-3 bg-planner-secondary/50 rounded-2xl border border-planner-border flex items-center justify-between">
+            <div>
+              <span className="text-sm font-bold text-planner-text">Repeat Daily 🔄</span>
+              <p className="text-xs text-planner-muted">Task will repeat every single day</p>
+            </div>
+            <Checkbox checked={isRecurringDaily} onChange={setIsRecurringDaily} />
           </div>
-          <Checkbox checked={isTop3} onChange={setIsTop3} />
+
+          <div className="p-3 bg-planner-secondary/50 rounded-2xl border border-planner-border flex items-center justify-between">
+            <div>
+              <span className="text-sm font-bold text-planner-text">Mark as Top 3 Priority</span>
+              <p className="text-xs text-planner-muted">Enforced max 3 priorities per day</p>
+            </div>
+            <Checkbox checked={isTop3} onChange={setIsTop3} />
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-3">

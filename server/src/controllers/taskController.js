@@ -4,56 +4,78 @@ const Task = require('../models/Task');
 exports.getTasks = async (req, res, next) => {
   try {
     const { view, category, priority, completed, search, sortBy, date } = req.query;
-    const query = { user: req.user._id };
+    const targetDate = date || new Date().toISOString().split('T')[0];
 
-    if (completed !== undefined) {
-      query.completed = completed === 'true';
-    }
+    const baseQuery = { user: req.user._id };
 
-    if (category) {
-      query.category = category;
-    }
-
-    if (priority) {
-      query.priority = priority;
-    }
-
+    if (category) baseQuery.category = category;
+    if (priority) baseQuery.priority = priority;
     if (search) {
-      query.$or = [
+      baseQuery.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } }
       ];
     }
 
-    const todayStr = date || new Date().toISOString().split('T')[0];
+    let rawTasks = [];
 
-    if (view === 'today') {
-      query.dueDate = todayStr;
+    if (view === 'today' || date) {
+      // Find non-recurring tasks on targetDate OR recurring tasks created on or before targetDate
+      const dateFilter = {
+        $or: [
+          { dueDate: targetDate },
+          { isRecurringDaily: true }
+        ]
+      };
+      rawTasks = await Task.find({ ...baseQuery, ...dateFilter });
     } else if (view === 'upcoming') {
-      query.dueDate = { $gt: todayStr };
-      query.completed = false;
+      rawTasks = await Task.find({
+        ...baseQuery,
+        dueDate: { $gt: targetDate },
+        completed: false
+      });
     } else if (view === 'completed') {
-      query.completed = true;
+      rawTasks = await Task.find({ ...baseQuery, completed: true });
+    } else {
+      rawTasks = await Task.find(baseQuery);
     }
 
-    let sort = { createdAt: 1 };
-    if (sortBy === 'dueDate') {
-      sort = { dueDate: 1, dueTime: 1, createdAt: 1 };
-    } else if (sortBy === 'recentlyCreated') {
-      sort = { createdAt: -1 };
+    // Map tasks to compute date-specific completed status for recurring tasks
+    let tasks = rawTasks.map((t) => {
+      const obj = t.toObject();
+      if (obj.isRecurringDaily) {
+        obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
+      }
+      return obj;
+    });
+
+    if (completed !== undefined) {
+      const isComp = completed === 'true';
+      tasks = tasks.filter((t) => t.completed === isComp);
     }
 
-    let tasks = await Task.find(query).sort(sort);
+    // Sorting logic
+    const getTimeValue = (t) => {
+      if (t.dueTime) return t.dueTime;
+      if (t.timeBlock === 'morning') return '08:00';
+      if (t.timeBlock === 'afternoon') return '12:00';
+      if (t.timeBlock === 'evening') return '17:00';
+      if (t.timeBlock === 'night') return '21:00';
+      return '99:99';
+    };
 
     if (sortBy === 'priority') {
       const priorityOrder = { high: 1, medium: 2, low: 3 };
       tasks.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+    } else if (sortBy === 'recentlyCreated') {
+      tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
-      // Default smart sort: Uncompleted & Top 3 first, then by creation order (first task created first)
+      // Default time-based sort: Uncompleted first, sorted strictly by time of day, then completed tasks sorted by time
       tasks.sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        if (a.isTop3 !== b.isTop3) return a.isTop3 ? -1 : 1;
-        if (a.dueTime && b.dueTime && a.dueTime !== b.dueTime) return a.dueTime.localeCompare(b.dueTime);
+        const timeA = getTimeValue(a);
+        const timeB = getTimeValue(b);
+        if (timeA !== timeB) return timeA.localeCompare(timeB);
         return new Date(a.createdAt) - new Date(b.createdAt);
       });
     }
@@ -84,7 +106,7 @@ exports.getTaskById = async (req, res, next) => {
 // @route POST /api/tasks
 exports.createTask = async (req, res, next) => {
   try {
-    const { title, description, dueDate, dueTime, priority, category, isTop3, top3Date, timeBlock } = req.body;
+    const { title, description, dueDate, dueTime, priority, category, isTop3, top3Date, timeBlock, isRecurringDaily } = req.body;
 
     const targetTop3Date = top3Date || dueDate || new Date().toISOString().split('T')[0];
 
@@ -113,7 +135,9 @@ exports.createTask = async (req, res, next) => {
       category: category || 'Personal',
       isTop3: !!isTop3,
       top3Date: targetTop3Date,
-      timeBlock: timeBlock || 'none'
+      timeBlock: timeBlock || 'none',
+      isRecurringDaily: !!isRecurringDaily,
+      completedDates: []
     });
 
     res.status(201).json({ success: true, task });
@@ -130,7 +154,7 @@ exports.updateTask = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
-    const { title, description, dueDate, dueTime, priority, category, completed, isTop3, top3Date, timeBlock } = req.body;
+    const { title, description, dueDate, dueTime, priority, category, completed, isTop3, top3Date, timeBlock, isRecurringDaily } = req.body;
 
     const targetTop3Date = top3Date !== undefined ? top3Date : (dueDate || task.top3Date || task.dueDate || new Date().toISOString().split('T')[0]);
 
@@ -157,6 +181,7 @@ exports.updateTask = async (req, res, next) => {
     if (priority !== undefined) task.priority = priority;
     if (category !== undefined) task.category = category;
     if (timeBlock !== undefined) task.timeBlock = timeBlock;
+    if (isRecurringDaily !== undefined) task.isRecurringDaily = isRecurringDaily;
     if (isTop3 !== undefined) {
       task.isTop3 = isTop3;
       task.top3Date = targetTop3Date;
@@ -182,8 +207,23 @@ exports.toggleTaskComplete = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
-    task.completed = !task.completed;
-    task.completedAt = task.completed ? new Date() : null;
+    const targetDate = req.query.date || req.body.date || new Date().toISOString().split('T')[0];
+
+    if (task.isRecurringDaily) {
+      if (!Array.isArray(task.completedDates)) {
+        task.completedDates = [];
+      }
+      const idx = task.completedDates.indexOf(targetDate);
+      if (idx > -1) {
+        task.completedDates.splice(idx, 1);
+      } else {
+        task.completedDates.push(targetDate);
+      }
+      task.completed = task.completedDates.includes(targetDate);
+    } else {
+      task.completed = !task.completed;
+      task.completedAt = task.completed ? new Date() : null;
+    }
 
     await task.save();
 

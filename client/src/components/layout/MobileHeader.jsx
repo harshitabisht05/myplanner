@@ -1,15 +1,24 @@
 import React from 'react';
-import { Plus, Download } from 'lucide-react';
+import { Plus, Download, Timer } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useFocusTimer } from '../../context/FocusContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const MobileHeader = ({ onOpenQuickAdd }) => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const { isInstallable, promptInstall } = usePWAInstall();
+  const { isRunning, timeLeft } = useFocusTimer();
 
   const isGta = theme === 'gta';
+
+  const formatTimerMin = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  };
 
   return (
     <header
@@ -33,13 +42,23 @@ const MobileHeader = ({ onOpenQuickAdd }) => {
         </div>
       </div>
       <div className="flex items-center gap-2">
+        {isRunning && (
+          <Link
+            to="/focus"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-500 text-xs font-bold border border-rose-500/30 animate-pulse"
+            title="Focus Timer Active"
+          >
+            <Timer className="w-3.5 h-3.5" />
+            <span>{formatTimerMin(timeLeft)}</span>
+          </Link>
+        )}
         {isInstallable && (
           <button
             onClick={promptInstall}
             className="bg-planner-secondary text-planner-primary text-xs font-bold px-2.5 py-1.5 rounded-xl border border-planner-border flex items-center gap-1 active:scale-95 transition-transform"
             title="Install App"
           >
-            <Download className="w-3.5 h-3.5" /> Install
+            <Download className="w-3.5 h-3.5" />
           </button>
         )}
         <button

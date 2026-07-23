@@ -51,14 +51,28 @@ const Tasks = () => {
 
   const tasks = data?.tasks || [];
 
-  // Mutations
+  // Mutations with Optimistic Updates
   const toggleCompleteMutation = useMutation({
     mutationFn: (id) => taskApi.toggleTaskComplete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.map((t) =>
+            t._id === id ? { ...t, completed: !t.completed } : t
+          )
+        };
+      });
+    },
     onSuccess: (resData) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       if (isGta && resData.task?.completed) {
         showSuccess('MISSION PASSED! 🎯');
       }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
   });
 

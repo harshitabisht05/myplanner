@@ -1,31 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { taskApi } from '../api/taskApi';
 import { useTheme } from '../context/ThemeContext';
+import { useFocusTimer, TIMER_MODES } from '../context/FocusContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Select from '../components/common/Select';
-import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Shield, Flame, Crosshair, Eye } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Crosshair, Eye, History, Trash2 } from 'lucide-react';
 import strangeOtherSideImg from '../assets/strange_otherside_bg.jpg';
-
-const TIMER_MODES = {
-  focus: { label: 'THE OTHER SIDE', minutes: 25, color: 'text-rose-500 border-rose-600' },
-  shortBreak: { label: 'SAFE ZONE', minutes: 5, color: 'text-emerald-400 border-emerald-500' },
-  longBreak: { label: 'RETURN TO NORMAL', minutes: 15, color: 'text-sky-400 border-sky-500' },
-  custom: { label: 'CUSTOM SESSION', minutes: 45, color: 'text-purple-400 border-purple-500' }
-};
 
 const Focus = () => {
   const { theme } = useTheme();
   const isGta = theme === 'gta';
   const isStrange = theme === 'strange';
 
-  const [mode, setMode] = useState('focus');
-  const [customMinutes, setCustomMinutes] = useState(45);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const {
+    mode,
+    customMinutes,
+    timeLeft,
+    isRunning,
+    selectedTaskId,
+    history,
+    setIsRunning,
+    setSelectedTaskId,
+    handleModeSwitch,
+    handleCustomMinutesChange,
+    handleReset,
+    clearHistory,
+    deleteHistoryItem
+  } = useFocusTimer();
 
   // Fetch available tasks to select from
   const { data: tasksData } = useQuery({
@@ -36,49 +40,6 @@ const Focus = () => {
   const tasks = tasksData?.tasks || [];
   const selectedTask = tasks.find((t) => t._id === selectedTaskId);
 
-  // Mode switch
-  const handleModeSwitch = (newMode, minutesOverride) => {
-    setMode(newMode);
-    setIsRunning(false);
-    const targetMins = minutesOverride || (newMode === 'custom' ? customMinutes : TIMER_MODES[newMode].minutes);
-    setTimeLeft(targetMins * 60);
-  };
-
-  const handleCustomMinutesChange = (newMins) => {
-    const mins = Math.max(1, Math.min(180, Number(newMins) || 1));
-    setCustomMinutes(mins);
-    if (mode === 'custom') {
-      setIsRunning(false);
-      setTimeLeft(mins * 60);
-    }
-  };
-
-  // Timer Countdown Effect
-  useEffect(() => {
-    let timer = null;
-    if (isRunning && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
-      setIsRunning(false);
-      if (typeof window !== 'undefined' && window.Notification && Notification.permission === 'granted') {
-        new Notification(isStrange ? 'OBJECTIVE COMPLETE! 🌲' : isGta ? 'MISSION COMPLETED! 🎯' : 'Focus Timer Finished! 🎉', {
-          body: `Completed ${TIMER_MODES[mode].label}`
-        });
-      }
-    }
-
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isRunning, timeLeft, mode, isGta, isStrange]);
-
-  const handleReset = () => {
-    setIsRunning(false);
-    setTimeLeft(TIMER_MODES[mode].minutes * 60);
-  };
-
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -86,7 +47,7 @@ const Focus = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto pb-10">
       <PageHeader
         title={isStrange ? 'ENTERING THE OTHER SIDE' : isGta ? 'MISSION IN PROGRESS' : 'Focus Mode'}
         subtitle={
@@ -183,7 +144,7 @@ const Focus = () => {
 
       {/* Main Timer Dial */}
       <Card
-        className={`p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-8 relative overflow-hidden ${
+        className={`p-6 sm:p-12 text-center flex flex-col items-center justify-center space-y-6 sm:space-y-8 relative overflow-hidden ${
           isStrange
             ? 'strange-hud-card bg-slate-950 border-rose-600/40'
             : isGta
@@ -234,7 +195,7 @@ const Focus = () => {
 
         {/* Circular Display Dial */}
         <div
-          className={`relative z-10 w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg ${
+          className={`relative z-10 w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg ${
             isStrange
               ? 'bg-slate-950 border-rose-600/60 shadow-[0_0_35px_rgba(225,29,72,0.3)]'
               : isGta
@@ -244,25 +205,25 @@ const Focus = () => {
         >
           <div className="text-center">
             <span
-              className={`text-5xl sm:text-6xl font-black tracking-tight font-mono ${
+              className={`text-4xl sm:text-6xl font-black tracking-tight font-mono ${
                 isStrange ? 'text-rose-400' : isGta ? 'text-emerald-400' : 'text-planner-text'
               }`}
             >
               {formatTime(timeLeft)}
             </span>
             <p className="text-xs font-black uppercase tracking-widest text-planner-muted mt-2 font-serif">
-              {TIMER_MODES[mode].label}
+              {TIMER_MODES[mode]?.label}
             </p>
           </div>
         </div>
 
         {/* Controls Bar */}
-        <div className="flex items-center justify-center gap-4 pt-4 relative z-10">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2 relative z-10">
           <Button
             variant={isRunning ? 'secondary' : 'primary'}
             size="lg"
             onClick={() => setIsRunning((prev) => !prev)}
-            className="px-8 shadow-cozy"
+            className="px-6 sm:px-8 shadow-cozy"
           >
             {isRunning ? (
               <>
@@ -279,6 +240,65 @@ const Focus = () => {
             <RotateCcw className="w-5 h-5 mr-2" /> {isStrange ? 'ABORT / RESET' : 'Reset'}
           </Button>
         </div>
+      </Card>
+
+      {/* Focus Timer History Log Section */}
+      <Card className={`p-5 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-planner-border">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-planner-secondary text-planner-primary">
+              <History className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-planner-text">Timer Session History</h3>
+              <p className="text-xs text-planner-muted">Log of completed focus and break sessions</p>
+            </div>
+          </div>
+
+          {history.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearHistory} className="text-rose-500 hover:text-rose-600">
+              <Trash2 className="w-4 h-4 mr-1" /> Clear Log
+            </Button>
+          )}
+        </div>
+
+        {history.length === 0 ? (
+          <div className="text-center py-6 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
+            <p className="text-sm font-medium">No completed focus sessions logged yet ✨</p>
+            <p className="text-xs text-planner-muted mt-1">Start a timer and run it to completion to record history.</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            {history.map((item) => {
+              const sessionDate = new Date(item.completedAt);
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 border border-planner-border text-xs sm:text-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-planner-text truncate">
+                        {item.label} ({item.durationMins} mins)
+                      </p>
+                      <p className="text-[11px] text-planner-muted">
+                        {sessionDate.toLocaleDateString()} at {sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteHistoryItem(item.id)}
+                    className="p-1.5 text-planner-muted hover:text-rose-500 rounded-lg transition-colors"
+                    title="Remove session log"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );
