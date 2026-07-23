@@ -33,20 +33,43 @@ const Today = () => {
 
   const tasks = data?.tasks || [];
 
-  // Filter top 3 tasks for today
   const top3Tasks = tasks.filter((t) => t.isTop3);
   const morningTasks = tasks.filter((t) => t.timeBlock === 'morning');
   const afternoonTasks = tasks.filter((t) => t.timeBlock === 'afternoon');
   const eveningTasks = tasks.filter((t) => t.timeBlock === 'evening');
+  const nightTasks = tasks.filter((t) => t.timeBlock === 'night');
 
-  // Toggle complete mutation
+  // Toggle complete mutation with Optimistic Updates
   const toggleCompleteMutation = useMutation({
     mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previousTasksData = queryClient.getQueryData(['tasks', 'today', todayStr]);
+
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.map((t) =>
+            t._id === taskId ? { ...t, completed: !t.completed } : t
+          )
+        };
+      });
+
+      return { previousTasksData };
+    },
+    onError: (err, taskId, context) => {
+      if (context?.previousTasksData) {
+        queryClient.setQueryData(['tasks', 'today', todayStr], context.previousTasksData);
+      }
+    },
     onSuccess: (resData) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       if (isGta && resData.task?.completed) {
         showSuccess('MISSION PASSED! 🎯');
       }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
   });
 
@@ -192,14 +215,14 @@ const Today = () => {
               <span>{isGta ? 'TIMELINE OPERATIONS' : 'Daily Timeline'}</span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Morning Timeline */}
               <Card className={isGta ? 'gta-hud-card' : ''}>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
                   <div className="flex items-center gap-2">
-                    <Sunrise className="w-5 h-5 text-amber-500" />
-                    <h3 className="font-bold text-planner-text">
-                      {isGta ? 'MORNING OPS' : 'Morning'}
+                    <Sunrise className="w-5 h-5 text-amber-500 shrink-0" />
+                    <h3 className="font-bold text-planner-text text-sm sm:text-base">
+                      {isGta ? 'MORNING OPS' : 'Morning 🌅'}
                     </h3>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleOpenNewTask('morning')}>
@@ -209,14 +232,14 @@ const Today = () => {
 
                 {morningTasks.length === 0 ? (
                   <p className="text-xs text-planner-muted text-center py-6 bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                    No morning tasks block.
+                    No morning tasks.
                   </p>
                 ) : (
                   <div className="space-y-2">
                     {morningTasks.map((task) => (
                       <div
                         key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between ${
+                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
                           task.completed && isGta
                             ? 'gta-mission-passed'
                             : 'bg-planner-bg/60 border-planner-border'
@@ -229,7 +252,7 @@ const Today = () => {
                           />
                           <span
                             onClick={() => handleOpenEditTask(task)}
-                            className={`text-sm font-semibold truncate cursor-pointer ${
+                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
                               task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
                             }`}
                           >
@@ -246,9 +269,9 @@ const Today = () => {
               <Card className={isGta ? 'gta-hud-card' : ''}>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
                   <div className="flex items-center gap-2">
-                    <Sun className="w-5 h-5 text-sky-500" />
-                    <h3 className="font-bold text-planner-text">
-                      {isGta ? 'AFTERNOON HEISTS' : 'Afternoon'}
+                    <Sun className="w-5 h-5 text-sky-500 shrink-0" />
+                    <h3 className="font-bold text-planner-text text-sm sm:text-base">
+                      {isGta ? 'AFTERNOON HEISTS' : 'Afternoon ☀️'}
                     </h3>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleOpenNewTask('afternoon')}>
@@ -258,14 +281,14 @@ const Today = () => {
 
                 {afternoonTasks.length === 0 ? (
                   <p className="text-xs text-planner-muted text-center py-6 bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                    No afternoon tasks block.
+                    No afternoon tasks.
                   </p>
                 ) : (
                   <div className="space-y-2">
                     {afternoonTasks.map((task) => (
                       <div
                         key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between ${
+                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
                           task.completed && isGta
                             ? 'gta-mission-passed'
                             : 'bg-planner-bg/60 border-planner-border'
@@ -278,7 +301,7 @@ const Today = () => {
                           />
                           <span
                             onClick={() => handleOpenEditTask(task)}
-                            className={`text-sm font-semibold truncate cursor-pointer ${
+                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
                               task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
                             }`}
                           >
@@ -295,9 +318,9 @@ const Today = () => {
               <Card className={isGta ? 'gta-hud-card' : ''}>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
                   <div className="flex items-center gap-2">
-                    <Moon className="w-5 h-5 text-purple-500" />
-                    <h3 className="font-bold text-planner-text">
-                      {isGta ? 'NIGHT OUT' : 'Evening'}
+                    <Sunset className="w-5 h-5 text-orange-500 shrink-0" />
+                    <h3 className="font-bold text-planner-text text-sm sm:text-base">
+                      {isGta ? 'EVENING OPS' : 'Evening 🌆'}
                     </h3>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleOpenNewTask('evening')}>
@@ -307,14 +330,14 @@ const Today = () => {
 
                 {eveningTasks.length === 0 ? (
                   <p className="text-xs text-planner-muted text-center py-6 bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                    No evening tasks block.
+                    No evening tasks.
                   </p>
                 ) : (
                   <div className="space-y-2">
                     {eveningTasks.map((task) => (
                       <div
                         key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between ${
+                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
                           task.completed && isGta
                             ? 'gta-mission-passed'
                             : 'bg-planner-bg/60 border-planner-border'
@@ -327,7 +350,56 @@ const Today = () => {
                           />
                           <span
                             onClick={() => handleOpenEditTask(task)}
-                            className={`text-sm font-semibold truncate cursor-pointer ${
+                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
+                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
+                            }`}
+                          >
+                            {task.title}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              {/* Night Timeline */}
+              <Card className={isGta ? 'gta-hud-card' : ''}>
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
+                  <div className="flex items-center gap-2">
+                    <Moon className="w-5 h-5 text-indigo-400 shrink-0" />
+                    <h3 className="font-bold text-planner-text text-sm sm:text-base">
+                      {isGta ? 'NIGHT OUT' : 'Night 🌃'}
+                    </h3>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => handleOpenNewTask('night')}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {nightTasks.length === 0 ? (
+                  <p className="text-xs text-planner-muted text-center py-6 bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
+                    No night tasks.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {nightTasks.map((task) => (
+                      <div
+                        key={task._id}
+                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
+                          task.completed && isGta
+                            ? 'gta-mission-passed'
+                            : 'bg-planner-bg/60 border-planner-border'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Checkbox
+                            checked={task.completed}
+                            onChange={() => toggleCompleteMutation.mutate(task._id)}
+                          />
+                          <span
+                            onClick={() => handleOpenEditTask(task)}
+                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
                               task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
                             }`}
                           >

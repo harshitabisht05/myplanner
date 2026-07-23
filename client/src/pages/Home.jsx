@@ -102,16 +102,39 @@ const Home = () => {
     }
   }, [dailyNoteData]);
 
-  // Task complete toggle mutation
+  // Task complete toggle mutation with Optimistic Updates
   const toggleTaskMutation = useMutation({
     mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previousTasksData = queryClient.getQueryData(['tasks', 'today', todayStr]);
+
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.map((t) =>
+            t._id === taskId ? { ...t, completed: !t.completed } : t
+          )
+        };
+      });
+
+      return { previousTasksData };
+    },
+    onError: (err, taskId, context) => {
+      if (context?.previousTasksData) {
+        queryClient.setQueryData(['tasks', 'today', todayStr], context.previousTasksData);
+      }
+    },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       if (isStrange && data.task?.completed) {
         showSuccess('CASE CLOSED / OBJECTIVE COMPLETE 🎯');
       } else if (isGta && data.task?.completed) {
         showSuccess('MISSION PASSED! 🎯 +100 EXP');
       }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
   });
 
@@ -313,7 +336,7 @@ const Home = () => {
                     }`}
                   >
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
-                      <div className="mt-0.5 sm:mt-0">
+                      <div className="mt-0.5 shrink-0">
                         <Checkbox
                           checked={task.completed}
                           onChange={() => toggleTaskMutation.mutate(task._id)}
@@ -322,7 +345,7 @@ const Home = () => {
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p
-                            className={`text-sm font-bold text-planner-text leading-snug ${
+                            className={`text-sm font-bold text-planner-text leading-snug break-words ${
                               task.completed ? 'line-through text-planner-muted' : ''
                             }`}
                           >
@@ -333,13 +356,25 @@ const Home = () => {
                               CASE CLOSED
                             </span>
                           )}
+                          {task.isRecurringDaily && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shrink-0">
+                              Daily 🔄
+                            </span>
+                          )}
                         </div>
-                        {task.dueTime && (
-                          <span className="text-xs text-planner-muted block">⏰ {task.dueTime}</span>
-                        )}
+                        <div className="flex items-center gap-2 text-xs text-planner-muted flex-wrap">
+                          {task.dueTime ? (
+                            <span className="font-semibold text-planner-primary">⏰ {task.dueTime}</span>
+                          ) : task.timeBlock && task.timeBlock !== 'none' ? (
+                            <span className="capitalize">🕒 {task.timeBlock}</span>
+                          ) : null}
+                          {task.category && (
+                            <span className="text-[10px] opacity-75">🏷️ {task.category}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto pt-1 sm:pt-0">
+                    <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto pt-1 sm:pt-0 flex-wrap">
                       {task.isTop3 && <Badge variant="primary">{isStrange ? 'CRITICAL CASE' : isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
                       <Badge variant={task.priority}>{task.priority}</Badge>
                     </div>
