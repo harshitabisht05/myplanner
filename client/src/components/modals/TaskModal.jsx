@@ -116,7 +116,8 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
               { value: 'morning', label: 'Morning 🌅' },
               { value: 'afternoon', label: 'Afternoon ☀️' },
               { value: 'evening', label: 'Evening 🌆' },
-              { value: 'night', label: 'Night 🌃' }
+              { value: 'night', label: 'Night 🌃' },
+              { value: 'midnight', label: 'Midnight 🌌' }
             ]}
           />
         </div>

@@ -77,6 +77,7 @@ exports.getTasks = async (req, res, next) => {
       if (t.timeBlock === 'afternoon') return '12:00';
       if (t.timeBlock === 'evening') return '17:00';
       if (t.timeBlock === 'night') return '21:00';
+      if (t.timeBlock === 'midnight') return '23:59';
       return '99:99';
     };
 
