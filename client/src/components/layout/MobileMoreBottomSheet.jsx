@@ -12,6 +12,7 @@ import {
   Smartphone
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import appLogo from '../../assets/logo.png';
 
 const moreItems = [
   { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE' },
@@ -42,7 +43,11 @@ const MobileMoreBottomSheet = ({ isOpen, onClose }) => {
       >
         <div className="flex items-center justify-between pb-3 border-b border-planner-border">
           <div className="flex items-center gap-2">
-            {isGta ? <Smartphone className="w-5 h-5 text-emerald-400" /> : <span className="text-lg">🌸</span>}
+            {isGta ? (
+              <Smartphone className="w-5 h-5 text-emerald-400" />
+            ) : (
+              <img src={appLogo} alt="Logo" className="w-5 h-5 object-contain rounded-md" />
+            )}
             <span className="font-extrabold text-base text-planner-text tracking-tight">
               {isGta ? 'iFruit Phone Launcher' : 'Planner Features'}
             </span>
