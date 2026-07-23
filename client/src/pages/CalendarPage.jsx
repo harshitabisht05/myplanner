@@ -69,7 +69,7 @@ const CalendarPage = () => {
   const handleToday = () => {
     const today = new Date();
     setCurrentDate(today);
-    setSelectedDateStr(today.toISOString().split('T')[0]);
+    setSelectedDateStr(getLocalDateStr(today));
   };
 
   // Calendar calculations
@@ -227,7 +227,7 @@ const CalendarPage = () => {
                 }
 
                 const isSelected = item.dateStr === selectedDateStr;
-                const isTodayStr = item.dateStr === new Date().toISOString().split('T')[0];
+                const isTodayStr = item.dateStr === getLocalDateStr();
 
                 const dayEvents = events.filter((e) => e.date === item.dateStr);
                 const dayTasks = tasks.filter((t) => {

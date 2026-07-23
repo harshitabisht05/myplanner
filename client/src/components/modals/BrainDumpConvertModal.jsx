@@ -4,17 +4,18 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import Select from '../common/Select';
 import { CheckSquare, StickyNote, Calendar as CalendarIcon } from 'lucide-react';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 const BrainDumpConvertModal = ({ isOpen, onClose, onConvert, item, isLoading = false }) => {
   const [targetType, setTargetType] = useState('task');
-  const [dueDate, setDueDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dueDate, setDueDate] = useState(() => getLocalDateStr());
   const [priority, setPriority] = useState('medium');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalDateStr());
   const [startTime, setStartTime] = useState('09:00');
 
   useEffect(() => {
-    setDueDate(new Date().toISOString().split('T')[0]);
-    setDate(new Date().toISOString().split('T')[0]);
+    setDueDate(getLocalDateStr());
+    setDate(getLocalDateStr());
   }, [isOpen]);
 
   const handleSubmit = (e) => {

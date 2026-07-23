@@ -27,7 +27,7 @@ const QuickAddModal = ({ isOpen, onClose }) => {
   // Form states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(() => getLocalDateStr());
+  const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('Personal');
@@ -38,7 +38,7 @@ const QuickAddModal = ({ isOpen, onClose }) => {
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setDate(getLocalDateStr());
+    setDate('');
     setTime('');
     setPriority('medium');
     setCategory('Personal');

@@ -51,7 +51,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
     } else {
       setTitle('');
       setDescription('');
-      setDueDate(getLocalDateStr());
+      setDueDate('');
       setDueTime('');
       setPriority('medium');
       setCategory('Personal');
@@ -74,7 +74,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
       timeBlock,
       isTop3,
       isRecurringDaily,
-      top3Date: dueDate || new Date().toISOString().split('T')[0]
+      top3Date: dueDate || getLocalDateStr()
     });
   };
 

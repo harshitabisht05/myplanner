@@ -8,13 +8,14 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Textarea from '../components/common/Textarea';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getLocalDateStr } from '../utils/dateUtils';
 import { Heart, Save, Calendar as CalendarIcon, Sparkles, Star } from 'lucide-react';
 
 const Reflections = () => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useToast();
 
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDateStr());
 
   const [whatWentWell, setWhatWentWell] = useState('');
   const [whatCouldBeBetter, setWhatCouldBeBetter] = useState('');

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { focusApi } from '../api/focusApi';
 import { useFocusTimer } from '../context/FocusContext';
 import { useTheme } from '../context/ThemeContext';
+import { getLocalDateStr } from '../utils/dateUtils';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -53,8 +54,8 @@ const Analytics = () => {
       
       // Time range filter
       if (timeRange === 'today') {
-        const todayStr = now.toISOString().split('T')[0];
-        const itemDateStr = itemDate.toISOString().split('T')[0];
+        const todayStr = getLocalDateStr(now);
+        const itemDateStr = getLocalDateStr(itemDate);
         if (itemDateStr !== todayStr) return false;
       } else if (timeRange === '7days') {
         const sevenDaysAgo = new Date(now);
@@ -106,7 +107,7 @@ const Analytics = () => {
       }
 
       // Daily map
-      const dateStr = new Date(s.completedAt).toISOString().split('T')[0];
+      const dateStr = getLocalDateStr(s.completedAt);
       dailyMap[dateStr] = (dailyMap[dateStr] || 0) + mins;
     });
 
@@ -134,7 +135,7 @@ const Analytics = () => {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateStr(d);
       const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
       last7DaysChart.push({
         dateStr,

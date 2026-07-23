@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { habitApi } from '../api/habitApi';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { getLocalDateStr } from '../utils/dateUtils';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -33,7 +34,7 @@ const Habits = () => {
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    datesArray.push(d.toISOString().split('T')[0]);
+    datesArray.push(getLocalDateStr(d));
   }
 
   const startDate = datesArray[0];
