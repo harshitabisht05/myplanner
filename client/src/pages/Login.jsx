@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Sparkles } from 'lucide-react';
 import appLogo from '../assets/logo.png';
 
 const Login = () => {

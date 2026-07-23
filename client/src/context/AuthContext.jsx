@@ -13,6 +13,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
     const checkAuth = async () => {
+      const token = localStorage.getItem('planner_token');
+      if (!token) {
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+        }
+        return;
+      }
       try {
         const data = await authApi.getMe();
         if (isMounted && data.success && data.user) {
