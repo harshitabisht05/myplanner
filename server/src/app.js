@@ -16,6 +16,8 @@ const moodRoutes = require('./routes/moodRoutes');
 const reflectionRoutes = require('./routes/reflectionRoutes');
 const brainDumpRoutes = require('./routes/brainDumpRoutes');
 const dailyNoteRoutes = require('./routes/dailyNoteRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const focusSessionRoutes = require('./routes/focusSessionRoutes');
 
 const app = express();
 
@@ -74,7 +76,9 @@ const apiRoutes = [
   { path: '/moods', handler: moodRoutes },
   { path: '/reflections', handler: reflectionRoutes },
   { path: '/braindump', handler: brainDumpRoutes },
-  { path: '/dailynote', handler: dailyNoteRoutes }
+  { path: '/dailynote', handler: dailyNoteRoutes },
+  { path: '/categories', handler: categoryRoutes },
+  { path: '/focus', handler: focusSessionRoutes }
 ];
 
 apiRoutes.forEach(({ path, handler }) => {

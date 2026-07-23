@@ -15,6 +15,7 @@ import Tasks from './pages/Tasks';
 import CalendarPage from './pages/CalendarPage';
 import Notes from './pages/Notes';
 import Focus from './pages/Focus';
+import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children }) => {
@@ -97,6 +98,7 @@ const App = () => {
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="notes" element={<Notes />} />
         <Route path="focus" element={<Focus />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 

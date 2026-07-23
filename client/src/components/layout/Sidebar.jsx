@@ -10,6 +10,7 @@ import {
   Target,
   Brain,
   Timer,
+  BarChart2,
   Heart,
   Settings,
   ChevronLeft,
@@ -33,6 +34,7 @@ const navItems = [
   { name: 'Calendar', path: '/calendar', icon: CalendarIcon, gtaName: 'MAP', strangeName: 'INCIDENT MAP' },
   { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE', strangeName: 'CASE FILES' },
   { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'MISSION MODE', strangeName: 'OTHER SIDE' },
+  { name: 'Analytics', path: '/analytics', icon: BarChart2, gtaName: 'STATS & LOGS', strangeName: 'TIME DOSSIER' },
   { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'OPTIONS', strangeName: 'SYSTEM' },
 ];
 

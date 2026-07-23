@@ -6,6 +6,7 @@ import {
   Target,
   Brain,
   Timer,
+  BarChart2,
   Heart,
   Settings,
   X,
@@ -17,6 +18,7 @@ import appLogo from '../../assets/logo.png';
 const moreItems = [
   { name: 'Notes', path: '/notes', icon: StickyNote, gtaName: 'PHONE' },
   { name: 'Focus', path: '/focus', icon: Timer, gtaName: 'MISSION MODE' },
+  { name: 'Analytics', path: '/analytics', icon: BarChart2, gtaName: 'STATS & LOGS' },
   { name: 'Settings', path: '/settings', icon: Settings, gtaName: 'OPTIONS' },
 ];
 
