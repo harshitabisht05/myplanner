@@ -104,7 +104,7 @@ const Home = () => {
 
   // Task complete toggle mutation with Optimistic Updates
   const toggleTaskMutation = useMutation({
-    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId),
+    mutationFn: (taskId) => taskApi.toggleTaskComplete(taskId, todayStr),
     onMutate: async (taskId) => {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
       const previousTasksData = queryClient.getQueryData(['tasks', 'today', todayStr]);
