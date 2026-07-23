@@ -15,6 +15,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('Personal');
   const [timeBlock, setTimeBlock] = useState('none');
+  const [isTop3, setIsTop3] = useState(false);
   const [isRecurringDaily, setIsRecurringDaily] = useState(false);
 
   useEffect(() => {
