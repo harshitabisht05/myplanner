@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-import { User, Mail, Lock, Sparkles } from 'lucide-react';
+import { User, Mail, Lock } from 'lucide-react';
+import appLogo from '../assets/logo.png';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -42,8 +43,8 @@ const Register = () => {
       <div className="w-full max-w-md bg-planner-card rounded-3xl p-8 border border-planner-border shadow-cozy-lg">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-3xl bg-planner-secondary text-planner-primary flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
-            ✨
+          <div className="w-16 h-16 rounded-3xl bg-planner-secondary flex items-center justify-center mx-auto mb-4 p-2.5 shadow-sm border border-planner-border">
+            <img src={appLogo} alt="My Little Planner Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-planner-text tracking-tight">Create Account</h1>
           <p className="text-sm text-planner-muted mt-1 leading-relaxed">

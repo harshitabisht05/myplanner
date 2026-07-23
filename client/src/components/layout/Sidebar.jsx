@@ -24,6 +24,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import gtaLogoV from '../../assets/gta_logo_v.svg';
 import strangeLogo from '../../assets/strange_logo.svg';
+import appLogo from '../../assets/logo.png';
 
 const navItems = [
   { name: 'Home', path: '/', icon: Home, gtaName: 'PLAYER', strangeName: 'CONTROL CENTER' },
@@ -83,7 +84,7 @@ const Sidebar = ({ onOpenQuickAdd }) => {
               </div>
             ) : (
               <>
-                <span className="text-xl">🌸</span>
+                <img src={appLogo} alt="My Little Planner Logo" className="w-8 h-8 object-contain rounded-xl shadow-xs" />
                 <span className="font-extrabold text-sm tracking-tight text-planner-text">
                   My Little Planner
                 </span>
@@ -91,7 +92,11 @@ const Sidebar = ({ onOpenQuickAdd }) => {
             )}
           </div>
         )}
-        {collapsed && <div className="mx-auto text-xl">{isStrange ? '🚲' : isGta ? '🌴' : '🌸'}</div>}
+        {collapsed && (
+          <div className="mx-auto">
+            <img src={appLogo} alt="Logo" className="w-7 h-7 object-contain rounded-lg" />
+          </div>
+        )}
         <button
           onClick={toggleCollapsed}
           className="p-1.5 rounded-xl hover:bg-planner-secondary text-planner-muted transition-colors"

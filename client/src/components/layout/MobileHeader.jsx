@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useFocusTimer } from '../../context/FocusContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import appLogo from '../../assets/logo.png';
 
 const MobileHeader = ({ onOpenQuickAdd }) => {
   const { user } = useAuth();
@@ -29,7 +30,7 @@ const MobileHeader = ({ onOpenQuickAdd }) => {
       }`}
     >
       <div className="flex items-center gap-2">
-        <span className="text-xl">{isGta ? '🌴' : '🌸'}</span>
+        <img src={appLogo} alt="Logo" className="w-7 h-7 object-contain rounded-lg shrink-0" />
         <div>
           <span className="font-extrabold text-sm text-planner-text tracking-tight block">
             {isGta ? 'MY LITTLE PLANNER' : 'My Little Planner'}
