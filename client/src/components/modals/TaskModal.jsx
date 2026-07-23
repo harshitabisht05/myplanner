@@ -6,6 +6,7 @@ import Textarea from '../common/Textarea';
 import Select from '../common/Select';
 import Checkbox from '../common/Checkbox';
 import { getLocalDateStr } from '../../utils/dateUtils';
+import { Plus, Tag } from 'lucide-react';
 
 const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }) => {
   const [title, setTitle] = useState('');
@@ -14,9 +15,27 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
   const [dueTime, setDueTime] = useState('');
   const [priority, setPriority] = useState('medium');
   const [category, setCategory] = useState('Personal');
+  const [isCustomCategoryInput, setIsCustomCategoryInput] = useState(false);
   const [timeBlock, setTimeBlock] = useState('none');
   const [isTop3, setIsTop3] = useState(false);
   const [isRecurringDaily, setIsRecurringDaily] = useState(false);
+
+  // Available categories list
+  const [availableCategories, setAvailableCategories] = useState([
+    'Personal', 'Work', 'Study', 'Break', 'Health & Fitness', 'Creative', 'Other'
+  ]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('myplanner_categories');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setAvailableCategories(parsed.map((c) => (typeof c === 'string' ? c : c.name)));
+        }
+      }
+    } catch (e) {}
+  }, [isOpen]);
 
   useEffect(() => {
     if (task) {
@@ -51,7 +70,7 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
       dueDate,
       dueTime,
       priority,
-      category,
+      category: category.trim() || 'Personal',
       timeBlock,
       isTop3,
       isRecurringDaily,
@@ -121,12 +140,48 @@ const TaskModal = ({ isOpen, onClose, onSubmit, task = null, isLoading = false }
             ]}
           />
         </div>
-        <Input
-          label="Category"
-          placeholder="Personal, Work, Study..."
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
+
+        {/* Category Picker & Custom Input */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs font-bold text-planner-muted">Category 🏷️</label>
+            <button
+              type="button"
+              onClick={() => setIsCustomCategoryInput((prev) => !prev)}
+              className="text-[11px] font-bold text-planner-primary hover:underline flex items-center gap-0.5"
+            >
+              {isCustomCategoryInput ? 'Choose from list' : '+ Custom Category'}
+            </button>
+          </div>
+
+          {isCustomCategoryInput ? (
+            <Input
+              placeholder="Enter custom category name..."
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
+          ) : (
+            <select
+              value={category}
+              onChange={(e) => {
+                if (e.target.value === '__CUSTOM__') {
+                  setIsCustomCategoryInput(true);
+                  setCategory('');
+                } else {
+                  setCategory(e.target.value);
+                }
+              }}
+              className="w-full px-3.5 py-2.5 rounded-2xl border border-planner-border bg-planner-bg text-planner-text font-bold text-sm focus:outline-none focus:ring-2 focus:ring-planner-primary"
+            >
+              {availableCategories.map((catName) => (
+                <option key={catName} value={catName}>
+                  {catName}
+                </option>
+              ))}
+              <option value="__CUSTOM__">+ Create New Custom Category...</option>
+            </select>
+          )}
+        </div>
 
         <div className="space-y-2">
           <div className="p-3 bg-planner-secondary/50 rounded-2xl border border-planner-border flex items-center justify-between">
