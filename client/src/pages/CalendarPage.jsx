@@ -32,6 +32,9 @@ const CalendarPage = () => {
   const [deleteConfirmEvent, setDeleteConfirmEvent] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [isDeleteAllTasksOpen, setIsDeleteAllTasksOpen] = useState(false);
+  const [isDeletingAllTasks, setIsDeletingAllTasks] = useState(false);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -150,6 +153,21 @@ const CalendarPage = () => {
       showError(err.message || 'Failed to delete event');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAllTasksConfirm = async () => {
+    if (selectedDayTasks.length === 0) return;
+    setIsDeletingAllTasks(true);
+    try {
+      await Promise.all(selectedDayTasks.map((t) => taskApi.deleteTask(t._id)));
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showSuccess(`Deleted all tasks for ${selectedDateStr}! 🗑️`);
+      setIsDeleteAllTasksOpen(false);
+    } catch (err) {
+      showError(err.message || 'Failed to delete tasks');
+    } finally {
+      setIsDeletingAllTasks(false);
     }
   };
 
@@ -348,9 +366,21 @@ const CalendarPage = () => {
 
               {/* Tasks for Selected Day */}
               <div>
-                <h4 className="text-xs font-bold text-planner-muted uppercase tracking-wider mb-2">
-                  Tasks ({selectedDayTasks.length})
-                </h4>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-bold text-planner-muted uppercase tracking-wider">
+                    Tasks ({selectedDayTasks.length})
+                  </h4>
+                  {selectedDayTasks.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteAllTasksOpen(true)}
+                      className="text-[11px] font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 px-2 py-0.5 rounded-lg transition-colors flex items-center gap-1"
+                      title="Delete all tasks for this date"
+                    >
+                      <Trash2 className="w-3 h-3" /> Clear All Tasks
+                    </button>
+                  )}
+                </div>
                 {selectedDayTasks.length === 0 ? (
                   <p className="text-xs text-planner-muted italic bg-planner-bg/40 p-3 rounded-2xl">
                     No tasks due on this date.
@@ -404,6 +434,17 @@ const CalendarPage = () => {
         message={`Are you sure you want to delete event "${deleteConfirmEvent?.title}"?`}
         confirmText="Delete Event"
         isLoading={isDeleting}
+      />
+
+      {/* Bulk Delete Tasks Dialog */}
+      <ConfirmationDialog
+        isOpen={isDeleteAllTasksOpen}
+        onClose={() => setIsDeleteAllTasksOpen(false)}
+        onConfirm={handleDeleteAllTasksConfirm}
+        title="Clear All Tasks for Selected Day"
+        message={`Are you sure you want to delete all ${selectedDayTasks.length} task(s) for ${selectedDateStr}? This action cannot be undone.`}
+        confirmText={`Delete All ${selectedDayTasks.length} Tasks`}
+        isLoading={isDeletingAllTasks}
       />
     </div>
   );
