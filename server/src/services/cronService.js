@@ -37,18 +37,21 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
     for (const user of users) {
       if (!user.email) continue;
 
-      // Find user's tasks scheduled for today or active uncompleted tasks
-      const startOfDay = new Date(`${todayStr}T00:00:00`);
-      const endOfDay = new Date(`${todayStr}T23:59:59`);
-
+      // Query uncompleted tasks scheduled for today (todayStr = YYYY-MM-DD)
       const tasks = await Task.find({
         user: user._id,
         completed: false,
         $or: [
-          { date: todayStr },
-          { dueDate: { $gte: startOfDay, $lte: endOfDay } },
-          { isRecurring: true },
-          { date: { $exists: false } }
+          { dueDate: todayStr },
+          { dueDate: '' },
+          {
+            isRecurringDaily: true,
+            $or: [
+              { dueDate: { $lte: todayStr } },
+              { dueDate: '' },
+              { dueDate: { $exists: false } }
+            ]
+          }
         ]
       }).limit(15);
 
