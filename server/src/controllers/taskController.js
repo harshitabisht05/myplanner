@@ -157,11 +157,13 @@ exports.createTask = async (req, res, next) => {
       }
     }
 
+    const effectiveDueDate = (isRecurringDaily && (!dueDate || dueDate === '')) ? getRequestLocalDate(req) : (dueDate || '');
+
     const task = await Task.create({
       user: req.user._id,
       title,
       description: description || '',
-      dueDate: dueDate || '',
+      dueDate: effectiveDueDate,
       dueTime: dueTime || '',
       priority: priority || 'medium',
       category: category || 'Personal',
@@ -247,9 +249,16 @@ exports.toggleTaskComplete = async (req, res, next) => {
       }
       const idx = task.completedDates.indexOf(targetDate);
       if (idx > -1) {
+        // Uncheck for targetDate -> restore dueDate to targetDate
         task.completedDates.splice(idx, 1);
+        task.dueDate = targetDate;
       } else {
+        // Check off for targetDate -> advance dueDate to tomorrow
         task.completedDates.push(targetDate);
+        const [y, m, d] = targetDate.split('-').map(Number);
+        const nextDateObj = new Date(y, m - 1, d + 1);
+        const nextDateStr = `${nextDateObj.getFullYear()}-${String(nextDateObj.getMonth() + 1).padStart(2, '0')}-${String(nextDateObj.getDate()).padStart(2, '0')}`;
+        task.dueDate = nextDateStr;
       }
       task.completed = task.completedDates.includes(targetDate);
     } else {
