@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../api/taskApi';
 import { useTheme } from '../context/ThemeContext';
@@ -19,6 +20,7 @@ import ConfirmationDialog from '../components/common/ConfirmationDialog';
 import { CheckSquare, Plus, Search, Edit2, Trash2, Calendar, Star, Shield, Award } from 'lucide-react';
 
 const Tasks = () => {
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
@@ -26,10 +28,17 @@ const Tasks = () => {
   const isGta = theme === 'gta';
 
   const [view, setView] = useState('all'); // 'all' | 'today' | 'upcoming' | 'completed'
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [sortBy, setSortBy] = useState('dueDate'); // 'dueDate' | 'priority' | 'recentlyCreated'
+
+  useEffect(() => {
+    const query = searchParams.get('search');
+    if (query !== null) {
+      setSearch(query);
+    }
+  }, [searchParams]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
