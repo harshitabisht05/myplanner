@@ -28,7 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <AuthProvider>
             <NotificationProvider>
               <FocusProvider>
-                <BrowserRouter>
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                   <App />
                 </BrowserRouter>
               </FocusProvider>
