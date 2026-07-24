@@ -12,7 +12,7 @@ const TYPE_ICONS = {
   system: { icon: Info, color: 'text-sky-500 bg-sky-500/10' }
 };
 
-const NotificationBell = () => {
+const NotificationBell = ({ align = 'right' }) => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block" ref={dropdownRef}>
       {/* Bell Trigger Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
@@ -71,7 +71,9 @@ const NotificationBell = () => {
       {/* Notification Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-2xl border z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 ${
+          className={`absolute mt-2.5 w-80 sm:w-96 rounded-2xl shadow-2xl border z-50 overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 ${
+            align === 'left' ? 'left-0' : 'right-0'
+          } ${
             isStrange
               ? 'bg-slate-950/95 border-rose-900/60 text-slate-100'
               : isGta

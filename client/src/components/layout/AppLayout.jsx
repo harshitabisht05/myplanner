@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MobileHeader from './MobileHeader';
+import DesktopHeader from './DesktopHeader';
 import MobileBottomNav from './MobileBottomNav';
 import MobileMoreBottomSheet from './MobileMoreBottomSheet';
 import QuickAddModal from '../quickadd/QuickAddModal';
@@ -20,6 +21,9 @@ const AppLayout = () => {
       <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-28 md:pb-8">
         {/* Mobile Header */}
         <MobileHeader onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
+
+        {/* Desktop Header */}
+        <DesktopHeader onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
 
         {/* Page View */}
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 md:p-8 max-w-7xl w-full mx-auto">
