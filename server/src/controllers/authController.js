@@ -117,12 +117,16 @@ exports.updateProfile = async (req, res, next) => {
 // @route PUT /api/auth/preferences
 exports.updatePreferences = async (req, res, next) => {
   try {
-    const { theme, weekStart, animations } = req.body;
+    const { theme, weekStart, animations, dailyDigestTime, dailyDigestEmail, browserNotifications, emailNotifications } = req.body;
     const user = await User.findById(req.user._id);
 
     if (theme !== undefined) user.preferences.theme = theme;
     if (weekStart !== undefined) user.preferences.weekStart = weekStart;
     if (animations !== undefined) user.preferences.animations = animations;
+    if (dailyDigestTime !== undefined) user.preferences.dailyDigestTime = dailyDigestTime;
+    if (dailyDigestEmail !== undefined) user.preferences.dailyDigestEmail = dailyDigestEmail;
+    if (browserNotifications !== undefined) user.preferences.browserNotifications = browserNotifications;
+    if (emailNotifications !== undefined) user.preferences.emailNotifications = emailNotifications;
 
     await user.save();
 

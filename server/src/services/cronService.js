@@ -6,8 +6,11 @@ const { sendDailyMorningDigest } = require('./emailService');
 
 const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = null) => {
   try {
-    const todayDate = new Date();
-    const todayStr = todayDate.toISOString().split('T')[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
 
     let query = { 'preferences.dailyDigestEmail': { $ne: false } };
 
@@ -26,16 +29,20 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
     for (const user of users) {
       if (!user.email) continue;
 
-      // Find user's scheduled tasks for today
+      // Find user's tasks scheduled for today or active uncompleted tasks
+      const startOfDay = new Date(`${todayStr}T00:00:00`);
+      const endOfDay = new Date(`${todayStr}T23:59:59`);
+
       const tasks = await Task.find({
         user: user._id,
+        completed: false,
         $or: [
           { date: todayStr },
-          { dueDate: { $gte: new Date(todayStr), $lt: new Date(Date.now() + 86400000) } },
-          { isRecurring: true }
-        ],
-        completed: false
-      }).limit(10);
+          { dueDate: { $gte: startOfDay, $lte: endOfDay } },
+          { isRecurring: true },
+          { date: { $exists: false } }
+        ]
+      }).limit(15);
 
       try {
         await sendDailyMorningDigest({
