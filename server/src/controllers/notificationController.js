@@ -1,5 +1,6 @@
 const Notification = require('../models/Notification');
 const { sendTestDigestEmail } = require('../services/emailService');
+const { triggerMorningDigestsNow } = require('../services/cronService');
 
 // @desc    Get user notifications
 // @route   GET /api/notifications
@@ -128,6 +129,26 @@ exports.sendTestEmail = async (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: error.message || 'Failed to send test email. Check server SMTP credentials.'
+    });
+  }
+};
+
+// @desc    Trigger Morning Digest Email Now
+// @route   POST /api/notifications/morning-digest
+// @access  Private
+exports.triggerMorningDigest = async (req, res, next) => {
+  try {
+    const result = await triggerMorningDigestsNow(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      message: `Daily Morning Digest email delivered to ${req.user.email}! 🌅`,
+      result
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Failed to send Daily Morning Digest. Check SMTP server configuration.'
     });
   }
 };

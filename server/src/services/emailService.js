@@ -68,7 +68,7 @@ const sendTestDigestEmail = async ({ to, userName }) => {
         </div>
 
         <div style="background-color: #f8fafc; padding: 16px; border-radius: 14px; border-left: 4px solid #8b5cf6;">
-          <h4 style="margin: 0 0 8px 0; color: #4c1d95;">What daily digests will contain:</h4>
+          <h4 style="margin: 0 0 8px 0; color: #4c1d95;">What daily digests contain:</h4>
           <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 13px; line-height: 1.6;">
             <li>Daily Scheduled Tasks & Objectives</li>
             <li>Focus Session Goals & Target Minutes</li>
@@ -86,7 +86,58 @@ const sendTestDigestEmail = async ({ to, userName }) => {
   await transporter.sendMail(mailOptions);
 };
 
+const sendDailyMorningDigest = async ({ to, userName, tasks = [], dateStr }) => {
+  const { EMAIL_FROM } = process.env;
+  const transporter = createTransporter();
+
+  const formattedDate = dateStr || new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const tasksListHtml = tasks.length > 0
+    ? tasks.map(t => `
+        <li style="padding: 10px 12px; margin-bottom: 6px; background-color: #f8fafc; border-radius: 10px; border-left: 4px solid ${t.priority === 'high' ? '#ef4444' : t.priority === 'medium' ? '#f59e0b' : '#3b82f6'}; list-style: none;">
+          <strong style="color: #1e293b; font-size: 14px;">${t.title}</strong>
+          ${t.category ? `<span style="font-size: 11px; color: #7c3aed; background: #f3e8ff; padding: 2px 8px; border-radius: 6px; margin-left: 8px; font-weight: bold;">${t.category}</span>` : ''}
+        </li>
+      `).join('')
+    : `<p style="color: #64748b; font-style: italic; font-size: 13px;">No scheduled tasks for today. A clear day to plan ahead or focus on deep work! ✨</p>`;
+
+  const mailOptions = {
+    from: EMAIL_FROM || 'notifications@mylittleplanner.app',
+    to,
+    subject: `🌅 Morning Digest: Your Plan for ${formattedDate} — My Little Planner`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background: linear-gradient(to bottom, #faf5ff, #ffffff);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h1 style="color: #7c3aed; margin: 0; font-size: 24px;">Good Morning, ${userName || 'Friend'}! 🌅</h1>
+          <p style="color: #6b21a8; font-size: 13px; font-weight: 600; margin-top: 4px;">${formattedDate}</p>
+        </div>
+        
+        <div style="background-color: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #f3e8ff; margin-bottom: 20px;">
+          <h3 style="color: #1e293b; margin-top: 0; font-size: 16px;">Today's Objectives (${tasks.length} Tasks Scheduled)</h3>
+          <ul style="padding: 0; margin: 12px 0 0 0;">
+            ${tasksListHtml}
+          </ul>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 16px; border-radius: 14px; border-left: 4px solid #7c3aed;">
+          <h4 style="margin: 0 0 4px 0; color: #4c1d95; font-size: 14px;">Focus Quote of the Day:</h4>
+          <p style="margin: 0; color: #475569; font-size: 13px; font-style: italic;">
+            "Small steps every day bring gently remarkable results."
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #f1f5f9; color: #94a3b8; font-size: 12px;">
+          <p>Sent with 💜 by My Little Planner • Configure email digest settings anytime in Settings ⚙️</p>
+        </div>
+      </div>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
 module.exports = {
   sendPasswordResetEmail,
-  sendTestDigestEmail
+  sendTestDigestEmail,
+  sendDailyMorningDigest
 };

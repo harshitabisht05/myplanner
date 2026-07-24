@@ -6,6 +6,7 @@ const {
   markAllAsRead,
   deleteNotification,
   sendTestEmail,
+  triggerMorningDigest,
   createTestNotification
 } = require('../controllers/notificationController');
 const { protect } = require('../middleware/authMiddleware');
@@ -17,6 +18,7 @@ router.put('/read-all', markAllAsRead);
 router.put('/:id/read', markAsRead);
 router.delete('/:id', deleteNotification);
 router.post('/test-email', sendTestEmail);
+router.post('/morning-digest', triggerMorningDigest);
 router.post('/test-browser', createTestNotification);
 
 module.exports = router;

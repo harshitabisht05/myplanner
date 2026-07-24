@@ -29,5 +29,10 @@ export const notificationApi = {
   sendTestBrowser: async () => {
     const response = await axiosClient.post('/notifications/test-browser');
     return response.data;
+  },
+
+  triggerMorningDigest: async () => {
+    const response = await axiosClient.post('/notifications/morning-digest');
+    return response.data;
   }
 };

@@ -36,6 +36,7 @@ const Settings = () => {
   const [avatar, setAvatar] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isSendingDigest, setIsSendingDigest] = useState(false);
 
   const isStrange = theme === 'strange';
 
@@ -56,6 +57,19 @@ const Settings = () => {
       showError(err.response?.data?.message || err.message || 'Failed to send test email');
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleMorningDigest = async () => {
+    setIsSendingDigest(true);
+    try {
+      const res = await notificationApi.triggerMorningDigest();
+      showSuccess(res.message || "Daily Morning Digest email delivered! 🌅");
+      fetchNotifications();
+    } catch (err) {
+      showError(err.response?.data?.message || err.message || "Failed to send Morning Digest email");
+    } finally {
+      setIsSendingDigest(false);
     }
   };
 
@@ -408,19 +422,31 @@ const Settings = () => {
                 <span className="text-[10px] text-planner-muted font-mono truncate max-w-[120px]">{user?.email}</span>
               </div>
               <p className="text-xs text-planner-muted leading-relaxed">
-                Sends automated daily digests, weekly focus summaries, and overdue task reports directly to your inbox.
+                Sends automated 8:00 AM daily morning digests, focus summaries, and overdue task reports.
               </p>
             </div>
 
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleTestEmail}
-              isLoading={isSendingEmail}
-              className="w-full justify-center text-xs font-bold"
-            >
-              <Send className="w-4 h-4 mr-1.5" /> Send Test Email Digest 📧
-            </Button>
+            <div className="space-y-2">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleMorningDigest}
+                isLoading={isSendingDigest}
+                className="w-full justify-center text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white border-none"
+              >
+                <Sparkles className="w-4 h-4 mr-1.5" /> Send Today's Morning Digest (8 AM) 🌅
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleTestEmail}
+                isLoading={isSendingEmail}
+                className="w-full justify-center text-xs font-bold"
+              >
+                <Send className="w-4 h-4 mr-1.5" /> Test Email Connection 📧
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
