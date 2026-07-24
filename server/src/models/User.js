@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema(
       animations: {
         type: Boolean,
         default: true
+      },
+      browserNotifications: {
+        type: Boolean,
+        default: true
+      },
+      emailNotifications: {
+        type: Boolean,
+        default: true
+      },
+      dailyDigestEmail: {
+        type: Boolean,
+        default: true
       }
     },
     resetPasswordToken: String,

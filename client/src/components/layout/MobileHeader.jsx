@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useFocusTimer } from '../../context/FocusContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import NotificationBell from '../common/NotificationBell';
 import appLogo from '../../assets/logo.png';
 
 const MobileHeader = ({ onOpenQuickAdd }) => {
@@ -62,6 +63,7 @@ const MobileHeader = ({ onOpenQuickAdd }) => {
             <Download className="w-3.5 h-3.5" />
           </button>
         )}
+        <NotificationBell />
         <button
           onClick={onOpenQuickAdd}
           className={`p-2 rounded-xl shadow-xs active:scale-95 transition-transform ${

@@ -18,6 +18,7 @@ const brainDumpRoutes = require('./routes/brainDumpRoutes');
 const dailyNoteRoutes = require('./routes/dailyNoteRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const focusSessionRoutes = require('./routes/focusSessionRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -78,7 +79,8 @@ const apiRoutes = [
   { path: '/braindump', handler: brainDumpRoutes },
   { path: '/dailynote', handler: dailyNoteRoutes },
   { path: '/categories', handler: categoryRoutes },
-  { path: '/focus', handler: focusSessionRoutes }
+  { path: '/focus', handler: focusSessionRoutes },
+  { path: '/notifications', handler: notificationRoutes }
 ];
 
 apiRoutes.forEach(({ path, handler }) => {

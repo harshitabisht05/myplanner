@@ -49,21 +49,21 @@ const Analytics = () => {
   // Filter history based on time range, category, and search query
   const filteredSessions = useMemo(() => {
     const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     return history.filter((item) => {
       const itemDate = new Date(item.completedAt);
       
       // Time range filter
       if (timeRange === 'today') {
-        const todayStr = getLocalDateStr(now);
-        const itemDateStr = getLocalDateStr(itemDate);
-        if (itemDateStr !== todayStr) return false;
+        if (itemDate < startOfToday) return false;
       } else if (timeRange === '7days') {
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(now.getDate() - 7);
+        const sevenDaysAgo = new Date(startOfToday);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // 7 days total including today
         if (itemDate < sevenDaysAgo) return false;
       } else if (timeRange === '30days') {
-        const thirtyDaysAgo = new Date(now);
-        thirtyDaysAgo.setDate(now.getDate() - 30);
+        const thirtyDaysAgo = new Date(startOfToday);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29); // 30 days total including today
         if (itemDate < thirtyDaysAgo) return false;
       }
 
@@ -130,21 +130,67 @@ const Analytics = () => {
       .map(([title, mins]) => ({ title, mins }))
       .sort((a, b) => b.mins - a.mins);
 
-    // Get last 7 days chart data
-    const last7DaysChart = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = getLocalDateStr(d);
-      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
-      last7DaysChart.push({
-        dateStr,
-        dayLabel,
-        mins: dailyMap[dateStr] || 0
+    // Dynamic Activity Chart Data based on timeRange
+    const chartData = [];
+    const now = new Date();
+
+    if (timeRange === 'today') {
+      // 4-hour slots breakdown for Today (00:00, 04:00, 08:00, 12:00, 16:00, 20:00)
+      const hourlyMap = {};
+      filteredSessions.forEach((s) => {
+        const d = new Date(s.completedAt);
+        const hour = d.getHours();
+        const mins = s.durationMins || Math.round((s.elapsedSeconds || 0) / 60) || 0;
+        const slotKey = `${Math.floor(hour / 4) * 4}:00`;
+        hourlyMap[slotKey] = (hourlyMap[slotKey] || 0) + mins;
       });
+      const slots = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+      slots.forEach((slot) => {
+        const hourNum = parseInt(slot, 10);
+        const label = hourNum === 0 ? '12am' : hourNum === 12 ? '12pm' : hourNum > 12 ? `${hourNum - 12}pm` : `${hourNum}am`;
+        chartData.push({
+          dateStr: slot,
+          dayLabel: label,
+          mins: hourlyMap[slot] || 0
+        });
+      });
+    } else if (timeRange === '7days') {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const dateStr = getLocalDateStr(d);
+        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
+        chartData.push({
+          dateStr,
+          dayLabel,
+          mins: dailyMap[dateStr] || 0
+        });
+      }
+    } else if (timeRange === '30days') {
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const dateStr = getLocalDateStr(d);
+        const dayLabel = i % 5 === 0 || i === 29 || i === 0 ? `${d.getMonth() + 1}/${d.getDate()}` : '';
+        chartData.push({
+          dateStr,
+          dayLabel,
+          mins: dailyMap[dateStr] || 0
+        });
+      }
+    } else {
+      // 'all' - Show all logged dates or last 30 days window
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const dateStr = getLocalDateStr(d);
+        const dayLabel = i % 5 === 0 || i === 29 || i === 0 ? `${d.getMonth() + 1}/${d.getDate()}` : '';
+        chartData.push({
+          dateStr,
+          dayLabel,
+          mins: dailyMap[dateStr] || 0
+        });
+      }
     }
 
-    const maxChartMins = Math.max(...last7DaysChart.map((d) => d.mins), 60);
+    const maxChartMins = Math.max(...chartData.map((d) => d.mins), 60);
 
     return {
       totalMins,
@@ -153,10 +199,10 @@ const Analytics = () => {
       topCategory: categoryList[0] || null,
       categoryList,
       taskList,
-      last7DaysChart,
+      chartData,
       maxChartMins
     };
-  }, [filteredSessions, categories]);
+  }, [filteredSessions, categories, timeRange]);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -372,23 +418,32 @@ const Analytics = () => {
           )}
         </Card>
 
-        {/* Daily Focus Activity Bar Chart */}
+        {/* Focus Activity Bar Chart */}
         <Card className={`p-5 space-y-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
           <div className="flex items-center justify-between pb-3 border-b border-planner-border">
             <h3 className="text-base font-bold text-planner-text flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-planner-primary" /> Daily Focus Activity (Last 7 Days)
+              <Calendar className="w-5 h-5 text-planner-primary" />
+              {timeRange === 'today'
+                ? "Today's Focus Breakdown"
+                : timeRange === '7days'
+                ? 'Daily Focus Activity (Last 7 Days)'
+                : timeRange === '30days'
+                ? 'Daily Focus Activity (Last 30 Days)'
+                : 'Focus Activity (All Time)'}
             </h3>
-            <span className="text-xs text-planner-muted font-mono">Daily Total</span>
+            <span className="text-xs text-planner-muted font-mono">
+              {timeRange === 'today' ? 'Hourly Slots' : 'Daily Total'}
+            </span>
           </div>
 
-          <div className="h-56 flex items-end justify-between gap-2 pt-6 pb-2 px-2">
-            {stats.last7DaysChart.map((day) => {
-              const heightPct = stats.maxChartMins > 0 ? (day.mins / stats.maxChartMins) * 100 : 0;
+          <div className="h-56 flex items-end justify-between gap-1 sm:gap-2 pt-6 pb-2 px-1 sm:px-2 overflow-x-auto">
+            {stats.chartData.map((item, idx) => {
+              const heightPct = stats.maxChartMins > 0 ? (item.mins / stats.maxChartMins) * 100 : 0;
               return (
-                <div key={day.dateStr} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                <div key={item.dateStr || idx} className="flex-1 min-w-[14px] flex flex-col items-center gap-2 h-full justify-end group">
                   {/* Tooltip / Label */}
                   <span className="text-[10px] font-mono font-bold text-planner-muted opacity-80 group-hover:opacity-100 transition-opacity">
-                    {day.mins > 0 ? `${day.mins}m` : '-'}
+                    {item.mins > 0 ? `${item.mins}m` : '-'}
                   </span>
 
                   {/* Bar */}
@@ -400,13 +455,15 @@ const Analytics = () => {
                           : isGta
                           ? 'bg-gradient-to-t from-emerald-600 to-emerald-400'
                           : 'bg-gradient-to-t from-planner-primary to-planner-accent'
-                      } ${day.mins > 0 ? 'opacity-100' : 'opacity-20'}`}
-                      style={{ height: `${Math.max(day.mins > 0 ? 8 : 4, heightPct)}%` }}
+                      } ${item.mins > 0 ? 'opacity-100' : 'opacity-20'}`}
+                      style={{ height: `${Math.max(item.mins > 0 ? 8 : 4, heightPct)}%` }}
                     />
                   </div>
 
-                  {/* Day Name */}
-                  <span className="text-xs font-bold text-planner-text font-mono mt-1">{day.dayLabel}</span>
+                  {/* Day Name / Time Label */}
+                  <span className="text-[10px] sm:text-xs font-bold text-planner-text font-mono mt-1 truncate max-w-full">
+                    {item.dayLabel}
+                  </span>
                 </div>
               );
             })}

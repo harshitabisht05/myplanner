@@ -4,13 +4,15 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useNotifications } from '../context/NotificationContext';
+import { notificationApi } from '../api/notificationApi';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Checkbox from '../components/common/Checkbox';
-import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles, Smartphone, Download, CheckCircle2, Shield } from 'lucide-react';
+import { Settings as SettingsIcon, User, Palette, Sliders, LogOut, Save, Sparkles, Smartphone, Download, CheckCircle2, Shield, Bell, Mail, Send, Volume2 } from 'lucide-react';
 
 const THEME_CARDS = [
   { id: 'lavender', label: 'Lavender', colorBg: 'bg-purple-100 border-purple-300 text-purple-900', emoji: '🪻' },
@@ -26,12 +28,14 @@ const Settings = () => {
   const { user, updateProfile, updatePreferences, logout } = useAuth();
   const { theme, setTheme, weekStart, setWeekStart, animations, setAnimations } = useTheme();
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
+  const { hasPermission, requestBrowserPermission, triggerLocalNotification, fetchNotifications } = useNotifications();
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const isStrange = theme === 'strange';
 
@@ -41,6 +45,39 @@ const Settings = () => {
       setAvatar(user.avatar || '');
     }
   }, [user]);
+
+  const handleTestEmail = async () => {
+    setIsSendingEmail(true);
+    try {
+      const res = await notificationApi.sendTestEmail();
+      showSuccess(res.message || 'Test email sent successfully! 📧');
+      fetchNotifications();
+    } catch (err) {
+      showError(err.response?.data?.message || err.message || 'Failed to send test email');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleTestBrowserNotification = async () => {
+    let permGranted = hasPermission;
+    if (!permGranted) {
+      const res = await requestBrowserPermission();
+      permGranted = res === 'granted';
+    }
+
+    triggerLocalNotification('My Little Planner Test 🔔', {
+      body: 'Notifications are working! Desktop push notifications & audio chimes are enabled.'
+    });
+
+    try {
+      await notificationApi.sendTestBrowser();
+      fetchNotifications();
+      showSuccess('Browser push & sound notification triggered! 🔔');
+    } catch (err) {
+      // Ignored
+    }
+  };
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -315,6 +352,75 @@ const Settings = () => {
               <p className="text-xs text-planner-muted">Toggle motion for reduced motion preference</p>
             </div>
             <Checkbox checked={animations} onChange={handleAnimationsChange} />
+          </div>
+        </div>
+      </Card>
+
+      {/* Notifications & Email Alerts Section */}
+      <Card className={`p-6 space-y-5 ${isStrange ? 'strange-hud-card' : ''}`}>
+        <div className="flex items-center justify-between pb-3 border-b border-planner-border flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <Bell className="w-5 h-5 text-planner-primary" />
+            <div>
+              <h2 className="text-lg font-bold text-planner-text">Notifications & Email Alerts</h2>
+              <p className="text-xs text-planner-muted">Manage push notifications, desktop sounds, and Nodemailer digests</p>
+            </div>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-planner-primary/10 text-planner-primary border border-planner-primary/30">
+            <CheckCircle2 className="w-3.5 h-3.5" /> System Ready
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Browser Desktop Notifications Test Card */}
+          <div className="p-4 rounded-2xl bg-planner-bg/60 border border-planner-border space-y-3 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-planner-text flex items-center gap-1.5">
+                  <Volume2 className="w-4 h-4 text-purple-500" /> Desktop Push & Chime Sound
+                </span>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase ${hasPermission ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>
+                  {hasPermission ? 'Granted' : 'Needs Action'}
+                </span>
+              </div>
+              <p className="text-xs text-planner-muted leading-relaxed">
+                Triggers native browser desktop popups and audio chimes when timers complete or tasks are due.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleTestBrowserNotification}
+              className="w-full justify-center text-xs font-bold"
+            >
+              <Bell className="w-4 h-4 mr-1.5 text-purple-500" /> Test Push & Audio Alert 🔔
+            </Button>
+          </div>
+
+          {/* Nodemailer Email Digest Test Card */}
+          <div className="p-4 rounded-2xl bg-planner-bg/60 border border-planner-border space-y-3 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-planner-text flex items-center gap-1.5">
+                  <Mail className="w-4 h-4 text-sky-500" /> Nodemailer Email Service
+                </span>
+                <span className="text-[10px] text-planner-muted font-mono truncate max-w-[120px]">{user?.email}</span>
+              </div>
+              <p className="text-xs text-planner-muted leading-relaxed">
+                Sends automated daily digests, weekly focus summaries, and overdue task reports directly to your inbox.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleTestEmail}
+              isLoading={isSendingEmail}
+              className="w-full justify-center text-xs font-bold"
+            >
+              <Send className="w-4 h-4 mr-1.5" /> Send Test Email Digest 📧
+            </Button>
           </div>
         </div>
       </Card>

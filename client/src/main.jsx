@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { FocusProvider } from './context/FocusContext';
+import { NotificationProvider } from './context/NotificationContext';
 import App from './App';
 import './index.css';
 
@@ -25,11 +26,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
-            <FocusProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </FocusProvider>
+            <NotificationProvider>
+              <FocusProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </FocusProvider>
+            </NotificationProvider>
           </AuthProvider>
         </ToastProvider>
       </ThemeProvider>

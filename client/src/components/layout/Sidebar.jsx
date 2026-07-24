@@ -26,6 +26,7 @@ import { useTheme } from '../../context/ThemeContext';
 import gtaLogoV from '../../assets/gta_logo_v.svg';
 import strangeLogo from '../../assets/strange_logo.svg';
 import appLogo from '../../assets/logo.png';
+import NotificationBell from '../common/NotificationBell';
 
 const navItems = [
   { name: 'Home', path: '/', icon: Home, gtaName: 'PLAYER', strangeName: 'CONTROL CENTER' },
@@ -99,13 +100,16 @@ const Sidebar = ({ onOpenQuickAdd }) => {
             <img src={appLogo} alt="Logo" className="w-7 h-7 object-contain rounded-lg" />
           </div>
         )}
-        <button
-          onClick={toggleCollapsed}
-          className="p-1.5 rounded-xl hover:bg-planner-secondary text-planner-muted transition-colors"
-          title={collapsed ? 'Expand menu' : 'Collapse menu'}
-        >
-          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <button
+            onClick={toggleCollapsed}
+            className="p-1.5 rounded-xl hover:bg-planner-secondary text-planner-muted transition-colors"
+            title={collapsed ? 'Expand menu' : 'Collapse menu'}
+          >
+            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+        </div>
 
         {/* Decorative Christmas Light Easter Egg Bulbs in Strange World */}
         {!collapsed && isStrange && (
