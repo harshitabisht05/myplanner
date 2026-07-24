@@ -71,23 +71,23 @@ const NotificationBell = ({ align = 'right' }) => {
       {/* Notification Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute mt-2.5 w-80 sm:w-96 rounded-2xl shadow-2xl border z-50 overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 ${
+          className={`absolute mt-3 w-80 sm:w-96 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] border z-50 overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 ${
             align === 'left' ? 'left-0' : 'right-0'
           } ${
             isStrange
-              ? 'bg-slate-950/95 border-rose-900/60 text-slate-100'
+              ? 'bg-slate-950/98 border-rose-900/80 text-slate-100'
               : isGta
-              ? 'bg-slate-950/95 border-emerald-900/60 text-slate-100'
-              : 'bg-planner-card/95 border-planner-border text-planner-text'
+              ? 'bg-slate-950/98 border-emerald-900/80 text-slate-100'
+              : 'bg-slate-900/98 dark:bg-slate-900/98 border-slate-700/80 text-slate-100 shadow-purple-500/10'
           }`}
         >
           {/* Panel Header */}
-          <div className="p-3.5 border-b border-planner-border flex items-center justify-between">
+          <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-planner-primary" />
-              <h3 className="font-bold text-sm">Notifications</h3>
+              <Bell className="w-4 h-4 text-purple-400" />
+              <h3 className="font-bold text-sm text-slate-100">Notifications</h3>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-planner-primary text-white">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600 text-white shadow-xs">
                   {unreadCount} new
                 </span>
               )}
@@ -97,7 +97,7 @@ const NotificationBell = ({ align = 'right' }) => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="px-2 py-1 rounded-lg text-xs font-bold text-planner-primary hover:bg-planner-secondary transition-colors flex items-center gap-1"
+                  className="px-2 py-1 rounded-lg text-xs font-bold text-purple-400 hover:bg-purple-500/10 transition-colors flex items-center gap-1"
                   title="Mark all as read"
                 >
                   <CheckCheck className="w-3.5 h-3.5" /> Read All
@@ -105,7 +105,7 @@ const NotificationBell = ({ align = 'right' }) => {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg text-planner-muted hover:text-planner-text"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -113,11 +113,11 @@ const NotificationBell = ({ align = 'right' }) => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center px-3 py-1.5 border-b border-planner-border/50 text-xs font-bold gap-2 bg-planner-bg/40">
+          <div className="flex items-center px-3 py-1.5 border-b border-slate-800 text-xs font-bold gap-2 bg-slate-950/60">
             <button
               onClick={() => setFilter('all')}
               className={`px-3 py-1 rounded-lg transition-all ${
-                filter === 'all' ? 'bg-planner-primary text-white' : 'text-planner-muted hover:text-planner-text'
+                filter === 'all' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               All ({notifications.length})
@@ -125,7 +125,7 @@ const NotificationBell = ({ align = 'right' }) => {
             <button
               onClick={() => setFilter('unread')}
               className={`px-3 py-1 rounded-lg transition-all ${
-                filter === 'unread' ? 'bg-planner-primary text-white' : 'text-planner-muted hover:text-planner-text'
+                filter === 'unread' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Unread ({unreadCount})
@@ -133,12 +133,12 @@ const NotificationBell = ({ align = 'right' }) => {
           </div>
 
           {/* Notification List */}
-          <div className="max-h-80 overflow-y-auto p-2 space-y-1.5">
+          <div className="max-h-96 overflow-y-auto p-2 space-y-2">
             {filtered.length === 0 ? (
-              <div className="p-8 text-center text-planner-muted text-xs font-medium space-y-1">
+              <div className="p-8 text-center text-slate-400 text-xs font-medium space-y-1">
                 <p className="text-base">🔔</p>
                 <p>No notifications found</p>
-                <p className="text-[11px] text-planner-muted/70">You're all caught up!</p>
+                <p className="text-[11px] text-slate-500">You're all caught up!</p>
               </div>
             ) : (
               filtered.map((n) => {
@@ -153,8 +153,8 @@ const NotificationBell = ({ align = 'right' }) => {
                     onClick={() => handleNotificationClick(n)}
                     className={`group relative p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
                       isUnread
-                        ? 'bg-planner-primary/10 border-planner-primary/30 font-semibold'
-                        : 'bg-planner-bg/40 border-planner-border/60 hover:bg-planner-secondary/50'
+                        ? 'bg-purple-950/40 border-purple-500/40 text-slate-100 shadow-xs'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/60'
                     }`}
                   >
                     <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${typeStyle.color}`}>

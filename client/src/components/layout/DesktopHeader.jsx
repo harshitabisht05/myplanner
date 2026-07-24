@@ -80,9 +80,6 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
           </button>
         )}
 
-        {/* Global Notification Bell */}
-        <NotificationBell align="right" />
-
         {/* Quick Add Button */}
         <button
           onClick={onOpenQuickAdd}
@@ -98,6 +95,9 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>Quick Add</span>
         </button>
+
+        {/* Global Notification Bell */}
+        <NotificationBell align="right" />
 
         {/* User Profile Avatar */}
         <div
