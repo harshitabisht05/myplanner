@@ -71,21 +71,21 @@ const NotificationBell = ({ align = 'right' }) => {
       {/* Notification Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute mt-3 w-80 sm:w-96 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] border z-50 overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 ${
-            align === 'left' ? 'left-0' : 'right-0'
+          className={`absolute mt-3 w-80 sm:w-96 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] border-2 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${
+            align === 'left' ? 'left-0' : 'right-0 sm:-right-10'
           } ${
             isStrange
-              ? 'bg-slate-950/98 border-rose-900/80 text-slate-100'
+              ? 'bg-[#0f0a15] text-slate-100 border-rose-600/60'
               : isGta
-              ? 'bg-slate-950/98 border-emerald-900/80 text-slate-100'
-              : 'bg-slate-900/98 dark:bg-slate-900/98 border-slate-700/80 text-slate-100 shadow-purple-500/10'
+              ? 'bg-[#0a1510] text-slate-100 border-emerald-500/60'
+              : 'bg-[#13111c] text-slate-100 border-purple-500/40 shadow-purple-500/20'
           }`}
         >
           {/* Panel Header */}
-          <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div className="p-3.5 border-b border-white/10 flex items-center justify-between bg-[#1a1626]">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-purple-400" />
-              <h3 className="font-bold text-sm text-slate-100">Notifications</h3>
+              <h3 className="font-bold text-sm text-white">Notifications</h3>
               {unreadCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600 text-white shadow-xs">
                   {unreadCount} new
@@ -97,7 +97,7 @@ const NotificationBell = ({ align = 'right' }) => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="px-2 py-1 rounded-lg text-xs font-bold text-purple-400 hover:bg-purple-500/10 transition-colors flex items-center gap-1"
+                  className="px-2 py-1 rounded-lg text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-colors flex items-center gap-1"
                   title="Mark all as read"
                 >
                   <CheckCheck className="w-3.5 h-3.5" /> Read All
@@ -105,7 +105,7 @@ const NotificationBell = ({ align = 'right' }) => {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-200"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -113,11 +113,11 @@ const NotificationBell = ({ align = 'right' }) => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center px-3 py-1.5 border-b border-slate-800 text-xs font-bold gap-2 bg-slate-950/60">
+          <div className="flex items-center px-3 py-2 border-b border-white/10 text-xs font-bold gap-2 bg-[#0d0b14]">
             <button
               onClick={() => setFilter('all')}
               className={`px-3 py-1 rounded-lg transition-all ${
-                filter === 'all' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                filter === 'all' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
               }`}
             >
               All ({notifications.length})
@@ -125,7 +125,7 @@ const NotificationBell = ({ align = 'right' }) => {
             <button
               onClick={() => setFilter('unread')}
               className={`px-3 py-1 rounded-lg transition-all ${
-                filter === 'unread' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                filter === 'unread' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
               }`}
             >
               Unread ({unreadCount})
@@ -133,12 +133,12 @@ const NotificationBell = ({ align = 'right' }) => {
           </div>
 
           {/* Notification List */}
-          <div className="max-h-96 overflow-y-auto p-2 space-y-2">
+          <div className="max-h-96 overflow-y-auto p-2 space-y-2 bg-[#13111c]">
             {filtered.length === 0 ? (
               <div className="p-8 text-center text-slate-400 text-xs font-medium space-y-1">
                 <p className="text-base">🔔</p>
-                <p>No notifications found</p>
-                <p className="text-[11px] text-slate-500">You're all caught up!</p>
+                <p className="text-white font-bold">No notifications found</p>
+                <p className="text-[11px] text-slate-400">You're all caught up!</p>
               </div>
             ) : (
               filtered.map((n) => {
@@ -153,8 +153,8 @@ const NotificationBell = ({ align = 'right' }) => {
                     onClick={() => handleNotificationClick(n)}
                     className={`group relative p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
                       isUnread
-                        ? 'bg-purple-950/40 border-purple-500/40 text-slate-100 shadow-xs'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/60'
+                        ? 'bg-[#211a33] border-purple-500/60 text-white shadow-md'
+                        : 'bg-[#181524] border-white/10 text-slate-300 hover:bg-[#231e33]'
                     }`}
                   >
                     <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${typeStyle.color}`}>
@@ -163,12 +163,12 @@ const NotificationBell = ({ align = 'right' }) => {
 
                     <div className="flex-1 min-w-0 pr-6">
                       <div className="flex items-center justify-between gap-1">
-                        <h4 className="text-xs font-bold text-planner-text truncate">{n.title}</h4>
-                        <span className="text-[10px] text-planner-muted shrink-0">{dateStr}</span>
+                        <h4 className="text-xs font-bold text-white truncate">{n.title}</h4>
+                        <span className="text-[10px] text-slate-400 font-mono shrink-0">{dateStr}</span>
                       </div>
-                      <p className="text-xs text-planner-muted mt-0.5 line-clamp-2 leading-snug">{n.message}</p>
+                      <p className="text-xs text-slate-300 mt-0.5 line-clamp-2 leading-snug">{n.message}</p>
                       {n.link && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-planner-primary mt-1">
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-purple-400 mt-1">
                           View details <ExternalLink className="w-2.5 h-2.5" />
                         </span>
                       )}
