@@ -111,6 +111,7 @@ const CalendarPage = () => {
       if (t.isRecurringDaily) {
         return {
           ...t,
+          dueDate: selectedDateStr,
           completed: Array.isArray(t.completedDates) && t.completedDates.includes(selectedDateStr)
         };
       }

@@ -71,11 +71,12 @@ exports.getTasks = async (req, res, next) => {
       rawTasks = await Task.find(baseQuery);
     }
 
-    // Map tasks to compute date-specific completed status for recurring tasks
+    // Map tasks to compute date-specific completed status & effective due date for recurring tasks
     let tasks = rawTasks.map((t) => {
       const obj = t.toObject();
       if (obj.isRecurringDaily) {
         obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
+        obj.dueDate = targetDate;
       }
       return obj;
     });
