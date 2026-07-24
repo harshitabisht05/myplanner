@@ -31,8 +31,8 @@ export const notificationApi = {
     return response.data;
   },
 
-  triggerMorningDigest: async () => {
-    const response = await axiosClient.post('/notifications/morning-digest');
+  triggerMorningDigest: async (dateStr) => {
+    const response = await axiosClient.post('/notifications/morning-digest', { date: dateStr });
     return response.data;
   }
 };

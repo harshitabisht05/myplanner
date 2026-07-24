@@ -87,7 +87,7 @@ const Home = () => {
   const handleSendDigestNow = async () => {
     setIsSendingDigest(true);
     try {
-      const res = await notificationApi.triggerMorningDigest();
+      const res = await notificationApi.triggerMorningDigest(todayStr);
       showSuccess(res.message || 'Daily Morning Digest email delivered! 🌅');
       fetchNotifications();
     } catch (err) {

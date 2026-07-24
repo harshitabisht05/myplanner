@@ -4,17 +4,27 @@ const Task = require('../models/Task');
 const Notification = require('../models/Notification');
 const { sendDailyMorningDigest } = require('./emailService');
 
-const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = null) => {
+const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = null, clientDateStr = null) => {
   try {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
-    const formattedDateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+    let todayStr = '';
+    let formattedDateStr = '';
+
+    if (clientDateStr && /^\d{4}-\d{2}-\d{2}$/.test(clientDateStr)) {
+      todayStr = clientDateStr;
+      const [y, m, d] = clientDateStr.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      formattedDateStr = `${days[dateObj.getDay()]}, ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+    } else {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      todayStr = `${year}-${month}-${day}`;
+      formattedDateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+    }
 
     let users = [];
     if (specificUserId) {

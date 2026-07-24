@@ -138,7 +138,8 @@ exports.sendTestEmail = async (req, res, next) => {
 // @access  Private
 exports.triggerMorningDigest = async (req, res, next) => {
   try {
-    const result = await triggerMorningDigestsNow(req.user._id);
+    const clientDateStr = req.body?.date || req.query?.date || null;
+    const result = await triggerMorningDigestsNow(req.user._id, null, clientDateStr);
 
     res.status(200).json({
       success: true,
