@@ -190,7 +190,8 @@ const Analytics = () => {
       }
     }
 
-    const maxChartMins = Math.max(...chartData.map((d) => d.mins), 60);
+    // Set max scale ceiling to 24 hours (1440 minutes = 24 hours)
+    const maxChartMins = 1440;
 
     return {
       totalMins,
@@ -431,8 +432,8 @@ const Analytics = () => {
                 ? 'Daily Focus Activity (Last 30 Days)'
                 : 'Focus Activity (All Time)'}
             </h3>
-            <span className="text-xs text-planner-muted font-mono">
-              {timeRange === 'today' ? 'Hourly Slots' : 'Daily Total'}
+            <span className="text-xs text-planner-muted font-mono bg-planner-bg/60 px-2 py-0.5 rounded-lg border border-planner-border">
+              {timeRange === 'today' ? 'Hourly Slots' : 'Daily Total (24h Max Scale)'}
             </span>
           </div>
 
