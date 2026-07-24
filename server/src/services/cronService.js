@@ -12,19 +12,23 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
     const day = String(now.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
 
-    let query = { 'preferences.dailyDigestEmail': { $ne: false } };
-
+    let users = [];
     if (specificUserId) {
-      query._id = specificUserId;
-    } else if (targetHourStr) {
-      query.$or = [
-        { 'preferences.dailyDigestTime': targetHourStr },
-        { 'preferences.dailyDigestTime': { $exists: false } } // fallback default 08:00
-      ];
+      const user = await User.findById(specificUserId);
+      if (user) users = [user];
+    } else {
+      let query = { 'preferences.dailyDigestEmail': { $ne: false } };
+      if (targetHourStr) {
+        query.$or = [
+          { 'preferences.dailyDigestTime': targetHourStr },
+          { 'preferences.dailyDigestTime': { $exists: false } }
+        ];
+      }
+      users = await User.find(query);
     }
 
-    const users = await User.find(query);
     let sentCount = 0;
+    let lastError = null;
 
     for (const user of users) {
       if (!user.email) continue;

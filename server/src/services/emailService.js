@@ -3,9 +3,15 @@ const nodemailer = require('nodemailer');
 const createTransporter = () => {
   const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
 
-  if (!EMAIL_HOST || !EMAIL_USER || !EMAIL_PASS) {
+  if (
+    !EMAIL_HOST ||
+    !EMAIL_USER ||
+    !EMAIL_PASS ||
+    EMAIL_USER === 'your_smtp_user' ||
+    EMAIL_PASS === 'your_smtp_password'
+  ) {
     throw new Error(
-      'Email provider credentials (EMAIL_HOST, EMAIL_USER, EMAIL_PASS) are not configured on the server. Please set them in your server .env file.'
+      'SMTP Email credentials (EMAIL_USER & EMAIL_PASS) are currently set to default placeholders in server/.env. Please set your real email credentials (such as Gmail App Password or Mailtrap/SendGrid) in server/.env to enable sending emails.'
     );
   }
 
