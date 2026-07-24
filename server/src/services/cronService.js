@@ -6,11 +6,15 @@ const { sendDailyMorningDigest } = require('./emailService');
 
 const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = null) => {
   try {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
+    const formattedDateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
 
     let users = [];
     if (specificUserId) {
@@ -54,7 +58,7 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
             to: user.email,
             userName: user.name,
             tasks,
-            dateStr: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+            dateStr: formattedDateStr
           });
 
           // Record in-app notification
