@@ -7,6 +7,8 @@ import { taskApi } from '../api/taskApi';
 import { eventApi } from '../api/eventApi';
 import { moodApi } from '../api/moodApi';
 import { dailyNoteApi } from '../api/dailyNoteApi';
+import { notificationApi } from '../api/notificationApi';
+import { useNotifications } from '../context/NotificationContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Checkbox from '../components/common/Checkbox';
@@ -28,7 +30,10 @@ import {
   RadioTower,
   Shield,
   Zap,
-  Activity
+  Activity,
+  Mail,
+  Clock,
+  Send
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -46,15 +51,51 @@ const MOOD_OPTIONS = [
 ];
 
 const Home = () => {
-  const { user } = useAuth();
+  const { user, updatePreferences } = useAuth();
   const { theme } = useTheme();
   const { showSuccess, showError } = useToast();
+  const { fetchNotifications } = useNotifications();
   const queryClient = useQueryClient();
 
   const todayStr = getLocalDateStr();
   const [dailyNoteText, setDailyNoteText] = useState('');
   const [isNoteSaving, setIsNoteSaving] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  const [digestTime, setDigestTime] = useState(() => user?.preferences?.dailyDigestTime || '08:00');
+  const [isSavingTime, setIsSavingTime] = useState(false);
+  const [isSendingDigest, setIsSendingDigest] = useState(false);
+
+  useEffect(() => {
+    if (user?.preferences?.dailyDigestTime) {
+      setDigestTime(user.preferences.dailyDigestTime);
+    }
+  }, [user]);
+
+  const handleSaveDigestTime = async () => {
+    setIsSavingTime(true);
+    try {
+      await updatePreferences({ ...user?.preferences, dailyDigestTime: digestTime, dailyDigestEmail: true });
+      showSuccess(`Morning digest time updated to ${digestTime}! ⏰`);
+    } catch (err) {
+      showError('Failed to save digest time preference');
+    } finally {
+      setIsSavingTime(false);
+    }
+  };
+
+  const handleSendDigestNow = async () => {
+    setIsSendingDigest(true);
+    try {
+      const res = await notificationApi.triggerMorningDigest();
+      showSuccess(res.message || 'Daily Morning Digest email delivered! 🌅');
+      fetchNotifications();
+    } catch (err) {
+      showError(err.response?.data?.message || err.message || 'Failed to send Morning Digest');
+    } finally {
+      setIsSendingDigest(false);
+    }
+  };
 
   const isGta = theme === 'gta';
   const isStrange = theme === 'strange';
@@ -464,6 +505,70 @@ const Home = () => {
                 ))}
               </div>
             )}
+          </Card>
+
+          {/* Daily Morning Digest Card on Home Page */}
+          <Card className={isStrange ? 'strange-hud-card border-rose-500/40' : isGta ? 'gta-hud-card border-emerald-500/40' : 'bg-gradient-to-br from-amber-500/10 via-planner-card to-purple-500/10 border-amber-500/30'}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-500 shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-planner-text flex items-center gap-1.5">
+                    <span>Daily Morning Digest</span> 🌅
+                  </h2>
+                  <p className="text-xs text-planner-muted">Automated task summary sent to your email</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Time Selector & Actions */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between gap-2 p-2.5 bg-planner-bg/60 rounded-2xl border border-planner-border">
+                <span className="text-xs font-bold text-planner-text flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" /> Delivery Time:
+                </span>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={digestTime}
+                    onChange={(e) => setDigestTime(e.target.value)}
+                    className="px-2.5 py-1 rounded-xl text-xs font-bold bg-planner-card text-planner-text border border-planner-border focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="06:00">06:00 AM 🌄</option>
+                    <option value="07:00">07:00 AM 🌅</option>
+                    <option value="08:00">08:00 AM ☀️</option>
+                    <option value="09:00">09:00 AM ☕</option>
+                    <option value="10:00">10:00 AM 🌤️</option>
+                    <option value="11:00">11:00 AM 🌤️</option>
+                    <option value="12:00">12:00 PM 🕛</option>
+                    <option value="18:00">06:00 PM 🌙</option>
+                    <option value="20:00">08:00 PM 🌙</option>
+                  </select>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveDigestTime}
+                    isLoading={isSavingTime}
+                    className="text-xs font-bold text-amber-500 hover:bg-amber-500/10 px-2 py-1"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleSendDigestNow}
+                isLoading={isSendingDigest}
+                className="w-full justify-center text-xs font-bold bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white border-none shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5 mr-1.5" /> Send Today's Morning Digest Now 📧
+              </Button>
+            </div>
           </Card>
 
           {/* Daily Note / Field Log */}

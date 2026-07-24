@@ -412,7 +412,7 @@ const Settings = () => {
             </Button>
           </div>
 
-          {/* Nodemailer Email Digest Test Card */}
+          {/* Nodemailer Email Service Card */}
           <div className="p-4 rounded-2xl bg-planner-bg/60 border border-planner-border space-y-3 flex flex-col justify-between">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -422,31 +422,19 @@ const Settings = () => {
                 <span className="text-[10px] text-planner-muted font-mono truncate max-w-[120px]">{user?.email}</span>
               </div>
               <p className="text-xs text-planner-muted leading-relaxed">
-                Sends automated 8:00 AM daily morning digests, focus summaries, and overdue task reports.
+                Connects your SMTP provider to deliver daily digests, task reminders, and notifications.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleMorningDigest}
-                isLoading={isSendingDigest}
-                className="w-full justify-center text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white border-none"
-              >
-                <Sparkles className="w-4 h-4 mr-1.5" /> Send Today's Morning Digest (8 AM) 🌅
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleTestEmail}
-                isLoading={isSendingEmail}
-                className="w-full justify-center text-xs font-bold"
-              >
-                <Send className="w-4 h-4 mr-1.5" /> Test Email Connection 📧
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleTestEmail}
+              isLoading={isSendingEmail}
+              className="w-full justify-center text-xs font-bold"
+            >
+              <Send className="w-4 h-4 mr-1.5" /> Test Email Connection 📧
+            </Button>
           </div>
         </div>
       </Card>

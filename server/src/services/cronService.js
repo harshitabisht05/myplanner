@@ -4,14 +4,21 @@ const Task = require('../models/Task');
 const Notification = require('../models/Notification');
 const { sendDailyMorningDigest } = require('./emailService');
 
-const triggerMorningDigestsNow = async (specificUserId = null) => {
+const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = null) => {
   try {
     const todayDate = new Date();
     const todayStr = todayDate.toISOString().split('T')[0];
 
-    const query = specificUserId
-      ? { _id: specificUserId }
-      : { 'preferences.dailyDigestEmail': { $ne: false } };
+    let query = { 'preferences.dailyDigestEmail': { $ne: false } };
+
+    if (specificUserId) {
+      query._id = specificUserId;
+    } else if (targetHourStr) {
+      query.$or = [
+        { 'preferences.dailyDigestTime': targetHourStr },
+        { 'preferences.dailyDigestTime': { $exists: false } } // fallback default 08:00
+      ];
+    }
 
     const users = await User.find(query);
     let sentCount = 0;
@@ -61,13 +68,15 @@ const triggerMorningDigestsNow = async (specificUserId = null) => {
 };
 
 const startCronJobs = () => {
-  // Schedule daily morning digest at 8:00 AM every day
-  cron.schedule('0 8 * * *', async () => {
-    console.log('🌅 Running daily morning email digest cron job at 8:00 AM...');
-    await triggerMorningDigestsNow();
+  // Check hourly at top of hour for matching user custom daily digest times
+  cron.schedule('0 * * * *', async () => {
+    const currentHourNum = new Date().getHours();
+    const currentHourStr = `${String(currentHourNum).padStart(2, '0')}:00`;
+    console.log(`🌅 Hourly digest cron checking user preferences for ${currentHourStr}...`);
+    await triggerMorningDigestsNow(null, currentHourStr);
   });
 
-  console.log('⏰ Cron service initialized (Daily Morning Digest scheduled at 8:00 AM)');
+  console.log('⏰ Dynamic Cron service initialized (Checks user custom digest times hourly)');
 };
 
 module.exports = {

@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
       dailyDigestEmail: {
         type: Boolean,
         default: true
+      },
+      dailyDigestTime: {
+        type: String,
+        default: '08:00'
       }
     },
     resetPasswordToken: String,
