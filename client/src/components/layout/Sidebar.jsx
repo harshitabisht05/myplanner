@@ -74,8 +74,8 @@ const Sidebar = ({ onOpenQuickAdd }) => {
       } ${collapsed ? 'w-20' : 'w-64'}`}
     >
       {/* Brand Header */}
-      <div className="flex items-center justify-between p-4 border-b border-planner-border flex-wrap gap-2">
-        {!collapsed && (
+      <div className={`p-3 border-b border-planner-border flex ${collapsed ? 'flex-col items-center gap-2.5 py-3' : 'items-center justify-between flex-wrap gap-2'}`}>
+        {!collapsed ? (
           <div className="flex items-center gap-2.5">
             {isStrange ? (
               <div className="h-11 w-48 overflow-hidden">
@@ -94,13 +94,11 @@ const Sidebar = ({ onOpenQuickAdd }) => {
               </>
             )}
           </div>
+        ) : (
+          <img src={appLogo} alt="Logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
         )}
-        {collapsed && (
-          <div className="mx-auto">
-            <img src={appLogo} alt="Logo" className="w-7 h-7 object-contain rounded-lg" />
-          </div>
-        )}
-        <div className="flex items-center gap-1">
+
+        <div className={`flex items-center ${collapsed ? 'flex-col gap-2' : 'gap-1'}`}>
           <NotificationBell />
           <button
             onClick={toggleCollapsed}
