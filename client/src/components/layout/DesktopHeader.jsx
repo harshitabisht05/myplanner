@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Plus, Timer, Download, Sparkles } from 'lucide-react';
+import React from 'react';
+import { Plus, Timer, Download, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,7 +13,6 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
   const { isRunning, timeLeft } = useFocusTimer();
   const { isInstallable, promptInstall } = usePWAInstall();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const isGta = theme === 'gta';
   const isStrange = theme === 'strange';
@@ -24,17 +23,9 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/tasks?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
-
   return (
     <header
-      className={`hidden md:flex items-center justify-between px-8 py-3.5 border-b backdrop-blur-md sticky top-0 z-20 transition-all ${
+      className={`hidden md:flex items-center justify-end px-8 py-3 border-b backdrop-blur-md sticky top-0 z-20 transition-all ${
         isStrange
           ? 'bg-slate-950/80 border-rose-900/40 text-slate-100'
           : isGta
@@ -42,18 +33,6 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
           : 'bg-planner-card/80 border-planner-border text-planner-text'
       }`}
     >
-      {/* Search Input */}
-      <form onSubmit={handleSearchSubmit} className="relative w-72">
-        <Search className="w-4 h-4 absolute left-3.5 top-3 text-planner-muted" />
-        <input
-          type="text"
-          placeholder={isStrange ? 'Search dossier...' : isGta ? 'Search missions...' : 'Search tasks & notes...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-1.5 rounded-2xl border border-planner-border bg-planner-bg/60 text-planner-text text-xs focus:outline-none focus:ring-2 focus:ring-planner-primary transition-all"
-        />
-      </form>
-
       {/* Right Action Bar */}
       <div className="flex items-center gap-3">
         {/* Active Focus Timer Badge */}
