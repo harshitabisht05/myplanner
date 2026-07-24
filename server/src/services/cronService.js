@@ -44,30 +44,36 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
         ]
       }).limit(15);
 
-      try {
-        await sendDailyMorningDigest({
-          to: user.email,
-          userName: user.name,
-          tasks,
-          dateStr: todayDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-        });
+        let lastError = null;
+        try {
+          await sendDailyMorningDigest({
+            to: user.email,
+            userName: user.name,
+            tasks,
+            dateStr: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+          });
 
-        // Record in-app notification
-        await Notification.create({
-          user: user._id,
-          title: 'Morning Digest Email Delivered 🌅',
-          message: `Your daily plan with ${tasks.length} task(s) was sent to ${user.email}. Have a productive day!`,
-          type: 'digest',
-          link: '/today'
-        });
+          // Record in-app notification
+          await Notification.create({
+            user: user._id,
+            title: 'Morning Digest Email Delivered 🌅',
+            message: `Your daily plan with ${tasks.length} task(s) was sent to ${user.email}. Have a productive day!`,
+            type: 'digest',
+            link: '/today'
+          });
 
-        sentCount++;
-      } catch (err) {
-        console.error(`Failed to send morning digest for user ${user.email}:`, err.message);
+          sentCount++;
+        } catch (err) {
+          console.error(`Failed to send morning digest for user ${user.email}:`, err.message);
+          lastError = err;
+        }
+
+        if (specificUserId && sentCount === 0 && lastError) {
+          throw lastError;
+        }
       }
-    }
 
-    return { success: true, count: sentCount };
+      return { success: true, count: sentCount };
   } catch (error) {
     console.error('Error running morning digest routine:', error.message);
     throw error;
