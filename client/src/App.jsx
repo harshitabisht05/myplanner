@@ -17,6 +17,16 @@ import Notes from './pages/Notes';
 import Focus from './pages/Focus';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import WorkspaceHome from './pages/workspace/WorkspaceHome';
+import Projects from './pages/workspace/Projects';
+import KanbanBoard from './pages/workspace/KanbanBoard';
+import SprintManagement from './pages/workspace/SprintManagement';
+import Members from './pages/workspace/Members';
+import TeamCalendar from './pages/workspace/TeamCalendar';
+import FilesManager from './pages/workspace/FilesManager';
+import ActivityTimeline from './pages/workspace/ActivityTimeline';
+import TeamChat from './pages/workspace/TeamChat';
+import WorkspaceSettings from './pages/workspace/WorkspaceSettings';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -100,6 +110,18 @@ const App = () => {
         <Route path="focus" element={<Focus />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
+
+        {/* Protected Workspace Module Routes */}
+        <Route path="workspace" element={<WorkspaceHome />} />
+        <Route path="workspace/projects" element={<Projects />} />
+        <Route path="workspace/kanban" element={<KanbanBoard />} />
+        <Route path="workspace/sprint" element={<SprintManagement />} />
+        <Route path="workspace/members" element={<Members />} />
+        <Route path="workspace/calendar" element={<TeamCalendar />} />
+        <Route path="workspace/files" element={<FilesManager />} />
+        <Route path="workspace/activity" element={<ActivityTimeline />} />
+        <Route path="workspace/chat" element={<TeamChat />} />
+        <Route path="workspace/settings" element={<WorkspaceSettings />} />
       </Route>
 
       {/* Catch-all redirect */}

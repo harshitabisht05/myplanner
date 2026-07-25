@@ -20,6 +20,15 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const focusSessionRoutes = require('./routes/focusSessionRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
+// Workspace Module Route imports
+const workspaceRoutes = require('./routes/workspaceRoutes');
+const projectRoutes = require('./routes/projectRoutes');
+const workspaceTaskRoutes = require('./routes/workspaceTaskRoutes');
+const sprintRoutes = require('./routes/sprintRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+const fileRoutes = require('./routes/fileRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+
 const app = express();
 
 // Trust proxy for Vercel deployment
@@ -66,6 +75,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Nested Workspace Routers
+workspaceRoutes.use('/:workspaceId/projects', projectRoutes);
+workspaceRoutes.use('/:workspaceId/tasks', workspaceTaskRoutes);
+workspaceRoutes.use('/:workspaceId/sprints', sprintRoutes);
+workspaceRoutes.use('/:workspaceId/chat', chatRoutes);
+workspaceRoutes.use('/:workspaceId/files', fileRoutes);
+workspaceRoutes.use('/:workspaceId/activity', activityRoutes);
+
 // API Routes - registered with both /api/path and /path for Vercel compatibility
 const apiRoutes = [
   { path: '/auth', handler: authRoutes },
@@ -80,7 +97,8 @@ const apiRoutes = [
   { path: '/dailynote', handler: dailyNoteRoutes },
   { path: '/categories', handler: categoryRoutes },
   { path: '/focus', handler: focusSessionRoutes },
-  { path: '/notifications', handler: notificationRoutes }
+  { path: '/notifications', handler: notificationRoutes },
+  { path: '/workspaces', handler: workspaceRoutes }
 ];
 
 apiRoutes.forEach(({ path, handler }) => {
