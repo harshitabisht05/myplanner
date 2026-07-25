@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Input from '../components/common/Input';
@@ -14,6 +14,7 @@ const Login = () => {
   const { login } = useAuth();
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +26,8 @@ const Login = () => {
     try {
       await login({ email, password });
       showSuccess('Welcome back! 🌸');
-      navigate('/');
+      const from = location.state?.from ? (location.state.from.pathname + location.state.from.search) : '/';
+      navigate(from, { replace: true });
     } catch (err) {
       showError(err.message || 'Login failed. Please check your credentials.');
     } finally {

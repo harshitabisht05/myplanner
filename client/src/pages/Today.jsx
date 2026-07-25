@@ -8,7 +8,9 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
+import ErrorMessage from '../components/common/ErrorMessage';
+import EmptyState from '../components/common/EmptyState';
 import TaskModal from '../components/modals/TaskModal';
 import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getLocalDateStr } from '../utils/dateUtils';
@@ -178,9 +180,15 @@ const Today = () => {
       </div>
 
       {isLoading ? (
-        <LoadingSpinner message="Loading daily schedule..." fullPage />
+        <div className="space-y-6">
+          <Skeleton variant="card" />
+          <Skeleton variant="task" count={5} />
+        </div>
       ) : isError ? (
-        <p className="text-center text-rose-500 font-semibold py-8">Failed to load today's tasks.</p>
+        <ErrorMessage
+          message="Failed to load daily schedule."
+          onRetry={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })}
+        />
       ) : (
         <>
           {/* Today's Top 3 Priority Section */}

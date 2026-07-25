@@ -8,6 +8,7 @@ import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Select from '../components/common/Select';
+import Skeleton from '../components/common/Skeleton';
 import { BarChart3, Clock, Flame, Calendar, Tag, CheckCircle2, Trash2, Filter, Search, Award, TrendingUp } from 'lucide-react';
 
 const CATEGORY_COLORS = {
@@ -31,7 +32,7 @@ const Analytics = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch analytics from backend
-  const { data: apiAnalyticsData } = useQuery({
+  const { data: apiAnalyticsData, isLoading } = useQuery({
     queryKey: ['focusAnalytics'],
     queryFn: () => focusApi.getAnalytics(),
     staleTime: 30000
@@ -205,6 +206,30 @@ const Analytics = () => {
     };
   }, [filteredSessions, categories, timeRange]);
 
+  // 120-Day GitHub-Style Habit Streak Heatmap Data
+  const heatmapDays = useMemo(() => {
+    const days = [];
+    const today = new Date();
+    for (let i = 119; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+
+      const dayMins = history
+        .filter((h) => h.completedAt && h.completedAt.split('T')[0] === dateStr)
+        .reduce((sum, h) => sum + (h.durationMins || Math.round((h.elapsedSeconds || 0) / 60) || 0), 0);
+
+      let level = 0;
+      if (dayMins > 0 && dayMins <= 15) level = 1;
+      else if (dayMins > 15 && dayMins <= 45) level = 2;
+      else if (dayMins > 45 && dayMins <= 90) level = 3;
+      else if (dayMins > 90) level = 4;
+
+      days.push({ dateStr, dayMins, level });
+    }
+    return days;
+  }, [history]);
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <PageHeader
@@ -307,7 +332,19 @@ const Analytics = () => {
       </div>
 
       {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+          </div>
+          <Skeleton variant="chart" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Time */}
         <Card className={`p-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
           <div className="flex items-center justify-between">
@@ -371,6 +408,47 @@ const Analytics = () => {
           </div>
         </Card>
       </div>
+
+      {/* GitHub-Style Habit & Productivity Contribution Heatmap */}
+      <Card className={`p-5 space-y-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
+        <div className="flex items-center justify-between border-b border-planner-border pb-3">
+          <div className="flex items-center gap-2">
+            <Flame className="w-5 h-5 text-amber-500" />
+            <div>
+              <h3 className="text-sm font-extrabold text-planner-text">Productivity & Habit Streak Heatmap</h3>
+              <p className="text-xs text-planner-muted">120-day contribution graph tracking focus minutes and completed habits</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 text-[10px] font-bold text-planner-muted">
+            <span>Less</span>
+            <div className="w-3 h-3 rounded-xs bg-planner-secondary" />
+            <div className="w-3 h-3 rounded-xs bg-emerald-300" />
+            <div className="w-3 h-3 rounded-xs bg-emerald-500" />
+            <div className="w-3 h-3 rounded-xs bg-emerald-700" />
+            <span>More</span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto pb-2">
+          <div className="grid grid-flow-col grid-rows-7 gap-1.5 min-w-[650px] justify-start">
+            {heatmapDays.map((day) => {
+              let bg = 'bg-planner-secondary/60';
+              if (day.level === 1) bg = 'bg-emerald-400/50';
+              if (day.level === 2) bg = 'bg-emerald-500';
+              if (day.level === 3) bg = 'bg-emerald-600';
+              if (day.level === 4) bg = 'bg-emerald-700 shadow-xs';
+
+              return (
+                <div
+                  key={day.dateStr}
+                  className={`w-3.5 h-3.5 rounded-xs transition-transform hover:scale-125 cursor-pointer ${bg}`}
+                  title={`${day.dateStr}: ${day.dayMins} mins focused`}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </Card>
 
       {/* Main Content Grid: Category Breakdown + Daily Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -580,6 +658,8 @@ const Analytics = () => {
           </div>
         )}
       </Card>
+      </>
+      )}
     </div>
   );
 };

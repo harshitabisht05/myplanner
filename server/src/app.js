@@ -111,6 +111,13 @@ app.get(['/api/health', '/health'], (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Direct link redirect for email invitations opening backend URL
+app.get(['/accept-invite', '/api/accept-invite'], (req, res) => {
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const token = req.query.token || '';
+  res.redirect(`${clientUrl.replace(/\/$/, '')}/accept-invite?token=${token}`);
+});
+
 // Centralized error handling
 app.use(errorMiddleware);
 

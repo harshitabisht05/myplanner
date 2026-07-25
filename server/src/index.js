@@ -3,6 +3,8 @@ const app = require('./app');
 const connectDB = require('./config/db');
 const { startCronJobs } = require('./services/cronService');
 
+const { initSocket } = require('./socket');
+
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
@@ -14,6 +16,9 @@ startCronJobs();
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
+
+// Initialize Socket.io real-time engine
+initSocket(server);
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {

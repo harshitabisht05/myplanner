@@ -21,8 +21,8 @@ export const taskApi = {
     const res = await axiosClient.patch(`/tasks/${id}/toggle`, { date });
     return res.data;
   },
-  deleteTask: async (id) => {
-    const res = await axiosClient.delete(`/tasks/${id}`);
+  deleteTask: async (id, params = {}) => {
+    const res = await axiosClient.delete(`/tasks/${id}`, { params });
     return res.data;
   }
 };

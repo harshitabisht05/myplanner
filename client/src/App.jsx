@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/common/LoadingSpinner';
@@ -20,23 +20,24 @@ import Settings from './pages/Settings';
 import WorkspaceHome from './pages/workspace/WorkspaceHome';
 import Projects from './pages/workspace/Projects';
 import KanbanBoard from './pages/workspace/KanbanBoard';
-import SprintManagement from './pages/workspace/SprintManagement';
 import Members from './pages/workspace/Members';
 import TeamCalendar from './pages/workspace/TeamCalendar';
 import FilesManager from './pages/workspace/FilesManager';
 import ActivityTimeline from './pages/workspace/ActivityTimeline';
 import TeamChat from './pages/workspace/TeamChat';
 import WorkspaceSettings from './pages/workspace/WorkspaceSettings';
+import AcceptInvite from './pages/AcceptInvite';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return <LoadingSpinner message="Checking authentication session..." fullPage />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
@@ -92,6 +93,14 @@ const App = () => {
           </PublicOnlyRoute>
         }
       />
+      <Route
+        path="/accept-invite"
+        element={
+          <ProtectedRoute>
+            <AcceptInvite />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Protected Planner Routes */}
       <Route
@@ -115,7 +124,6 @@ const App = () => {
         <Route path="workspace" element={<WorkspaceHome />} />
         <Route path="workspace/projects" element={<Projects />} />
         <Route path="workspace/kanban" element={<KanbanBoard />} />
-        <Route path="workspace/sprint" element={<SprintManagement />} />
         <Route path="workspace/members" element={<Members />} />
         <Route path="workspace/calendar" element={<TeamCalendar />} />
         <Route path="workspace/files" element={<FilesManager />} />

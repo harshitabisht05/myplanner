@@ -1,5 +1,6 @@
 const Channel = require('../models/Channel');
 const ChatMessage = require('../models/ChatMessage');
+const { emitWorkspaceEvent } = require('../socket');
 
 // @route GET /api/workspaces/:workspaceId/chat/channels
 exports.getChannels = async (req, res, next) => {
@@ -17,14 +18,18 @@ exports.getChannels = async (req, res, next) => {
 // @route POST /api/workspaces/:workspaceId/chat/channels
 exports.createChannel = async (req, res, next) => {
   try {
-    const { name, description, isPrivate } = req.body;
+    const { name, description, isPrivate, memberIds } = req.body;
+
+    const initialMembers = Array.isArray(memberIds) && memberIds.length > 0
+      ? Array.from(new Set([...memberIds, req.user._id.toString()]))
+      : [req.user._id];
 
     const channel = await Channel.create({
       workspace: req.params.workspaceId,
       name: name.toLowerCase().trim().replace(/\s+/g, '-'),
       description: description || '',
       isPrivate: !!isPrivate,
-      members: [req.user._id],
+      members: initialMembers,
       createdBy: req.user._id
     });
 
@@ -83,6 +88,8 @@ exports.sendMessage = async (req, res, next) => {
       .populate('sender', 'name avatar email')
       .populate('recipient', 'name avatar email');
 
+    emitWorkspaceEvent(req.params.workspaceId, 'chat_message', populated);
+
     res.status(201).json({ success: true, message: populated });
   } catch (error) {
     next(error);
@@ -118,6 +125,8 @@ exports.addReaction = async (req, res, next) => {
     const updated = await ChatMessage.findById(message._id)
       .populate('sender', 'name avatar email')
       .populate('recipient', 'name avatar email');
+
+    emitWorkspaceEvent(req.params.workspaceId, 'chat_reaction', updated);
 
     res.status(200).json({ success: true, message: updated });
   } catch (error) {

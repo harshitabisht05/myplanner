@@ -33,10 +33,13 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
     } else {
       let query = { 'preferences.dailyDigestEmail': { $ne: false } };
       if (targetHourStr) {
-        query.$or = [
-          { 'preferences.dailyDigestTime': targetHourStr },
-          { 'preferences.dailyDigestTime': { $exists: false } }
-        ];
+        const hourConditions = [{ 'preferences.dailyDigestTime': targetHourStr }];
+        if (targetHourStr === '08:00') {
+          hourConditions.push({ 'preferences.dailyDigestTime': { $exists: false } });
+          hourConditions.push({ 'preferences.dailyDigestTime': null });
+          hourConditions.push({ 'preferences.dailyDigestTime': '' });
+        }
+        query.$or = hourConditions;
       }
       users = await User.find(query);
     }
@@ -47,28 +50,43 @@ const triggerMorningDigestsNow = async (specificUserId = null, targetHourStr = n
     for (const user of users) {
       if (!user.email) continue;
 
-      // Query uncompleted tasks scheduled for today or active pending tasks
-      let tasks = await Task.find({
+      const targetDateEnd = new Date(`${todayStr}T23:59:59.999Z`);
+      const rawTasks = await Task.find({
         user: user._id,
-        completed: false,
         $or: [
           { dueDate: todayStr },
           { dueDate: '' },
           { dueDate: null },
           { dueDate: { $exists: false } },
-          { isRecurringDaily: true }
+          {
+            isRecurringDaily: true,
+            $or: [
+              { dueDate: { $lte: todayStr } },
+              { completedDates: todayStr },
+              { createdAt: { $lte: targetDateEnd } },
+              { dueDate: '' },
+              { dueDate: { $exists: false } }
+            ]
+          }
         ]
-      }).limit(20);
+      }).limit(100);
 
-      // Fallback: If no tasks found matching today's filter, fetch user's top pending uncompleted tasks
-      if (tasks.length === 0) {
-        tasks = await Task.find({
-          user: user._id,
-          completed: false
-        }).sort({ createdAt: -1 }).limit(15);
-      }
+      let tasks = rawTasks
+        .filter((t) => {
+          if (t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(todayStr)) {
+            return false;
+          }
+          return true;
+        })
+        .map((t) => {
+          const obj = t.toObject ? t.toObject() : { ...t };
+          if (obj.isRecurringDaily) {
+            obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(todayStr);
+            obj.dueDate = todayStr;
+          }
+          return obj;
+        });
 
-        let lastError = null;
         try {
           await sendDailyMorningDigest({
             to: user.email,

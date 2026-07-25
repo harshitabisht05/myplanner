@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/authApi';
 import { useTheme } from './ThemeContext';
 
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { updatePreferencesFromUser } = useTheme();
+  const queryClient = useQueryClient();
 
   // Check current authenticated session on app load
   useEffect(() => {
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
+    queryClient.clear();
     const data = await authApi.login(credentials);
     if (data.success && data.user) {
       if (data.token) {
@@ -61,6 +64,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
+    queryClient.clear();
     const data = await authApi.register(userData);
     if (data.success && data.user) {
       if (data.token) {
@@ -77,8 +81,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authApi.logout();
+    } catch (e) {
+      // Ignore network errors on logout
     } finally {
       localStorage.removeItem('planner_token');
+      localStorage.removeItem('planner_current_workspace_id');
+      queryClient.clear();
       setUser(null);
     }
   };

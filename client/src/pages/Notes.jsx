@@ -7,7 +7,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import IconButton from '../components/common/IconButton';
 import Input from '../components/common/Input';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import NoteModal from '../components/modals/NoteModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
@@ -107,9 +107,12 @@ const Notes = () => {
         />
       </Card>
 
-      {/* Notes Masonry / Card Grid */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching notes..." fullPage />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+        </div>
       ) : notes.length === 0 ? (
         <EmptyState
           icon={StickyNote}

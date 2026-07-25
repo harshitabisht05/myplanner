@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { taskApi } from '../api/taskApi';
 import { useTheme } from '../context/ThemeContext';
@@ -9,8 +9,16 @@ import Button from '../components/common/Button';
 import Select from '../components/common/Select';
 import CategoryModal from '../components/modals/CategoryModal';
 import Analytics from './Analytics';
-import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Crosshair, Eye, History, Trash2, Save, Plus, Tag, BarChart2, BookmarkCheck } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Crosshair, Eye, History, Trash2, Save, Plus, Tag, BarChart2, BookmarkCheck, Volume2, VolumeX, Music } from 'lucide-react';
 import strangeOtherSideImg from '../assets/strange_otherside_bg.jpg';
+
+const AMBIENT_TRACKS = {
+  rain: 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg',
+  rain_roof: 'https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg',
+  cafe: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg',
+  farm: 'https://actions.google.com/sounds/v1/ambiences/morning_farm.ogg',
+  clock: 'https://actions.google.com/sounds/v1/household/clock_ticking.ogg'
+};
 
 const Focus = () => {
   const { theme } = useTheme();
@@ -19,6 +27,55 @@ const Focus = () => {
 
   const [activeTab, setActiveTab] = useState('timer'); // 'timer' or 'analytics'
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+  // Ambient Focus Soundscapes Real Audio State & Preloader
+  const [ambientSound, setAmbientSound] = useState('none');
+  const [ambientVolume, setAmbientVolume] = useState(0.4);
+  const audioCacheRef = useRef({});
+
+  // Preload all audio tracks into memory on page load for instant playback
+  useEffect(() => {
+    Object.keys(AMBIENT_TRACKS).forEach((key) => {
+      const audio = new Audio(AMBIENT_TRACKS[key]);
+      audio.loop = true;
+      audio.preload = 'auto';
+      audioCacheRef.current[key] = audio;
+    });
+
+    return () => {
+      Object.values(audioCacheRef.current).forEach((audio) => {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (e) {}
+      });
+    };
+  }, []);
+
+  const handleSoundChange = (type) => {
+    // Stop all currently playing audio tracks
+    Object.values(audioCacheRef.current).forEach((audio) => {
+      try {
+        audio.pause();
+      } catch (e) {}
+    });
+
+    setAmbientSound(type);
+
+    if (type !== 'none' && audioCacheRef.current[type]) {
+      const targetAudio = audioCacheRef.current[type];
+      targetAudio.volume = ambientVolume;
+      targetAudio.play().catch((err) => console.log('Instant audio play:', err));
+    }
+  };
+
+  const handleVolumeChange = (v) => {
+    const val = parseFloat(v);
+    setAmbientVolume(val);
+    if (ambientSound !== 'none' && audioCacheRef.current[ambientSound]) {
+      audioCacheRef.current[ambientSound].volume = val;
+    }
+  };
 
   const {
     mode,
@@ -408,6 +465,59 @@ const Focus = () => {
               <Button variant="outline" size="lg" onClick={handleReset}>
                 <RotateCcw className="w-5 h-5 mr-2" /> {isStrange ? 'ABORT / RESET' : 'Reset'}
               </Button>
+            </div>
+          </Card>
+
+          {/* Ambient Focus Soundscapes Card */}
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-planner-border pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600">
+                  <Music className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-planner-text">Ambient Focus Soundscapes 🎧</h3>
+                  <p className="text-xs text-planner-muted">Procedural background audio for deep concentration and flow state</p>
+                </div>
+              </div>
+
+              {ambientSound !== 'none' && (
+                <div className="flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-planner-primary" />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={ambientVolume}
+                    onChange={(e) => handleVolumeChange(e.target.value)}
+                    className="w-24 accent-purple-600 cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              {[
+                { id: 'none', label: 'Off 🔇' },
+                { id: 'rain', label: 'Heavy Rain 🌧️' },
+                { id: 'rain_roof', label: 'Rain on Roof 🏠' },
+                { id: 'cafe', label: 'Cozy Cafe ☕' },
+                { id: 'farm', label: 'Morning Birds 🌾' },
+                { id: 'clock', label: 'Focus Clock ⏱️' }
+              ].map((snd) => (
+                <button
+                  key={snd.id}
+                  onClick={() => handleSoundChange(snd.id)}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
+                    ambientSound === snd.id
+                      ? 'bg-purple-600 text-white border-purple-500 shadow-xs'
+                      : 'bg-planner-bg text-planner-text border-planner-border hover:bg-planner-secondary'
+                  }`}
+                >
+                  {snd.label}
+                </button>
+              ))}
             </div>
           </Card>
 

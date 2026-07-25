@@ -48,7 +48,6 @@ const workspaceNavItems = [
   { name: 'Workspace Home', path: '/workspace', icon: Layout, gtaName: 'HQ DASHBOARD', strangeName: 'COMMAND HUB' },
   { name: 'Projects', path: '/workspace/projects', icon: Layers, gtaName: 'OPERATIONS', strangeName: 'SECTOR PROJECTS' },
   { name: 'Kanban Board', path: '/workspace/kanban', icon: Kanban, gtaName: 'TACTICAL BOARD', strangeName: 'SITUATION BOARD' },
-  { name: 'Sprint', path: '/workspace/sprint', icon: Zap, gtaName: 'SURGE SPRINT', strangeName: 'PHASE RUN' },
   { name: 'Members', path: '/workspace/members', icon: Users, gtaName: 'CREW MEMBERS', strangeName: 'AGENTS' },
   { name: 'Team Calendar', path: '/workspace/calendar', icon: CalendarIcon, gtaName: 'CREW SCHEDULE', strangeName: 'TIMELINE' },
   { name: 'Files', path: '/workspace/files', icon: Folder, gtaName: 'INTEL FILES', strangeName: 'DOCUMENT VAULT' },
@@ -186,51 +185,71 @@ const Sidebar = ({ onOpenQuickAdd }) => {
         </div>
       </div>
 
-      {/* Workspace Selector Dropdown (Shown in Workspace Mode) */}
+      {/* Workspace Selector Dropdown (Shown in Workspace Mode - Highly Prominent) */}
       {mode === 'workspace' && !collapsed && (
-        <div className="px-3 py-1">
-          <div className="relative">
-            <select
-              value={currentWorkspace?._id || ''}
-              onChange={(e) => {
-                if (e.target.value === 'new') {
-                  setIsCreatingWs(true);
-                } else {
-                  setCurrentWorkspaceId(e.target.value);
-                }
-              }}
-              className={`w-full text-xs font-bold py-2 px-3 rounded-xl border appearance-none truncate cursor-pointer transition-colors ${
-                isStrange
-                  ? 'bg-slate-900 border-rose-900/50 text-rose-300'
-                  : isGta
-                  ? 'bg-slate-900 border-emerald-900/50 text-emerald-300'
-                  : 'bg-planner-bg border-planner-border text-planner-text'
-              }`}
-            >
-              {workspaces.map((w) => (
-                <option key={w._id} value={w._id}>
-                  {w.icon || '👥'} {w.name}
-                </option>
-              ))}
-              <option value="new">+ Create New Workspace</option>
-            </select>
+        <div className="px-3 py-2">
+          <div className={`p-2.5 rounded-2xl border-2 transition-all space-y-1.5 shadow-sm ${
+            isStrange
+              ? 'bg-rose-950/40 border-rose-600/60 text-rose-200'
+              : isGta
+              ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-200'
+              : 'bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-purple-500/10 border-purple-500/40 text-planner-text'
+          }`}>
+            <div className="flex items-center justify-between px-0.5">
+              <span className="text-[10px] font-black uppercase tracking-wider opacity-80 flex items-center gap-1 font-mono">
+                <Building className="w-3 h-3 text-purple-500" /> ACTIVE WORKSPACE
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-400">
+                {workspaces.length} Total
+              </span>
+            </div>
+
+            <div className="relative">
+              <select
+                value={currentWorkspace?._id || ''}
+                onChange={(e) => {
+                  if (e.target.value === 'new') {
+                    setIsCreatingWs(true);
+                  } else {
+                    setCurrentWorkspaceId(e.target.value);
+                  }
+                }}
+                className={`w-full text-xs font-black py-2 px-3 pr-8 rounded-xl border appearance-none truncate cursor-pointer transition-all ${
+                  isStrange
+                    ? 'bg-slate-900 border-rose-700/60 text-white font-serif'
+                    : isGta
+                    ? 'bg-slate-900 border-emerald-600/60 text-white font-mono'
+                    : 'bg-planner-card border-purple-400/50 text-planner-text shadow-xs'
+                }`}
+              >
+                {workspaces.map((w) => (
+                  <option key={w._id} value={w._id}>
+                    {w.icon || '🏢'} {w.name}
+                  </option>
+                ))}
+                <option value="new">+ Create New Workspace</option>
+              </select>
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-planner-muted">
+                <ChevronRight className="w-4 h-4 rotate-90" />
+              </div>
+            </div>
           </div>
 
           {isCreatingWs && (
-            <form onSubmit={handleCreateWorkspace} className="mt-2 p-2 rounded-xl bg-planner-bg border border-planner-border space-y-2">
+            <form onSubmit={handleCreateWorkspace} className="mt-2 p-2.5 rounded-2xl bg-planner-bg border-2 border-purple-500/40 space-y-2">
               <input
                 type="text"
                 placeholder="Workspace name..."
                 value={newWsName}
                 onChange={(e) => setNewWsName(e.target.value)}
-                className="w-full text-xs p-1.5 rounded-lg border border-planner-border bg-planner-card text-planner-text"
+                className="w-full text-xs p-2 rounded-xl border border-planner-border bg-planner-card text-planner-text font-medium"
                 autoFocus
               />
-              <div className="flex gap-1">
-                <button type="submit" className="flex-1 py-1 text-[11px] font-bold bg-planner-primary text-white rounded-lg">
+              <div className="flex gap-1.5">
+                <button type="submit" className="flex-1 py-1.5 text-xs font-bold bg-planner-primary text-white rounded-xl">
                   Save
                 </button>
-                <button type="button" onClick={() => setIsCreatingWs(false)} className="px-2 py-1 text-[11px] text-planner-muted">
+                <button type="button" onClick={() => setIsCreatingWs(false)} className="px-3 py-1.5 text-xs text-planner-muted hover:text-planner-text">
                   Cancel
                 </button>
               </div>
@@ -239,23 +258,25 @@ const Sidebar = ({ onOpenQuickAdd }) => {
         </div>
       )}
 
-      {/* Quick Add Button */}
-      <div className="p-3 py-2">
-        <button
-          onClick={onOpenQuickAdd}
-          className={`w-full p-3 font-bold shadow-cozy flex items-center justify-center gap-2 transition-all active:scale-95 ${
-            isStrange
-              ? 'bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] uppercase font-serif'
-              : isGta
-              ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] uppercase font-mono'
-              : 'bg-planner-primary hover:bg-planner-primaryHover text-white rounded-2xl'
-          } ${collapsed ? 'px-0' : ''}`}
-          title="Quick Add Task or Event"
-        >
-          <Plus className="w-5 h-5 stroke-[2.5]" />
-          {!collapsed && <span>{isStrange ? 'NEW OBJECTIVE' : isGta ? 'NEW MISSION' : 'Quick Add'}</span>}
-        </button>
-      </div>
+      {/* Quick Add Button (Personal Mode Only) */}
+      {mode === 'personal' && (
+        <div className="p-3 py-2">
+          <button
+            onClick={onOpenQuickAdd}
+            className={`w-full p-3 font-bold shadow-cozy flex items-center justify-center gap-2 transition-all active:scale-95 ${
+              isStrange
+                ? 'bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] uppercase font-serif'
+                : isGta
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] uppercase font-mono'
+                : 'bg-planner-primary hover:bg-planner-primaryHover text-white rounded-2xl'
+            } ${collapsed ? 'px-0' : ''}`}
+            title="Quick Add Task or Event"
+          >
+            <Plus className="w-5 h-5 stroke-[2.5]" />
+            {!collapsed && <span>{isStrange ? 'NEW OBJECTIVE' : isGta ? 'NEW MISSION' : 'Quick Add'}</span>}
+          </button>
+        </div>
+      )}
 
       {/* Navigation Links */}
       <nav className="flex-1 px-3 py-1 space-y-1 overflow-y-auto">

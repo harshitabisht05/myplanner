@@ -6,6 +6,7 @@ import DesktopHeader from './DesktopHeader';
 import MobileBottomNav from './MobileBottomNav';
 import MobileMoreBottomSheet from './MobileMoreBottomSheet';
 import QuickAddModal from '../quickadd/QuickAddModal';
+import CommandPalette from '../common/CommandPalette';
 import { Plus } from 'lucide-react';
 
 const AppLayout = () => {
@@ -48,6 +49,9 @@ const AppLayout = () => {
 
       {/* Global Quick Add Modal */}
       <QuickAddModal isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} />
+
+      {/* Global Command Palette (Ctrl+K) */}
+      <CommandPalette />
     </div>
   );
 };

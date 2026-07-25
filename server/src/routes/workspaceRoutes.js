@@ -12,10 +12,18 @@ const {
   updateMemberRole,
   removeMember,
   getWorkspaceStats,
-  searchWorkspace
+  searchWorkspace,
+  getInviteDetails,
+  acceptInvite
 } = require('../controllers/workspaceController');
 
 router.use(protect);
+
+router.route('/invites/:token')
+  .get(getInviteDetails);
+
+router.route('/invites/:token/accept')
+  .post(acceptInvite);
 
 router.route('/')
   .get(getWorkspaces)

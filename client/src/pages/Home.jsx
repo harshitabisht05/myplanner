@@ -14,7 +14,7 @@ import Button from '../components/common/Button';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import ProgressBar from '../components/common/ProgressBar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
 import TaskModal from '../components/modals/TaskModal';
 import {
   Sparkles,
@@ -33,7 +33,10 @@ import {
   Activity,
   Mail,
   Clock,
-  Send
+  Send,
+  Download,
+  Edit3,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -64,7 +67,25 @@ const Home = () => {
 
   const [digestTime, setDigestTime] = useState(() => user?.preferences?.dailyDigestTime || '08:00');
   const [isSavingTime, setIsSavingTime] = useState(false);
+  const [isEditingTime, setIsEditingTime] = useState(false);
   const [isSendingDigest, setIsSendingDigest] = useState(false);
+
+  const TIME_OPTIONS = [
+    { value: '06:00', label: '06:00 AM 🌄' },
+    { value: '07:00', label: '07:00 AM 🌅' },
+    { value: '08:00', label: '08:00 AM ☀️' },
+    { value: '09:00', label: '09:00 AM ☕' },
+    { value: '10:00', label: '10:00 AM 🌤️' },
+    { value: '11:00', label: '11:00 AM 🌤️' },
+    { value: '12:00', label: '12:00 PM 🕛' },
+    { value: '18:00', label: '06:00 PM 🌙' },
+    { value: '20:00', label: '08:00 PM 🌙' }
+  ];
+
+  const getTimeLabel = (val) => {
+    const found = TIME_OPTIONS.find(t => t.value === val);
+    return found ? found.label : `${val}`;
+  };
 
   useEffect(() => {
     if (user?.preferences?.dailyDigestTime) {
@@ -76,12 +97,43 @@ const Home = () => {
     setIsSavingTime(true);
     try {
       await updatePreferences({ ...user?.preferences, dailyDigestTime: digestTime, dailyDigestEmail: true });
-      showSuccess(`Morning digest time updated to ${digestTime}! ⏰`);
+      setIsEditingTime(false);
+      showSuccess(`Digest delivery time updated & scheduled for ${getTimeLabel(digestTime)}! ⏰`);
     } catch (err) {
       showError('Failed to save digest time preference');
     } finally {
       setIsSavingTime(false);
     }
+  };
+
+  const handleExportCSV = () => {
+    const tasks = tasksData?.tasks || [];
+    if (tasks.length === 0) {
+      showError('No scheduled tasks available to export for today.');
+      return;
+    }
+
+    const headers = ['Task Title', 'Category', 'Priority', 'Status', 'Due Date'];
+    const csvRows = [
+      headers.join(','),
+      ...tasks.map(t => {
+        const title = `"${(t.title || '').replace(/"/g, '""')}"`;
+        const category = `"${(t.category || 'General').replace(/"/g, '""')}"`;
+        const priority = `"${(t.priority || 'normal').replace(/"/g, '""')}"`;
+        const status = t.completed ? '"Completed"' : '"Pending"';
+        const dueDate = `"${t.dueDate || todayStr}"`;
+        return [title, category, priority, status, dueDate].join(',');
+      })
+    ];
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', `schedule_${todayStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSuccess('Today schedule exported to CSV! 📄');
   };
 
   const handleSendDigestNow = async () => {
@@ -358,7 +410,7 @@ const Home = () => {
             )}
 
             {isTasksLoading ? (
-              <LoadingSpinner message="Loading tasks..." />
+              <Skeleton variant="task" count={3} />
             ) : tasks.length === 0 ? (
               <div className="text-center py-8 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
                 <p className="text-sm font-medium">No active cases logged today ✨</p>
@@ -487,7 +539,7 @@ const Home = () => {
             </div>
 
             {isEventsLoading ? (
-              <LoadingSpinner message="Loading events..." />
+              <Skeleton variant="task" count={2} />
             ) : events.length === 0 ? (
               <p className="text-xs text-planner-muted text-center py-4 bg-planner-bg/40 rounded-2xl">
                 No upcoming events scheduled.
@@ -518,7 +570,7 @@ const Home = () => {
                   <h2 className="text-base font-bold text-planner-text flex items-center gap-1.5">
                     <span>Daily Morning Digest</span> 🌅
                   </h2>
-                  <p className="text-xs text-planner-muted">Automated task summary sent to your email</p>
+                  <p className="text-xs text-planner-muted">Automated task schedule table sent to your email</p>
                 </div>
               </div>
             </div>
@@ -529,45 +581,68 @@ const Home = () => {
                 <span className="text-xs font-bold text-planner-text flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-amber-500" /> Delivery Time:
                 </span>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={digestTime}
-                    onChange={(e) => setDigestTime(e.target.value)}
-                    className="px-2.5 py-1 rounded-xl text-xs font-bold bg-planner-card text-planner-text border border-planner-border focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  >
-                    <option value="06:00">06:00 AM 🌄</option>
-                    <option value="07:00">07:00 AM 🌅</option>
-                    <option value="08:00">08:00 AM ☀️</option>
-                    <option value="09:00">09:00 AM ☕</option>
-                    <option value="10:00">10:00 AM 🌤️</option>
-                    <option value="11:00">11:00 AM 🌤️</option>
-                    <option value="12:00">12:00 PM 🕛</option>
-                    <option value="18:00">06:00 PM 🌙</option>
-                    <option value="20:00">08:00 PM 🌙</option>
-                  </select>
+                
+                {isEditingTime ? (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={digestTime}
+                      onChange={(e) => setDigestTime(e.target.value)}
+                      className="px-2.5 py-1 rounded-xl text-xs font-bold bg-planner-card text-planner-text border border-planner-border focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      {TIME_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSaveDigestTime}
-                    isLoading={isSavingTime}
-                    className="text-xs font-bold text-amber-500 hover:bg-amber-500/10 px-2 py-1"
-                  >
-                    Save
-                  </Button>
-                </div>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={handleSaveDigestTime}
+                      isLoading={isSavingTime}
+                      className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 flex items-center gap-1"
+                    >
+                      <Check className="w-3.5 h-3.5" /> Save
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+                      <Check className="w-3 h-3 text-amber-500" /> {getTimeLabel(digestTime)}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingTime(true)}
+                      className="text-xs font-bold text-amber-500 hover:bg-amber-500/10 px-2 py-1 flex items-center gap-1"
+                    >
+                      <Edit3 className="w-3 h-3" /> Change Time
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleSendDigestNow}
-                isLoading={isSendingDigest}
-                className="w-full justify-center text-xs font-bold bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white border-none shadow-sm"
-              >
-                <Send className="w-3.5 h-3.5 mr-1.5" /> Send Today's Morning Digest Now 📧
-              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleSendDigestNow}
+                  isLoading={isSendingDigest}
+                  className="w-full justify-center text-xs font-bold bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white border-none shadow-sm"
+                >
+                  <Send className="w-3.5 h-3.5 mr-1.5" /> Send Digest Now 📧
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleExportCSV}
+                  className="w-full justify-center text-xs font-bold border-planner-border hover:bg-planner-card"
+                >
+                  <Download className="w-3.5 h-3.5 mr-1.5 text-sky-500" /> Export Schedule (CSV) 📊
+                </Button>
+              </div>
             </div>
           </Card>
 

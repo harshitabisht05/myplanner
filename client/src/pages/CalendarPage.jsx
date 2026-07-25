@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventApi } from '../api/eventApi';
 import { taskApi } from '../api/taskApi';
@@ -82,41 +82,52 @@ const CalendarPage = () => {
     startWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
   }
 
-  const daysArray = [];
-  // Empty offset slots
-  for (let i = 0; i < startWeekday; i++) {
-    daysArray.push(null);
-  }
-  // Days of current month
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    daysArray.push({ day: d, dateStr: dStr });
-  }
+  const daysArray = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < startWeekday; i++) {
+      arr.push(null);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      arr.push({ day: d, dateStr: dStr });
+    }
+    return arr;
+  }, [startWeekday, daysInMonth, year, month]);
 
-  const weekdays =
-    weekStart === 'monday'
+  const weekdays = useMemo(() => {
+    return weekStart === 'monday'
       ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
       : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  }, [weekStart]);
 
   // Selected Day Items
-  const selectedDayEvents = events.filter((e) => e.date === selectedDateStr);
-  const selectedDayTasks = tasks
-    .filter((t) => {
-      if (t.isRecurringDaily) {
-        return !t.dueDate || selectedDateStr >= t.dueDate;
-      }
-      return t.dueDate === selectedDateStr;
-    })
-    .map((t) => {
-      if (t.isRecurringDaily) {
-        return {
-          ...t,
-          dueDate: selectedDateStr,
-          completed: Array.isArray(t.completedDates) && t.completedDates.includes(selectedDateStr)
-        };
-      }
-      return t;
-    });
+  const selectedDayEvents = useMemo(() => {
+    return events.filter((e) => e.date === selectedDateStr);
+  }, [events, selectedDateStr]);
+
+  const selectedDayTasks = useMemo(() => {
+    return tasks
+      .filter((t) => {
+        if (t.isRecurringDaily) {
+          if (Array.isArray(t.excludedDates) && t.excludedDates.includes(selectedDateStr)) {
+            return false;
+          }
+          const createdDateStr = t.createdAt ? getLocalDateStr(new Date(t.createdAt)) : '';
+          return !createdDateStr || selectedDateStr >= createdDateStr;
+        }
+        return t.dueDate === selectedDateStr;
+      })
+      .map((t) => {
+        if (t.isRecurringDaily) {
+          return {
+            ...t,
+            dueDate: selectedDateStr,
+            completed: Array.isArray(t.completedDates) && t.completedDates.includes(selectedDateStr)
+          };
+        }
+        return t;
+      });
+  }, [tasks, selectedDateStr]);
 
   // Mutations
   const toggleTaskMutation = useMutation({
@@ -264,7 +275,11 @@ const CalendarPage = () => {
                 const dayEvents = events.filter((e) => e.date === item.dateStr);
                 const dayTasks = tasks.filter((t) => {
                   if (t.isRecurringDaily) {
-                    return !t.dueDate || item.dateStr >= t.dueDate;
+                    if (Array.isArray(t.excludedDates) && t.excludedDates.includes(item.dateStr)) {
+                      return false;
+                    }
+                    const createdDateStr = t.createdAt ? getLocalDateStr(new Date(t.createdAt)) : '';
+                    return !createdDateStr || item.dateStr >= createdDateStr;
                   }
                   return t.dueDate === item.dateStr;
                 });

@@ -11,7 +11,7 @@ import Input from '../components/common/Input';
 import ProgressBar from '../components/common/ProgressBar';
 import Badge from '../components/common/Badge';
 import Checkbox from '../components/common/Checkbox';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import GoalModal from '../components/modals/GoalModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
@@ -127,9 +127,12 @@ const Goals = () => {
         }
       />
 
-      {/* Goal Cards Grid */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching goals..." fullPage />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+        </div>
       ) : goals.length === 0 ? (
         <EmptyState
           icon={Target}

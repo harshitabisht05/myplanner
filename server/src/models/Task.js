@@ -65,6 +65,10 @@ const taskSchema = new mongoose.Schema(
     completedDates: {
       type: [String],
       default: []
+    },
+    excludedDates: {
+      type: [String],
+      default: []
     }
   },
   {

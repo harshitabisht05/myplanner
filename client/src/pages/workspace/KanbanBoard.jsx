@@ -11,7 +11,8 @@ import Input from '../../components/common/Input';
 import Textarea from '../../components/common/Textarea';
 import Select from '../../components/common/Select';
 import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Skeleton from '../../components/common/Skeleton';
+import { useSocket } from '../../hooks/useSocket';
 import {
   Kanban,
   Plus,
@@ -50,8 +51,15 @@ const KanbanBoard = () => {
   const [newPriority, setNewPriority] = useState('medium');
   const [newDueDate, setNewDueDate] = useState('');
   const [newProjectId, setNewProjectId] = useState('');
-
+  const [newAssigneeId, setNewAssigneeId] = useState('');
   const [commentText, setCommentText] = useState('');
+
+  // Connect socket for real-time live Kanban card movements
+  useSocket(currentWorkspaceId, (event) => {
+    if (event === 'task_updated' || event === 'task_created') {
+      queryClient.invalidateQueries({ queryKey: ['workspace-tasks', currentWorkspaceId] });
+    }
+  });
 
   // Fetch tasks
   const { data: tasksData, isLoading: isTasksLoading } = useQuery({
@@ -90,13 +98,15 @@ const KanbanBoard = () => {
         status: newStatus,
         priority: newPriority,
         dueDate: newDueDate,
-        project: newProjectId || null
+        project: newProjectId || null,
+        assignees: newAssigneeId ? [newAssigneeId] : []
       });
       showSuccess('Workspace task created!');
       queryClient.invalidateQueries({ queryKey: ['workspace-tasks', currentWorkspaceId] });
       setIsCreateModalOpen(false);
       setNewTitle('');
       setNewDesc('');
+      setNewAssigneeId('');
     } catch (err) {
       showError(err.message || 'Failed to create task');
     }
@@ -133,6 +143,8 @@ const KanbanBoard = () => {
     }
   };
 
+  const [mobileActiveCol, setMobileActiveCol] = useState('all');
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -146,11 +158,42 @@ const KanbanBoard = () => {
         }
       />
 
+      {/* Mobile Column Navigation Tabs */}
+      <div className="flex md:hidden gap-1.5 overflow-x-auto pb-2 border-b border-planner-border">
+        <button
+          onClick={() => setMobileActiveCol('all')}
+          className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all ${
+            mobileActiveCol === 'all' ? 'bg-planner-primary text-white' : 'bg-planner-card text-planner-muted'
+          }`}
+        >
+          All ({tasks.length})
+        </button>
+        {KANBAN_COLUMNS.map((col) => {
+          const count = tasks.filter((t) => t.status === col.id).length;
+          return (
+            <button
+              key={col.id}
+              onClick={() => setMobileActiveCol(col.id)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all ${
+                mobileActiveCol === col.id ? 'bg-planner-primary text-white' : 'bg-planner-card text-planner-muted'
+              }`}
+            >
+              {col.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
       {isTasksLoading ? (
-        <LoadingSpinner message="Loading Kanban board..." />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+        </div>
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4 items-start">
-          {KANBAN_COLUMNS.map((col) => {
+          {KANBAN_COLUMNS.filter((col) => mobileActiveCol === 'all' || mobileActiveCol === col.id).map((col) => {
             const colTasks = tasks.filter((t) => t.status === col.id);
             return (
               <div key={col.id} className="w-72 shrink-0 bg-planner-bg/60 border border-planner-border rounded-2xl p-3 space-y-3">
@@ -190,9 +233,12 @@ const KanbanBoard = () => {
                               <Clock className="w-3 h-3 text-planner-primary" /> {task.dueDate}
                             </span>
                           )}
-                          {task.checklist && task.checklist.length > 0 && (
-                            <span className="flex items-center gap-0.5">
-                              <CheckSquare className="w-3 h-3" /> {task.checklist.filter((c) => c.completed).length}/{task.checklist.length}
+                          {task.assignees && task.assignees.length > 0 && (
+                            <span className="flex items-center gap-1 font-bold text-planner-primary" title={task.assignees[0]?.name || 'Assignee'}>
+                              <div className="w-4 h-4 rounded-full bg-purple-500 text-white flex items-center justify-center text-[9px]">
+                                {task.assignees[0]?.name ? task.assignees[0].name.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                              {task.assignees[0]?.name?.split(' ')[0]}
                             </span>
                           )}
                         </div>
@@ -268,6 +314,18 @@ const KanbanBoard = () => {
               options={[{ value: '', label: 'None (General)' }, ...projects.map((p) => ({ value: p._id, label: p.title }))]}
             />
           </div>
+          <Select
+            label="Assign To Team Member 👤"
+            value={newAssigneeId}
+            onChange={(e) => setNewAssigneeId(e.target.value)}
+            options={[
+              { value: '', label: 'Unassigned' },
+              ...(currentWorkspace?.members || []).map((m) => ({
+                value: m.user?._id || m.user,
+                label: `${m.user?.name || 'Member'} (${m.role})`
+              }))
+            ]}
+          />
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setIsCreateModalOpen(false)}>
               Cancel

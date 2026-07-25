@@ -87,4 +87,8 @@ const workspaceTaskSchema = new mongoose.Schema(
   }
 );
 
+workspaceTaskSchema.index({ workspace: 1, status: 1 });
+workspaceTaskSchema.index({ workspace: 1, project: 1 });
+workspaceTaskSchema.index({ workspace: 1, sprint: 1 });
+
 module.exports = mongoose.model('WorkspaceTask', workspaceTaskSchema);

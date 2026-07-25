@@ -75,14 +75,21 @@ exports.getTasks = async (req, res, next) => {
     }
 
     // Map tasks to compute date-specific completed status & effective due date for recurring tasks
-    let tasks = rawTasks.map((t) => {
-      const obj = t.toObject();
-      if (obj.isRecurringDaily) {
-        obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
-        obj.dueDate = targetDate;
-      }
-      return obj;
-    });
+    let tasks = rawTasks
+      .filter((t) => {
+        if (t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(targetDate)) {
+          return false;
+        }
+        return true;
+      })
+      .map((t) => {
+        const obj = t.toObject();
+        if (obj.isRecurringDaily) {
+          obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
+          obj.dueDate = targetDate;
+        }
+        return obj;
+      });
 
     if (completed !== undefined) {
       const isComp = completed === 'true';
@@ -304,10 +311,30 @@ exports.toggleTaskComplete = async (req, res, next) => {
 // @route DELETE /api/tasks/:id
 exports.deleteTask = async (req, res, next) => {
   try {
-    const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
+
+    const { deleteAll, date } = req.query;
+    const targetDate = date || (req.body && req.body.date) || getRequestLocalDate(req);
+
+    if (task.isRecurringDaily && deleteAll !== 'true') {
+      if (!Array.isArray(task.excludedDates)) {
+        task.excludedDates = [];
+      }
+      if (!task.excludedDates.includes(targetDate)) {
+        task.excludedDates.push(targetDate);
+        await task.save();
+      }
+      return res.status(200).json({
+        success: true,
+        message: `Recurring task removed for ${targetDate} only`,
+        isExcludedOnly: true
+      });
+    }
+
+    await Task.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     res.status(200).json({ success: true, message: 'Task deleted successfully' });
   } catch (error) {
     next(error);

@@ -9,7 +9,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import IconButton from '../components/common/IconButton';
 import ProgressBar from '../components/common/ProgressBar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import HabitModal from '../components/modals/HabitModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
@@ -130,9 +130,8 @@ const Habits = () => {
         />
       </Card>
 
-      {/* Habits List & 7-Day Matrix */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching habits..." fullPage />
+        <Skeleton variant="task" count={4} />
       ) : habits.length === 0 ? (
         <EmptyState
           icon={Sparkles}

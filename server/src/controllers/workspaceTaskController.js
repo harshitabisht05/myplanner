@@ -1,6 +1,7 @@
 const WorkspaceTask = require('../models/WorkspaceTask');
 const Comment = require('../models/Comment');
 const Activity = require('../models/Activity');
+const { emitWorkspaceEvent } = require('../socket');
 
 // @route GET /api/workspaces/:workspaceId/tasks
 exports.getTasks = async (req, res, next) => {
@@ -85,6 +86,8 @@ exports.createTask = async (req, res, next) => {
       .populate('assignees', 'name email avatar')
       .populate('watchers', 'name email avatar')
       .populate('createdBy', 'name email avatar');
+
+    emitWorkspaceEvent(req.params.workspaceId, 'task_created', populated);
 
     res.status(201).json({ success: true, task: populated });
   } catch (error) {
@@ -193,6 +196,8 @@ exports.updateTask = async (req, res, next) => {
       .populate('assignees', 'name email avatar')
       .populate('watchers', 'name email avatar')
       .populate('createdBy', 'name email avatar');
+
+    emitWorkspaceEvent(req.params.workspaceId, 'task_updated', updated);
 
     res.status(200).json({ success: true, task: updated });
   } catch (error) {

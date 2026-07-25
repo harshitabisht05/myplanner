@@ -8,7 +8,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import IconButton from '../components/common/IconButton';
 import Textarea from '../components/common/Textarea';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import BrainDumpConvertModal from '../components/modals/BrainDumpConvertModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
@@ -141,9 +141,11 @@ const BrainDump = () => {
         </form>
       </Card>
 
-      {/* Captured Items Grid */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching items..." fullPage />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+        </div>
       ) : items.length === 0 ? (
         <EmptyState
           icon={Brain}

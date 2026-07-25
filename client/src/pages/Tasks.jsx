@@ -13,7 +13,8 @@ import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import Skeleton from '../components/common/Skeleton';
+import ErrorMessage from '../components/common/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
 import TaskModal from '../components/modals/TaskModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
@@ -215,7 +216,7 @@ const Tasks = () => {
 
       {/* Task List */}
       {isLoading ? (
-        <LoadingSpinner message="Fetching tasks..." fullPage />
+        <Skeleton variant="task" count={6} />
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}

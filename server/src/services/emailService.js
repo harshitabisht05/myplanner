@@ -89,7 +89,14 @@ const sendTestDigestEmail = async ({ to, userName }) => {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (err) {
+      if (err.message && (err.message.includes('550') || err.message.includes('testing emails'))) {
+        throw new Error(`Resend Free Tier Restriction: Email could not be sent to "${to}". Resend free testing mode only permits sending emails to the account owner. Update server/.env with your Gmail App Password or verify a custom domain in Resend.`);
+      }
+      throw err;
+    }
 };
 
 const sendDailyMorningDigest = async ({ to, userName, tasks = [], dateStr }) => {
@@ -98,31 +105,74 @@ const sendDailyMorningDigest = async ({ to, userName, tasks = [], dateStr }) => 
 
   const formattedDate = dateStr || new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const tasksListHtml = tasks.length > 0
-    ? tasks.map(t => `
-        <li style="padding: 10px 12px; margin-bottom: 6px; background-color: #f8fafc; border-radius: 10px; border-left: 4px solid ${t.priority === 'high' ? '#ef4444' : t.priority === 'medium' ? '#f59e0b' : '#3b82f6'}; list-style: none;">
-          <strong style="color: #1e293b; font-size: 14px;">${t.title}</strong>
-          ${t.category ? `<span style="font-size: 11px; color: #7c3aed; background: #f3e8ff; padding: 2px 8px; border-radius: 6px; margin-left: 8px; font-weight: bold;">${t.category}</span>` : ''}
-        </li>
-      `).join('')
-    : `<p style="color: #64748b; font-style: italic; font-size: 13px;">No scheduled tasks for today. A clear day to plan ahead or focus on deep work! ✨</p>`;
+  const tableRowsHtml = tasks.length > 0
+    ? tasks.map((t, idx) => {
+        const priorityBg = t.priority === 'high' ? '#fef2f2' : t.priority === 'medium' ? '#fffbeb' : '#eff6ff';
+        const priorityColor = t.priority === 'high' ? '#dc2626' : t.priority === 'medium' ? '#d97706' : '#2563eb';
+        const priorityBorder = t.priority === 'high' ? '#fecaca' : t.priority === 'medium' ? '#fde68a' : '#bfdbfe';
+        const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+        
+        return `
+          <tr style="background-color: ${rowBg}; border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 12px 14px; color: #1e293b; font-weight: 600; font-size: 13.5px;">
+              ${t.title}
+            </td>
+            <td style="padding: 12px 14px;">
+              ${t.category ? `<span style="font-size: 11px; color: #7c3aed; background-color: #f3e8ff; border: 1px solid #e9d5ff; padding: 3px 8px; border-radius: 9999px; font-weight: 700;">${t.category}</span>` : '<span style="color: #94a3b8; font-size: 12px;">General</span>'}
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="font-size: 11px; color: ${priorityColor}; background-color: ${priorityBg}; border: 1px solid ${priorityBorder}; padding: 3px 8px; border-radius: 9999px; font-weight: 700; text-transform: uppercase;">
+                ${t.priority || 'normal'}
+              </span>
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <span style="font-size: 11px; color: ${t.completed ? '#166534' : '#b45309'}; background-color: ${t.completed ? '#f0fdf4' : '#fffbeb'}; border: 1px solid ${t.completed ? '#bbf7d0' : '#fde68a'}; padding: 3px 8px; border-radius: 9999px; font-weight: 700;">
+                ${t.completed ? '✅ Done' : '⏳ Pending'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('')
+    : `
+      <tr>
+        <td colspan="4" style="padding: 24px; text-align: center; color: #64748b; font-style: italic; font-size: 13px;">
+          ✨ No scheduled tasks for today. Enjoy a clear day or focus on deep work!
+        </td>
+      </tr>
+    `;
+
+  const tasksTableHtml = `
+    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 12px;">
+      <table style="width: 100%; border-collapse: collapse; font-family: inherit; font-size: 13px; text-align: left;">
+        <thead>
+          <tr style="background-color: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Task Title</th>
+            <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Category</th>
+            <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Priority</th>
+            <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
 
   const mailOptions = {
     from: EMAIL_FROM || 'notifications@mylittleplanner.app',
     to,
-    subject: `🌅 Morning Digest: Your Plan for ${formattedDate} — My Little Planner`,
+    subject: `🌅 Morning Digest: Your Schedule Table for ${formattedDate} — My Little Planner`,
     html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background: linear-gradient(to bottom, #faf5ff, #ffffff);">
-        <div style="text-align: center; margin-bottom: 24px;">
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background: linear-gradient(to bottom, #faf5ff, #ffffff);">
+        <div style="text-align: center; margin-bottom: 20px;">
           <h1 style="color: #7c3aed; margin: 0; font-size: 24px;">Good Morning, ${userName || 'Friend'}! 🌅</h1>
-          <p style="color: #6b21a8; font-size: 13px; font-weight: 600; margin-top: 4px;">${formattedDate}</p>
+          <p style="color: #6b21a8; font-size: 13px; font-weight: 600; margin-top: 4px;">Schedule Overview • ${formattedDate}</p>
         </div>
         
         <div style="background-color: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #f3e8ff; margin-bottom: 20px;">
-          <h3 style="color: #1e293b; margin-top: 0; font-size: 16px;">Today's Objectives (${tasks.length} Tasks Scheduled)</h3>
-          <ul style="padding: 0; margin: 12px 0 0 0;">
-            ${tasksListHtml}
-          </ul>
+          <h3 style="color: #1e293b; margin-top: 0; font-size: 16px;">Today's Schedule (${tasks.length} Tasks) 📊</h3>
+          ${tasksTableHtml}
         </div>
 
         <div style="background-color: #f8fafc; padding: 16px; border-radius: 14px; border-left: 4px solid #7c3aed;">
@@ -139,11 +189,46 @@ const sendDailyMorningDigest = async ({ to, userName, tasks = [], dateStr }) => 
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    if (err.message && (err.message.includes('550') || err.message.includes('testing emails'))) {
+      throw new Error(`Resend Free Tier Restriction: Email could not be sent to "${to}". Resend free testing mode only permits sending emails to the account owner. Update server/.env with your Gmail App Password or verify a custom domain in Resend.`);
+    }
+    throw err;
+  }
+};
+
+const sendWorkspaceInviteEmail = async ({ to, inviterName, workspaceName, role, inviteUrl }) => {
+  const { EMAIL_FROM } = process.env;
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: EMAIL_FROM || 'notifications@mylittleplanner.app',
+      to,
+      subject: `👥 Invitation to join "${workspaceName}" — My Little Planner`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+          <h2 style="color: #8b5cf6; margin-top: 0;">Workspace Invitation 👥</h2>
+          <p style="color: #475569; font-size: 15px;">Hello,</p>
+          <p style="color: #475569; font-size: 15px;"><strong>${inviterName || 'A teammate'}</strong> has invited you to join the <strong>${workspaceName}</strong> workspace as a <strong>${role}</strong> on My Little Planner.</p>
+          <p style="color: #475569; font-size: 15px;">Click the button below to accept the invitation and join the workspace:</p>
+          <div style="margin: 25px 0;">
+            <a href="${inviteUrl}" style="background-color: #8b5cf6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 15px; display: inline-block;">Accept Invitation</a>
+          </div>
+          <p style="color: #94a3b8; font-size: 12px;">If you do not have an account yet, you will be prompted to register or log in first.</p>
+        </div>
+      `
+    };
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error('Failed to send workspace invitation email:', err.message);
+  }
 };
 
 module.exports = {
   sendPasswordResetEmail,
   sendTestDigestEmail,
-  sendDailyMorningDigest
+  sendDailyMorningDigest,
+  sendWorkspaceInviteEmail
 };

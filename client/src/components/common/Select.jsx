@@ -1,18 +1,25 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 const Select = forwardRef(
-  ({ label, error, options = [], className = '', containerClassName = '', ...props }, ref) => {
+  ({ label, error, options = [], className = '', containerClassName = '', id: customId, ...props }, ref) => {
+    const defaultId = useId();
+    const selectId = customId || defaultId;
+    const errorId = `${selectId}-error`;
+
     return (
       <div className={`flex flex-col gap-1.5 w-full ${containerClassName}`}>
         {label && (
-          <label className="text-xs font-semibold text-planner-muted uppercase tracking-wider">
+          <label htmlFor={selectId} className="text-xs font-bold text-planner-muted uppercase tracking-wider select-none">
             {label}
           </label>
         )}
         <select
+          id={selectId}
           ref={ref}
-          className={`w-full bg-planner-bg/60 dark:bg-planner-card text-planner-text text-sm rounded-2xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-planner-primary/40 focus:border-planner-primary px-3.5 py-2.5 ${
-            error ? 'border-rose-400 focus:ring-rose-300' : 'border-planner-border'
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+          className={`w-full bg-planner-bg/60 dark:bg-planner-card text-planner-text text-sm rounded-2xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-planner-primary/40 focus:border-planner-primary px-3.5 py-2.5 min-h-[44px] sm:min-h-[40px] cursor-pointer ${
+            error ? 'border-rose-400 focus:ring-rose-400/40 focus:border-rose-500' : 'border-planner-border'
           } ${className}`}
           {...props}
         >
@@ -22,7 +29,7 @@ const Select = forwardRef(
             </option>
           ))}
         </select>
-        {error && <span className="text-xs text-rose-500 font-medium leading-tight">{error}</span>}
+        {error && <span id={errorId} className="text-xs text-rose-500 font-semibold leading-tight">{error}</span>}
       </div>
     );
   }

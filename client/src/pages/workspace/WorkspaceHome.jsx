@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { workspaceApi } from '../../api/workspaceApi';
 import PageHeader from '../../components/common/PageHeader';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import Input from '../../components/common/Input';
+import Textarea from '../../components/common/Textarea';
+import Modal from '../../components/common/Modal';
 import ProgressBar from '../../components/common/ProgressBar';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Skeleton from '../../components/common/Skeleton';
 import {
   Layout,
   Layers,
@@ -22,12 +26,20 @@ import {
   Plus,
   ArrowRight,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Building
 } from 'lucide-react';
 
 const WorkspaceHome = () => {
-  const { currentWorkspace, currentWorkspaceId } = useWorkspace();
+  const { currentWorkspace, currentWorkspaceId, createWorkspace } = useWorkspace();
   const { theme } = useTheme();
+  const { showSuccess, showError } = useToast();
+
+  const [isAddWsModalOpen, setIsAddWsModalOpen] = useState(false);
+  const [wsName, setWsName] = useState('');
+  const [wsDescription, setWsDescription] = useState('');
+  const [wsIcon, setWsIcon] = useState('👥');
+  const [wsColor, setWsColor] = useState('#8B5CF6');
 
   const isGta = theme === 'gta';
   const isStrange = theme === 'strange';
@@ -43,13 +55,58 @@ const WorkspaceHome = () => {
   const todayDeadlines = stats.todayDeadlines || [];
   const recentProjects = stats.recentProjects || [];
   const recentActivities = stats.recentActivities || [];
-  const recentComments = stats.recentComments || [];
+
+  const handleCreateWorkspace = async (e) => {
+    e.preventDefault();
+    if (!wsName.trim()) return;
+
+    try {
+      await createWorkspace({
+        name: wsName.trim(),
+        description: wsDescription.trim(),
+        icon: wsIcon,
+        color: wsColor
+      });
+      showSuccess(`Workspace "${wsName}" created! 🎉`);
+      setIsAddWsModalOpen(false);
+      setWsName('');
+      setWsDescription('');
+    } catch (err) {
+      showError(err.message || 'Failed to create workspace');
+    }
+  };
 
   if (!currentWorkspaceId) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-8 text-center space-y-4">
         <h2 className="text-xl font-bold text-planner-text">No Workspace Selected</h2>
-        <p className="text-sm text-planner-muted mt-2">Please select or create a workspace from the sidebar.</p>
+        <p className="text-sm text-planner-muted">Create a new workspace to start collaborating with your team.</p>
+        <Button variant="primary" onClick={() => setIsAddWsModalOpen(true)}>
+          <Plus className="w-4 h-4 mr-1.5" /> ADD WORKSPACE
+        </Button>
+
+        {/* Add Workspace Modal */}
+        <Modal isOpen={isAddWsModalOpen} onClose={() => setIsAddWsModalOpen(false)} title="Add New Workspace 🏢">
+          <form onSubmit={handleCreateWorkspace} className="space-y-4">
+            <Input label="Workspace Name" placeholder="e.g. Frontend Team, Startup, Hackathon" value={wsName} onChange={(e) => setWsName(e.target.value)} required autoFocus />
+            <Textarea label="Description (Optional)" placeholder="What is this workspace for?" value={wsDescription} onChange={(e) => setWsDescription(e.target.value)} rows={3} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="Icon / Emoji" value={wsIcon} onChange={(e) => setWsIcon(e.target.value)} />
+              <div>
+                <label className="text-xs font-bold text-planner-muted block mb-1">Accent Color</label>
+                <input type="color" value={wsColor} onChange={(e) => setWsColor(e.target.value)} className="w-full h-10 rounded-xl cursor-pointer bg-planner-bg border border-planner-border p-1" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="ghost" onClick={() => setIsAddWsModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary">
+                Create Workspace
+              </Button>
+            </div>
+          </form>
+        </Modal>
       </div>
     );
   }
@@ -62,14 +119,17 @@ const WorkspaceHome = () => {
         subtitle={currentWorkspace?.description || 'Collaborative team workspace overview & project progress'}
         icon={Layout}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="primary" size="sm" onClick={() => setIsAddWsModalOpen(true)}>
+              <Building className="w-4 h-4 mr-1.5" /> ADD WORKSPACE
+            </Button>
             <Link to="/workspace/projects">
-              <Button variant="primary" size="sm">
+              <Button variant="outline" size="sm">
                 <Plus className="w-4 h-4 mr-1" /> New Project
               </Button>
             </Link>
             <Link to="/workspace/kanban">
-              <Button variant="outline" size="sm">
+              <Button variant="ghost" size="sm">
                 Kanban Board
               </Button>
             </Link>
@@ -78,11 +138,16 @@ const WorkspaceHome = () => {
       />
 
       {isLoading ? (
-        <LoadingSpinner message="Loading workspace overview..." />
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+          <Skeleton variant="card" />
+        </div>
       ) : (
         <>
           {/* Top Quick Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card className="p-4 flex items-center gap-4">
               <div className="p-3 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300">
                 <Layers className="w-6 h-6" />
@@ -115,11 +180,11 @@ const WorkspaceHome = () => {
 
             <Card className="p-4 flex items-center gap-4">
               <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300">
-                <Zap className="w-6 h-6" />
+                <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-planner-muted uppercase">Sprint Progress</p>
-                <p className="text-2xl font-extrabold text-planner-text">{stats.sprintProgress || 0}%</p>
+                <p className="text-xs font-semibold text-planner-muted uppercase">Team Members</p>
+                <p className="text-2xl font-extrabold text-planner-text">{currentWorkspace?.members?.length || 0}</p>
               </div>
             </Card>
           </div>
@@ -128,28 +193,6 @@ const WorkspaceHome = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Projects & Assigned Tasks */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Sprint Progress Widget */}
-              {stats.activeSprint && (
-                <Card className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-amber-500" />
-                      <h3 className="text-base font-bold text-planner-text">Active Sprint: {stats.activeSprint.name}</h3>
-                    </div>
-                    <Link to="/workspace/sprint">
-                      <Button variant="ghost" size="sm">
-                        View Sprint <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </Link>
-                  </div>
-                  <p className="text-xs text-planner-muted mb-3">{stats.activeSprint.goal || 'No goal set for this sprint'}</p>
-                  <ProgressBar value={stats.sprintProgress} max={100} className="mb-2" />
-                  <div className="flex justify-between text-xs text-planner-muted">
-                    <span>{stats.sprintTotalTasks} Total Sprint Tasks</span>
-                    <span>{stats.sprintProgress}% Completed</span>
-                  </div>
-                </Card>
-              )}
 
               {/* Recent Projects */}
               <Card className="p-5">
@@ -289,6 +332,29 @@ const WorkspaceHome = () => {
           </div>
         </>
       )}
+
+      {/* Add Workspace Modal */}
+      <Modal isOpen={isAddWsModalOpen} onClose={() => setIsAddWsModalOpen(false)} title="Add New Workspace 🏢">
+        <form onSubmit={handleCreateWorkspace} className="space-y-4">
+          <Input label="Workspace Name" placeholder="e.g. Frontend Team, Startup, Hackathon" value={wsName} onChange={(e) => setWsName(e.target.value)} required autoFocus />
+          <Textarea label="Description (Optional)" placeholder="What is this workspace for?" value={wsDescription} onChange={(e) => setWsDescription(e.target.value)} rows={3} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Icon / Emoji" value={wsIcon} onChange={(e) => setWsIcon(e.target.value)} />
+            <div>
+              <label className="text-xs font-bold text-planner-muted block mb-1">Accent Color</label>
+              <input type="color" value={wsColor} onChange={(e) => setWsColor(e.target.value)} className="w-full h-10 rounded-xl cursor-pointer bg-planner-bg border border-planner-border p-1" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setIsAddWsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Create Workspace
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
