@@ -89,15 +89,38 @@ exports.getTasks = async (req, res, next) => {
       tasks = tasks.filter((t) => t.completed === isComp);
     }
 
-    // Sorting logic
-    const getTimeValue = (t) => {
-      if (t.dueTime) return t.dueTime;
-      if (t.timeBlock === 'morning') return '08:00';
-      if (t.timeBlock === 'afternoon') return '12:00';
-      if (t.timeBlock === 'evening') return '17:00';
-      if (t.timeBlock === 'night') return '21:00';
-      if (t.timeBlock === 'midnight') return '23:59';
-      return '99:99';
+    // Helper to convert task time (dueTime or timeBlock) into total minutes from midnight (0 - 1439)
+    const getTimeMinutes = (t) => {
+      if (t.dueTime && typeof t.dueTime === 'string') {
+        const raw = t.dueTime.trim();
+        // Check for 12-hour AM/PM format (e.g., "9:30 AM", "02:15 PM")
+        const ampmMatch = raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (ampmMatch) {
+          let hours = parseInt(ampmMatch[1], 10);
+          const minutes = parseInt(ampmMatch[2], 10);
+          const period = ampmMatch[3].toUpperCase();
+          if (period === 'PM' && hours < 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          return hours * 60 + minutes;
+        }
+        // Check for 24-hour format (e.g., "09:30", "9:30", "14:00")
+        const match24 = raw.match(/^(\d{1,2}):(\d{2})$/);
+        if (match24) {
+          const hours = parseInt(match24[1], 10);
+          const minutes = parseInt(match24[2], 10);
+          return hours * 60 + minutes;
+        }
+      }
+
+      // Fallback to timeBlock presets if dueTime is not specified
+      if (t.timeBlock === 'morning') return 8 * 60; // 08:00 (480 mins)
+      if (t.timeBlock === 'afternoon') return 12 * 60; // 12:00 (720 mins)
+      if (t.timeBlock === 'evening') return 17 * 60; // 17:00 (1020 mins)
+      if (t.timeBlock === 'night') return 21 * 60; // 21:00 (1260 mins)
+      if (t.timeBlock === 'midnight') return 23 * 60 + 59; // 23:59 (1439 mins)
+
+      // Untimed tasks placed at the end of active list (1440 mins)
+      return 1440;
     };
 
     if (sortBy === 'priority') {
@@ -109,9 +132,9 @@ exports.getTasks = async (req, res, next) => {
       // Default time-based sort: Uncompleted first, sorted strictly by time of day, then completed tasks sorted by time
       tasks.sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        const timeA = getTimeValue(a);
-        const timeB = getTimeValue(b);
-        if (timeA !== timeB) return timeA.localeCompare(timeB);
+        const timeA = getTimeMinutes(a);
+        const timeB = getTimeMinutes(b);
+        if (timeA !== timeB) return timeA - timeB;
         return new Date(a.createdAt) - new Date(b.createdAt);
       });
     }
