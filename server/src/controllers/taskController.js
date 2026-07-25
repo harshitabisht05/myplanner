@@ -36,6 +36,7 @@ exports.getTasks = async (req, res, next) => {
 
     if (view === 'today' || date) {
       // Find non-recurring tasks on targetDate OR recurring tasks created on or before targetDate
+      const targetDateEnd = new Date(`${targetDate}T23:59:59.999Z`);
       const dateFilter = {
         $or: [
           { dueDate: targetDate },
@@ -43,6 +44,8 @@ exports.getTasks = async (req, res, next) => {
             isRecurringDaily: true,
             $or: [
               { dueDate: { $lte: targetDate } },
+              { completedDates: targetDate },
+              { createdAt: { $lte: targetDateEnd } },
               { dueDate: '' },
               { dueDate: { $exists: false } }
             ]
