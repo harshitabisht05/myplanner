@@ -183,70 +183,7 @@ const WorkspaceSettings = () => {
             </form>
           </Card>
 
-          {/* Granular Permissions Matrix Card */}
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center gap-2 border-b border-planner-border pb-3">
-              <Shield className="w-5 h-5 text-purple-500" />
-              <h3 className="text-sm font-extrabold text-planner-text">Granular Role Permissions Matrix</h3>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-planner-border text-planner-muted uppercase font-mono text-[10px]">
-                    <th className="py-2 px-3">Capability / Feature</th>
-                    <th className="py-2 px-2 text-center">Owner</th>
-                    <th className="py-2 px-2 text-center">Admin</th>
-                    <th className="py-2 px-2 text-center">Manager</th>
-                    <th className="py-2 px-2 text-center">Developer</th>
-                    <th className="py-2 px-2 text-center">Viewer</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-planner-border/50 font-medium">
-                  <tr>
-                    <td className="py-2.5 px-3 text-planner-text">Create Projects & Tasks</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 text-planner-text">Invite Team Members</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 text-planner-text">Upload & Delete Vault Files</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 text-planner-text">Manage Channels & DMs</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 text-planner-text">Delete Workspace</td>
-                    <td className="text-center py-2 text-emerald-500">✓</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                    <td className="text-center py-2 text-planner-muted">✗</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </Card>
 
           {/* Danger Zone Card */}
           <Card className="p-6 border-rose-500/30 bg-rose-500/5 space-y-3">

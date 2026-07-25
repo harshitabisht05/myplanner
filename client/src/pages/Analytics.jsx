@@ -409,47 +409,6 @@ const Analytics = () => {
         </Card>
       </div>
 
-      {/* GitHub-Style Habit & Productivity Contribution Heatmap */}
-      <Card className={`p-5 space-y-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
-        <div className="flex items-center justify-between border-b border-planner-border pb-3">
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-amber-500" />
-            <div>
-              <h3 className="text-sm font-extrabold text-planner-text">Productivity & Habit Streak Heatmap</h3>
-              <p className="text-xs text-planner-muted">120-day contribution graph tracking focus minutes and completed habits</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 text-[10px] font-bold text-planner-muted">
-            <span>Less</span>
-            <div className="w-3 h-3 rounded-xs bg-planner-secondary" />
-            <div className="w-3 h-3 rounded-xs bg-emerald-300" />
-            <div className="w-3 h-3 rounded-xs bg-emerald-500" />
-            <div className="w-3 h-3 rounded-xs bg-emerald-700" />
-            <span>More</span>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto pb-2">
-          <div className="grid grid-flow-col grid-rows-7 gap-1.5 min-w-[650px] justify-start">
-            {heatmapDays.map((day) => {
-              let bg = 'bg-planner-secondary/60';
-              if (day.level === 1) bg = 'bg-emerald-400/50';
-              if (day.level === 2) bg = 'bg-emerald-500';
-              if (day.level === 3) bg = 'bg-emerald-600';
-              if (day.level === 4) bg = 'bg-emerald-700 shadow-xs';
-
-              return (
-                <div
-                  key={day.dateStr}
-                  className={`w-3.5 h-3.5 rounded-xs transition-transform hover:scale-125 cursor-pointer ${bg}`}
-                  title={`${day.dateStr}: ${day.dayMins} mins focused`}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </Card>
-
       {/* Main Content Grid: Category Breakdown + Daily Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Time Distribution */}
@@ -550,32 +509,7 @@ const Analytics = () => {
         </Card>
       </div>
 
-      {/* Task Time Distribution (if tasks logged) */}
-      {stats.taskList.length > 0 && (
-        <Card className={`p-5 space-y-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
-          <div className="flex items-center justify-between pb-3 border-b border-planner-border">
-            <h3 className="text-base font-bold text-planner-text flex items-center gap-2">
-              <Award className="w-5 h-5 text-planner-primary" /> Top Tasks Invested In
-            </h3>
-            <span className="text-xs text-planner-muted font-mono">{stats.taskList.length} Tasks</span>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {stats.taskList.slice(0, 8).map((task) => (
-              <div
-                key={task.title}
-                className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 border border-planner-border text-xs sm:text-sm font-semibold text-planner-text"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-planner-primary shrink-0" />
-                  <span className="truncate">{task.title}</span>
-                </div>
-                <span className="font-mono text-planner-primary font-bold ml-2 shrink-0">{formatHoursMins(task.mins)}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {/* Filterable Session History Table / List */}
       <Card className={`p-5 space-y-4 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>

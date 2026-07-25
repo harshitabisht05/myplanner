@@ -28,11 +28,9 @@ import {
 } from 'lucide-react';
 
 const KANBAN_COLUMNS = [
-  { id: 'backlog', label: 'Backlog', color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400' },
   { id: 'todo', label: 'To Do', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
   { id: 'in_progress', label: 'In Progress', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   { id: 'review', label: 'Review', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  { id: 'testing', label: 'Testing', color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400' },
   { id: 'done', label: 'Done', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
 ];
 
@@ -149,7 +147,7 @@ const KanbanBoard = () => {
     <div className="space-y-6">
       <PageHeader
         title="Kanban Board"
-        subtitle="Manage sprint workflow across Backlog, To Do, In Progress, Review, Testing, and Done"
+        subtitle="Manage sprint workflow across To Do, In Progress, Review, and Done"
         icon={Kanban}
         action={
           <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>

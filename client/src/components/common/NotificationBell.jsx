@@ -82,7 +82,7 @@ const NotificationBell = ({ align = 'right' }) => {
           }`}
         >
           {/* Panel Header */}
-          <div className="p-3.5 border-b border-white/10 flex items-center justify-between bg-[#1a1626]">
+          <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-[#1a1626]">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-purple-400" />
               <h3 className="font-bold text-sm text-white">Notifications</h3>
@@ -113,7 +113,7 @@ const NotificationBell = ({ align = 'right' }) => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center px-3 py-2 border-b border-white/10 text-xs font-bold gap-2 bg-[#0d0b14]">
+          <div className="flex items-center px-3 py-2 border-b border-slate-800 text-xs font-bold gap-2 bg-[#0d0b14]">
             <button
               onClick={() => setFilter('all')}
               className={`px-3 py-1 rounded-lg transition-all ${
@@ -154,7 +154,7 @@ const NotificationBell = ({ align = 'right' }) => {
                     className={`group relative p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
                       isUnread
                         ? 'bg-[#211a33] border-purple-500/60 text-white shadow-md'
-                        : 'bg-[#181524] border-white/10 text-slate-300 hover:bg-[#231e33]'
+                        : 'bg-[#181524] border-slate-800 text-slate-300 hover:bg-[#231e33]'
                     }`}
                   >
                     <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${typeStyle.color}`}>

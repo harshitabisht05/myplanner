@@ -47,17 +47,7 @@ const DesktopHeader = ({ onOpenQuickAdd }) => {
           </Link>
         )}
 
-        {/* PWA Install Button */}
-        {isInstallable && (
-          <button
-            onClick={promptInstall}
-            className="bg-planner-secondary hover:bg-planner-secondary/80 text-planner-primary text-xs font-bold px-3 py-1.5 rounded-2xl border border-planner-border flex items-center gap-1.5 active:scale-95 transition-all"
-            title="Install Mobile App"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Install App</span>
-          </button>
-        )}
+
 
         {/* Quick Add Button */}
         <button

@@ -199,44 +199,7 @@ const Settings = () => {
         icon={isStrange ? Shield : SettingsIcon}
       />
 
-      {/* PWA Download / Mobile App Card */}
-      <Card className={`p-6 ${isStrange ? 'strange-hud-card border-rose-500/40' : 'bg-gradient-to-r from-purple-500/10 via-planner-card to-pink-500/10 border-purple-200 dark:border-purple-900/60'}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className={`p-3 rounded-2xl shrink-0 mt-0.5 ${isStrange ? 'bg-rose-600 text-white' : 'bg-planner-primary text-white'}`}>
-              <Smartphone className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-planner-text flex items-center gap-2">
-                <span>Download & Install Mobile App</span> 📲
-              </h2>
-              <p className="text-sm text-planner-muted mt-1 leading-relaxed">
-                Use My Little Planner as a native standalone app on your iPhone or Android home screen with offline access.
-              </p>
-            </div>
-          </div>
 
-          <div className="shrink-0">
-            {isInstalled ? (
-              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
-                <CheckCircle2 className="w-4 h-4" /> App Installed
-              </div>
-            ) : isInstallable ? (
-              <Button variant="primary" onClick={handleInstallClick} size="lg">
-                <Download className="w-4 h-4 mr-1.5" /> Install App Now
-              </Button>
-            ) : (
-              <div className="text-xs bg-planner-bg/80 p-3 rounded-2xl border border-planner-border max-w-xs text-planner-muted">
-                <strong>To install on phone:</strong>
-                <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                  <li><strong>iPhone/Safari:</strong> Tap Share icon → <em>"Add to Home Screen"</em>.</li>
-                  <li><strong>Android/Chrome:</strong> Tap Menu (3 dots) → <em>"Add to Home Screen"</em>.</li>
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      </Card>
 
       {/* Profile Section */}
       <Card className={`p-6 space-y-4 ${isStrange ? 'strange-hud-card' : ''}`}>
@@ -370,74 +333,7 @@ const Settings = () => {
         </div>
       </Card>
 
-      {/* Notifications & Email Alerts Section */}
-      <Card className={`p-6 space-y-5 ${isStrange ? 'strange-hud-card' : ''}`}>
-        <div className="flex items-center justify-between pb-3 border-b border-planner-border flex-wrap gap-2">
-          <div className="flex items-center gap-2.5">
-            <Bell className="w-5 h-5 text-planner-primary" />
-            <div>
-              <h2 className="text-lg font-bold text-planner-text">Notifications & Email Alerts</h2>
-              <p className="text-xs text-planner-muted">Manage push notifications, desktop sounds, and Nodemailer digests</p>
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-planner-primary/10 text-planner-primary border border-planner-primary/30">
-            <CheckCircle2 className="w-3.5 h-3.5" /> System Ready
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Browser Desktop Notifications Test Card */}
-          <div className="p-4 rounded-2xl bg-planner-bg/60 border border-planner-border space-y-3 flex flex-col justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-planner-text flex items-center gap-1.5">
-                  <Volume2 className="w-4 h-4 text-purple-500" /> Desktop Push & Chime Sound
-                </span>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase ${hasPermission ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>
-                  {hasPermission ? 'Granted' : 'Needs Action'}
-                </span>
-              </div>
-              <p className="text-xs text-planner-muted leading-relaxed">
-                Triggers native browser desktop popups and audio chimes when timers complete or tasks are due.
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleTestBrowserNotification}
-              className="w-full justify-center text-xs font-bold"
-            >
-              <Bell className="w-4 h-4 mr-1.5 text-purple-500" /> Test Push & Audio Alert 🔔
-            </Button>
-          </div>
-
-          {/* Nodemailer Email Service Card */}
-          <div className="p-4 rounded-2xl bg-planner-bg/60 border border-planner-border space-y-3 flex flex-col justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-planner-text flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-sky-500" /> Nodemailer Email Service
-                </span>
-                <span className="text-[10px] text-planner-muted font-mono truncate max-w-[120px]">{user?.email}</span>
-              </div>
-              <p className="text-xs text-planner-muted leading-relaxed">
-                Connects your SMTP provider to deliver daily digests, task reminders, and notifications.
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleTestEmail}
-              isLoading={isSendingEmail}
-              className="w-full justify-center text-xs font-bold"
-            >
-              <Send className="w-4 h-4 mr-1.5" /> Test Email Connection 📧
-            </Button>
-          </div>
-        </div>
-      </Card>
 
       {/* Account Section */}
       <Card className={`p-6 ${isStrange ? 'strange-hud-card' : ''}`}>

@@ -6,10 +6,25 @@ import { useFocusTimer, TIMER_MODES } from '../context/FocusContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import Select from '../components/common/Select';
 import CategoryModal from '../components/modals/CategoryModal';
-import Analytics from './Analytics';
-import { Timer, Play, Pause, RotateCcw, CheckCircle2, Sparkles, Crosshair, Eye, History, Trash2, Save, Plus, Tag, BarChart2, BookmarkCheck, Volume2, VolumeX, Music } from 'lucide-react';
+import {
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  CheckCircle2,
+  Sparkles,
+  Crosshair,
+  Eye,
+  History,
+  Trash2,
+  Save,
+  Plus,
+  Tag,
+  BookmarkCheck,
+  Music,
+  Volume2
+} from 'lucide-react';
 import strangeOtherSideImg from '../assets/strange_otherside_bg.jpg';
 
 const AMBIENT_TRACKS = {
@@ -25,7 +40,6 @@ const Focus = () => {
   const isGta = theme === 'gta';
   const isStrange = theme === 'strange';
 
-  const [activeTab, setActiveTab] = useState('timer'); // 'timer' or 'analytics'
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Ambient Focus Soundscapes Real Audio State & Preloader
@@ -150,445 +164,406 @@ const Focus = () => {
     <div className="space-y-6 max-w-4xl mx-auto pb-10">
       {/* Top Header */}
       <PageHeader
-        title={isStrange ? 'ENTERING THE OTHER SIDE' : isGta ? 'MISSION IN PROGRESS' : 'Focus & Time Tracker'}
+        title={isStrange ? 'ENTERING THE OTHER SIDE' : isGta ? 'MISSION IN PROGRESS' : 'Focus Timer & Soundscapes'}
         subtitle={
           isStrange
             ? 'Deep parallel dimension environment for uninterrupted deep work'
             : isGta
             ? 'Execute deep-work objectives and log time distribution per sector'
-            : 'Distraction-free focus timer, mid-session saving & detailed category analytics'
+            : 'Distraction-free focus timer with ambient soundscapes and task linking'
         }
         icon={isStrange ? Eye : isGta ? Crosshair : Timer}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="text-xs shrink-0"
+          >
+            <Tag className="w-3.5 h-3.5 mr-1 text-planner-primary" /> + Manage Categories
+          </Button>
+        }
       />
 
-      {/* Main View Tabs (Timer vs Analytics) */}
-      <div className="flex items-center justify-between border-b border-planner-border pb-2 gap-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('timer')}
-            className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all ${
-              activeTab === 'timer'
-                ? isStrange
-                  ? 'bg-rose-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.4)] font-serif'
-                  : isGta
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)] font-mono'
-                  : 'bg-planner-primary text-white shadow-xs'
-                : 'bg-planner-card text-planner-muted hover:text-planner-text border border-planner-border'
-            }`}
-          >
-            <Timer className="w-4 h-4" /> ⏱️ Focus Timer
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all ${
-              activeTab === 'analytics'
-                ? isStrange
-                  ? 'bg-rose-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.4)] font-serif'
-                  : isGta
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)] font-mono'
-                  : 'bg-planner-primary text-white shadow-xs'
-                : 'bg-planner-card text-planner-muted hover:text-planner-text border border-planner-border'
-            }`}
-          >
-            <BarChart2 className="w-4 h-4" /> 📊 Analytics & Time Log
-          </button>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsCategoryModalOpen(true)}
-          className="text-xs shrink-0"
+      {/* Mode Selector Tabs */}
+      <div className={`grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 rounded-2xl border shadow-cozy ${isStrange ? 'bg-slate-950 border-rose-900/50' : isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
+        <button
+          onClick={() => handleModeSwitch('focus')}
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
+            mode === 'focus'
+              ? isStrange
+                ? 'bg-rose-600 text-white font-serif shadow-[0_0_20px_rgba(225,29,72,0.5)]'
+                : isGta
+                ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                : 'bg-planner-primary text-white shadow-xs'
+              : 'text-planner-muted hover:text-planner-text'
+          }`}
         >
-          <Tag className="w-3.5 h-3.5 mr-1 text-planner-primary" /> + Manage Categories
-        </Button>
+          {isStrange ? '25m OTHER SIDE 🌲' : isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
+        </button>
+        <button
+          onClick={() => handleModeSwitch('shortBreak')}
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
+            mode === 'shortBreak'
+              ? isStrange
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                : isGta
+                ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                : 'bg-emerald-500 text-white shadow-xs'
+              : 'text-planner-muted hover:text-planner-text'
+          }`}
+        >
+          {isStrange ? '5m SAFE ZONE ☕' : isGta ? '5m RECHARGE ☕' : '5m Short Break ☕'}
+        </button>
+        <button
+          onClick={() => handleModeSwitch('longBreak')}
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
+            mode === 'longBreak'
+              ? isStrange
+                ? 'bg-sky-500 text-slate-950 font-bold shadow-xs'
+                : isGta
+                ? 'bg-sky-500 text-slate-950 font-black shadow-xs'
+                : 'bg-sky-500 text-white shadow-xs'
+              : 'text-planner-muted hover:text-planner-text'
+          }`}
+        >
+          {isStrange ? '15m RETURN 🌿' : isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
+        </button>
+        <button
+          onClick={() => handleModeSwitch('custom')}
+          className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
+            mode === 'custom'
+              ? isStrange
+                ? 'bg-purple-600 text-white font-bold shadow-xs'
+                : isGta
+                ? 'bg-purple-500 text-slate-950 font-black shadow-xs'
+                : 'bg-purple-600 text-white shadow-xs'
+              : 'text-planner-muted hover:text-planner-text'
+          }`}
+        >
+          ⚙️ Custom
+        </button>
       </div>
 
-      {activeTab === 'analytics' ? (
-        <Analytics />
-      ) : (
-        <>
-          {/* Mode Selector Tabs */}
-          <div className={`grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 rounded-2xl border shadow-cozy ${isStrange ? 'bg-slate-950 border-rose-900/50' : isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
-            <button
-              onClick={() => handleModeSwitch('focus')}
-              className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
-                mode === 'focus'
-                  ? isStrange
-                    ? 'bg-rose-600 text-white font-serif shadow-[0_0_20px_rgba(225,29,72,0.5)]'
-                    : isGta
-                    ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                    : 'bg-planner-primary text-white shadow-xs'
-                  : 'text-planner-muted hover:text-planner-text'
-              }`}
+      {/* Custom Minutes Input when Custom Mode active */}
+      {mode === 'custom' && (
+        <div className="flex items-center justify-center gap-3 p-4 bg-planner-card rounded-2xl border border-planner-border shadow-xs max-w-sm mx-auto">
+          <span className="text-xs font-bold text-planner-text">Custom Time (mins):</span>
+          <input
+            type="number"
+            min="1"
+            max="180"
+            value={customMinutes}
+            onChange={(e) => handleCustomMinutesChange(e.target.value)}
+            className="w-20 px-3 py-1.5 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-center text-sm focus:outline-none focus:ring-2 focus:ring-planner-primary"
+          />
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => handleModeSwitch('custom', customMinutes)}
+          >
+            Set Time
+          </Button>
+        </div>
+      )}
+
+      {/* Save Success Banner */}
+      {saveSuccessMsg && (
+        <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold flex items-center gap-2 animate-in fade-in duration-200">
+          <BookmarkCheck className="w-5 h-5 shrink-0" />
+          <span>{saveSuccessMsg}</span>
+        </div>
+      )}
+
+      {/* Main Timer Dial Card */}
+      <Card
+        className={`p-6 sm:p-10 text-center flex flex-col items-center justify-center space-y-6 sm:space-y-8 relative overflow-hidden ${
+          isStrange
+            ? 'strange-hud-card bg-slate-950 border-rose-600/40'
+            : isGta
+            ? 'gta-hud-card bg-gradient-to-b from-slate-950 via-slate-950/90 to-purple-950/30 border-emerald-500/30'
+            : 'bg-gradient-to-b from-planner-card via-planner-card to-planner-secondary/30'
+        }`}
+      >
+        {/* Background artwork overlay for Strange World */}
+        {isStrange && (
+          <div className="absolute inset-0 z-0">
+            <img
+              src={strangeOtherSideImg}
+              alt="The Other Side"
+              className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
+          </div>
+        )}
+
+        {/* Task & Category Pickers Grid */}
+        <div className="w-full max-w-lg grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10 text-left">
+          {/* Category Selector */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-planner-muted">Select Category:</label>
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="text-[11px] font-bold text-planner-primary hover:underline flex items-center gap-0.5"
+              >
+                <Plus className="w-3 h-3" /> New Category
+              </button>
+            </div>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-xs focus:outline-none focus:ring-2 focus:ring-planner-primary"
             >
-              {isStrange ? '25m OTHER SIDE 🌲' : isGta ? '25m MISSION 🎯' : '25m Focus 🎯'}
-            </button>
-            <button
-              onClick={() => handleModeSwitch('shortBreak')}
-              className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
-                mode === 'shortBreak'
-                  ? isStrange
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                    : isGta
-                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                    : 'bg-emerald-500 text-white shadow-xs'
-                  : 'text-planner-muted hover:text-planner-text'
-              }`}
-            >
-              {isStrange ? '5m SAFE ZONE ☕' : isGta ? '5m RECHARGE ☕' : '5m Short Break ☕'}
-            </button>
-            <button
-              onClick={() => handleModeSwitch('longBreak')}
-              className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
-                mode === 'longBreak'
-                  ? isStrange
-                    ? 'bg-sky-500 text-slate-950 font-bold shadow-xs'
-                    : isGta
-                    ? 'bg-sky-500 text-slate-950 font-black shadow-xs'
-                    : 'bg-sky-500 text-white shadow-xs'
-                  : 'text-planner-muted hover:text-planner-text'
-              }`}
-            >
-              {isStrange ? '15m RETURN 🌿' : isGta ? '15m HQ REST 🌿' : '15m Long Break 🌿'}
-            </button>
-            <button
-              onClick={() => handleModeSwitch('custom')}
-              className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-center ${
-                mode === 'custom'
-                  ? isStrange
-                    ? 'bg-purple-600 text-white font-bold shadow-xs'
-                    : isGta
-                    ? 'bg-purple-500 text-slate-950 font-black shadow-xs'
-                    : 'bg-purple-600 text-white shadow-xs'
-                  : 'text-planner-muted hover:text-planner-text'
-              }`}
-            >
-              ⚙️ Custom
-            </button>
+              {categories.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.icon || '📌'} {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Custom Minutes Input when Custom Mode active */}
-          {mode === 'custom' && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-planner-card rounded-2xl border border-planner-border shadow-xs max-w-sm mx-auto">
-              <span className="text-xs font-bold text-planner-text">Custom Time (mins):</span>
-              <input
-                type="number"
-                min="1"
-                max="180"
-                value={customMinutes}
-                onChange={(e) => handleCustomMinutesChange(e.target.value)}
-                className="w-20 px-3 py-1.5 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-center text-sm focus:outline-none focus:ring-2 focus:ring-planner-primary"
-              />
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() => handleModeSwitch('custom', customMinutes)}
-              >
-                Set Time
-              </Button>
-            </div>
-          )}
+          {/* Task Selector */}
+          <div>
+            <label className="block text-xs font-bold text-planner-muted mb-1">Focusing On Task (Optional):</label>
+            <select
+              value={selectedTaskId}
+              onChange={(e) => setSelectedTaskId(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-xs focus:outline-none focus:ring-2 focus:ring-planner-primary"
+            >
+              <option value="">-- Select Task --</option>
+              {tasks.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title} {t.category ? `[${t.category}]` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-          {/* Save Success Banner */}
-          {saveSuccessMsg && (
-            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-bold flex items-center gap-2 animate-in fade-in duration-200">
-              <BookmarkCheck className="w-5 h-5 shrink-0" />
-              <span>{saveSuccessMsg}</span>
-            </div>
-          )}
+        {/* Selected Task & Category Badge */}
+        <div className="flex flex-wrap items-center justify-center gap-2 relative z-10">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-planner-secondary text-planner-primary border border-planner-border">
+            <Tag className="w-3.5 h-3.5" />
+            <span>Category: {selectedCategory}</span>
+          </span>
 
-          {/* Main Timer Dial Card */}
-          <Card
-            className={`p-6 sm:p-10 text-center flex flex-col items-center justify-center space-y-6 sm:space-y-8 relative overflow-hidden ${
-              isStrange
-                ? 'strange-hud-card bg-slate-950 border-rose-600/40'
-                : isGta
-                ? 'gta-hud-card bg-gradient-to-b from-slate-950 via-slate-950/90 to-purple-950/30 border-emerald-500/30'
-                : 'bg-gradient-to-b from-planner-card via-planner-card to-planner-secondary/30'
-            }`}
-          >
-            {/* Background artwork overlay for Strange World */}
-            {isStrange && (
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={strangeOtherSideImg}
-                  alt="The Other Side"
-                  className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
-              </div>
-            )}
-
-            {/* Task & Category Pickers Grid */}
-            <div className="w-full max-w-lg grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10 text-left">
-              {/* Category Selector */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-planner-muted">Select Category:</label>
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoryModalOpen(true)}
-                    className="text-[11px] font-bold text-planner-primary hover:underline flex items-center gap-0.5"
-                  >
-                    <Plus className="w-3 h-3" /> New Category
-                  </button>
-                </div>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-xs focus:outline-none focus:ring-2 focus:ring-planner-primary"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.name} value={cat.name}>
-                      {cat.icon || '📌'} {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Task Selector */}
-              <div>
-                <label className="block text-xs font-bold text-planner-muted mb-1">Focusing On Task (Optional):</label>
-                <select
-                  value={selectedTaskId}
-                  onChange={(e) => setSelectedTaskId(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-planner-border bg-planner-bg text-planner-text font-bold text-xs focus:outline-none focus:ring-2 focus:ring-planner-primary"
-                >
-                  <option value="">-- Select Task --</option>
-                  {tasks.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      {t.title} {t.category ? `[${t.category}]` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Selected Task & Category Badge */}
-            <div className="flex flex-wrap items-center justify-center gap-2 relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-planner-secondary text-planner-primary border border-planner-border">
-                <Tag className="w-3.5 h-3.5" />
-                <span>Category: {selectedCategory}</span>
-              </span>
-
-              {selectedTask && (
-                <div
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl text-xs font-bold border ${
-                    isStrange
-                      ? 'bg-rose-600/20 text-rose-400 border-rose-600/50 shadow-[0_0_15px_rgba(225,29,72,0.3)]'
-                      : isGta
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                      : 'bg-planner-secondary text-planner-text border-planner-border'
-                  }`}
-                >
-                  {isStrange ? <Eye className="w-3.5 h-3.5" /> : isGta ? <Crosshair className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  <span>Task: {selectedTask.title}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Circular Display Dial */}
+          {selectedTask && (
             <div
-              className={`relative z-10 w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg transition-all ${
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl text-xs font-bold border ${
                 isStrange
-                  ? 'bg-slate-950 border-rose-600/60 shadow-[0_0_35px_rgba(225,29,72,0.3)]'
+                  ? 'bg-rose-600/20 text-rose-400 border-rose-600/50 shadow-[0_0_15px_rgba(225,29,72,0.3)]'
                   : isGta
-                  ? 'bg-slate-950 border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
-                  : 'bg-planner-bg/60 border-planner-secondary'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                  : 'bg-planner-secondary text-planner-text border-planner-border'
               }`}
             >
-              <div className="text-center space-y-1">
-                <span
-                  className={`text-4xl sm:text-6xl font-black tracking-tight font-mono ${
-                    isStrange ? 'text-rose-400' : isGta ? 'text-emerald-400' : 'text-planner-text'
-                  }`}
-                >
-                  {formatTime(timeLeft)}
+              {isStrange ? <Eye className="w-3.5 h-3.5" /> : isGta ? <Crosshair className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+              <span>Task: {selectedTask.title}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Circular Display Dial */}
+        <div
+          className={`relative z-10 w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center rounded-full border-8 shadow-cozy-lg transition-all ${
+            isStrange
+              ? 'bg-slate-950 border-rose-600/60 shadow-[0_0_35px_rgba(225,29,72,0.3)]'
+              : isGta
+              ? 'bg-slate-950 border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
+              : 'bg-planner-bg/60 border-planner-secondary'
+          }`}
+        >
+          <div className="text-center space-y-1">
+            <span
+              className={`text-4xl sm:text-6xl font-black tracking-tight font-mono ${
+                isStrange ? 'text-rose-400' : isGta ? 'text-emerald-400' : 'text-planner-text'
+              }`}
+            >
+              {formatTime(timeLeft)}
+            </span>
+
+            <p className="text-xs font-black uppercase tracking-widest text-planner-muted font-serif">
+              {TIMER_MODES[mode]?.label}
+            </p>
+
+            {/* Live Spent Time Counter */}
+            {elapsedSeconds > 0 && (
+              <div className="pt-1">
+                <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold font-mono bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  ⏱️ {elapsedMins}m {elapsedSeconds % 60}s logged
                 </span>
-
-                <p className="text-xs font-black uppercase tracking-widest text-planner-muted font-serif">
-                  {TIMER_MODES[mode]?.label}
-                </p>
-
-                {/* Live Spent Time Counter */}
-                {elapsedSeconds > 0 && (
-                  <div className="pt-1">
-                    <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold font-mono bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      ⏱️ {elapsedMins}m {elapsedSeconds % 60}s logged
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Main Action Controls Bar */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2 relative z-10">
-              <Button
-                variant={isRunning ? 'secondary' : 'primary'}
-                size="lg"
-                onClick={() => setIsRunning((prev) => !prev)}
-                className="px-6 sm:px-8 shadow-cozy"
-              >
-                {isRunning ? (
-                  <>
-                    <Pause className="w-5 h-5 mr-2" /> PAUSE
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 mr-2 fill-current" /> {isStrange ? 'CONNECT TO OTHER SIDE' : isGta ? 'START MISSION' : 'Start Focus'}
-                  </>
-                )}
-              </Button>
-
-              {/* MID-SESSION SAVE BUTTON */}
-              <Button
-                variant="accent"
-                size="lg"
-                onClick={handleMidSessionSave}
-                disabled={elapsedSeconds <= 0}
-                className={`px-5 sm:px-6 shadow-cozy transition-all ${
-                  elapsedSeconds > 0
-                    ? isStrange
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white font-serif'
-                      : isGta
-                      ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    : 'opacity-50 cursor-not-allowed'
-                }`}
-                title={elapsedSeconds > 0 ? `Save ${elapsedMins} mins logged so far` : 'Run timer to enable saving'}
-              >
-                <Save className="w-5 h-5 mr-2" />
-                <span>Save Time {elapsedSeconds > 0 ? `(${elapsedMins}m)` : ''}</span>
-              </Button>
-
-              <Button variant="outline" size="lg" onClick={handleReset}>
-                <RotateCcw className="w-5 h-5 mr-2" /> {isStrange ? 'ABORT / RESET' : 'Reset'}
-              </Button>
-            </div>
-          </Card>
-
-          {/* Ambient Focus Soundscapes Card */}
-          <Card className="p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-planner-border pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600">
-                  <Music className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-planner-text">Ambient Focus Soundscapes 🎧</h3>
-                  <p className="text-xs text-planner-muted">Procedural background audio for deep concentration and flow state</p>
-                </div>
-              </div>
-
-              {ambientSound !== 'none' && (
-                <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-planner-primary" />
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={ambientVolume}
-                    onChange={(e) => handleVolumeChange(e.target.value)}
-                    className="w-24 accent-purple-600 cursor-pointer"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-              {[
-                { id: 'none', label: 'Off 🔇' },
-                { id: 'rain', label: 'Heavy Rain 🌧️' },
-                { id: 'rain_roof', label: 'Rain on Roof 🏠' },
-                { id: 'cafe', label: 'Cozy Cafe ☕' },
-                { id: 'farm', label: 'Morning Birds 🌾' },
-                { id: 'clock', label: 'Focus Clock ⏱️' }
-              ].map((snd) => (
-                <button
-                  key={snd.id}
-                  onClick={() => handleSoundChange(snd.id)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
-                    ambientSound === snd.id
-                      ? 'bg-purple-600 text-white border-purple-500 shadow-xs'
-                      : 'bg-planner-bg text-planner-text border-planner-border hover:bg-planner-secondary'
-                  }`}
-                >
-                  {snd.label}
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          {/* Timer History Log Section */}
-          <Card className={`p-5 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-planner-border">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-planner-secondary text-planner-primary">
-                  <History className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-planner-text">Recent Session History</h3>
-                  <p className="text-xs text-planner-muted">Recent focus & break logs recorded under your categories</p>
-                </div>
-              </div>
-
-              {history.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearHistory} className="text-rose-500 hover:text-rose-600">
-                  <Trash2 className="w-4 h-4 mr-1" /> Clear Log
-                </Button>
-              )}
-            </div>
-
-            {history.length === 0 ? (
-              <div className="text-center py-6 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
-                <p className="text-sm font-medium">No focus sessions logged yet ✨</p>
-                <p className="text-xs text-planner-muted mt-1">Start a timer and click "Save Time" or run to completion to record your time.</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                {history.map((item) => {
-                  const sessionDate = new Date(item.completedAt);
-                  const catInfo = categories.find((c) => c.name === item.category);
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 border border-planner-border text-xs sm:text-sm"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-planner-text truncate">
-                              {item.taskTitle ? item.taskTitle : item.label || 'Focus Session'} ({item.durationMins} mins)
-                            </p>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-planner-secondary text-planner-text border border-planner-border shrink-0">
-                              <span>{catInfo?.icon || '📌'}</span>
-                              <span>{item.category || 'Personal'}</span>
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-planner-muted mt-0.5">
-                            {sessionDate.toLocaleDateString()} at {sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => deleteHistoryItem(item.id)}
-                        className="p-1.5 text-planner-muted hover:text-rose-500 rounded-lg transition-colors ml-2"
-                        title="Remove session log"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  );
-                })}
               </div>
             )}
-          </Card>
-        </>
-      )}
+          </div>
+        </div>
+
+        {/* Main Action Controls Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2 relative z-10">
+          <Button
+            variant={isRunning ? 'secondary' : 'primary'}
+            size="lg"
+            onClick={() => setIsRunning((prev) => !prev)}
+            className="px-6 sm:px-8 shadow-cozy"
+          >
+            {isRunning ? (
+              <>
+                <Pause className="w-5 h-5 mr-2" /> PAUSE
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5 mr-2 fill-current" /> {isStrange ? 'CONNECT TO OTHER SIDE' : isGta ? 'START MISSION' : 'Start Focus'}
+              </>
+            )}
+          </Button>
+
+          {/* MID-SESSION SAVE BUTTON */}
+          <Button
+            variant="accent"
+            size="lg"
+            onClick={handleMidSessionSave}
+            disabled={elapsedSeconds <= 0}
+            className={`px-5 sm:px-6 shadow-cozy transition-all ${
+              elapsedSeconds > 0
+                ? isStrange
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white font-serif'
+                  : isGta
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'opacity-50 cursor-not-allowed'
+            }`}
+            title={elapsedSeconds > 0 ? `Save ${elapsedMins} mins logged so far` : 'Run timer to enable saving'}
+          >
+            <Save className="w-5 h-5 mr-2" />
+            <span>Save Time {elapsedSeconds > 0 ? `(${elapsedMins}m)` : ''}</span>
+          </Button>
+
+          <Button variant="outline" size="lg" onClick={handleReset}>
+            <RotateCcw className="w-5 h-5 mr-2" /> {isStrange ? 'ABORT / RESET' : 'Reset'}
+          </Button>
+        </div>
+      </Card>
+
+      {/* Ambient Focus Soundscapes Card */}
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center justify-between border-b border-planner-border pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600">
+              <Music className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-planner-text">Ambient Focus Soundscapes 🎧</h3>
+              <p className="text-xs text-planner-muted">Procedural background audio for deep concentration and flow state</p>
+            </div>
+          </div>
+
+          {ambientSound !== 'none' && (
+            <div className="flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-planner-primary" />
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={ambientVolume}
+                onChange={(e) => handleVolumeChange(e.target.value)}
+                className="w-24 accent-purple-600 cursor-pointer"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+          {[
+            { id: 'none', label: 'Off 🔇' },
+            { id: 'rain', label: 'Heavy Rain 🌧️' },
+            { id: 'rain_roof', label: 'Rain on Roof 🏠' },
+            { id: 'cafe', label: 'Cozy Cafe ☕' },
+            { id: 'farm', label: 'Morning Birds 🌾' },
+            { id: 'clock', label: 'Focus Clock ⏱️' }
+          ].map((snd) => (
+            <button
+              key={snd.id}
+              onClick={() => handleSoundChange(snd.id)}
+              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center ${
+                ambientSound === snd.id
+                  ? 'bg-purple-600 text-white border-purple-500 shadow-xs'
+                  : 'bg-planner-bg text-planner-text border-planner-border hover:bg-planner-secondary'
+              }`}
+            >
+              {snd.label}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* Timer History Log Section */}
+      <Card className={`p-5 ${isStrange ? 'strange-hud-card' : isGta ? 'gta-hud-card' : ''}`}>
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-planner-border">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-planner-secondary text-planner-primary">
+              <History className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-planner-text">Recent Session History</h3>
+              <p className="text-xs text-planner-muted">Recent focus & break logs recorded under your categories</p>
+            </div>
+          </div>
+
+          {history.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearHistory} className="text-rose-500 hover:text-rose-600">
+              <Trash2 className="w-4 h-4 mr-1" /> Clear Log
+            </Button>
+          )}
+        </div>
+
+        {history.length === 0 ? (
+          <div className="text-center py-6 text-planner-muted bg-planner-bg/40 rounded-2xl border border-dashed border-planner-border">
+            <p className="text-sm font-medium">No focus sessions logged yet ✨</p>
+            <p className="text-xs text-planner-muted mt-1">Start a timer and click "Save Time" or run to completion to record your time.</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            {history.map((item) => {
+              const sessionDate = new Date(item.completedAt);
+              const catInfo = categories.find((c) => c.name === item.category);
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-planner-bg/60 border border-planner-border text-xs sm:text-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-planner-text truncate">
+                          {item.taskTitle ? item.taskTitle : item.label || 'Focus Session'} ({item.durationMins} mins)
+                        </p>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-planner-secondary text-planner-text border border-planner-border shrink-0">
+                          <span>{catInfo?.icon || '📌'}</span>
+                          <span>{item.category || 'Personal'}</span>
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-planner-muted mt-0.5">
+                        {sessionDate.toLocaleDateString()} at {sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteHistoryItem(item.id)}
+                    className="p-1.5 text-planner-muted hover:text-rose-500 rounded-lg transition-colors ml-2"
+                    title="Remove session log"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
 
       {/* Category Management Modal */}
       <CategoryModal

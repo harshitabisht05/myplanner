@@ -9,13 +9,14 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Modal from '../../components/common/Modal';
 import Badge from '../../components/common/Badge';
-import { Users, UserPlus, Shield, Trash2, Mail } from 'lucide-react';
+import { Users, UserPlus, Shield, Trash2, Mail, Calendar, CheckCircle2, User } from 'lucide-react';
 
 const Members = () => {
   const { currentWorkspace, currentWorkspaceId, refetchWorkspaces } = useWorkspace();
   const { showSuccess, showError } = useToast();
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [selectedProfileMember, setSelectedProfileMember] = useState(null);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('developer');
 
@@ -50,6 +51,9 @@ const Members = () => {
       await workspaceApi.removeMember(currentWorkspaceId, userId);
       showSuccess('Member removed');
       refetchWorkspaces();
+      if (selectedProfileMember?.user?._id === userId) {
+        setSelectedProfileMember(null);
+      }
     } catch (err) {
       showError(err.response?.data?.message || err.message || 'Failed to remove member');
     }
@@ -61,7 +65,7 @@ const Members = () => {
     <div className="space-y-6">
       <PageHeader
         title="Workspace Members"
-        subtitle="Manage workspace roster, role permissions (Owner, Admin, Manager, Developer, Viewer), and invitations"
+        subtitle="Manage workspace roster, member profiles, role permissions, and invitations"
         icon={Users}
         action={
           <Button variant="primary" onClick={() => setIsInviteModalOpen(true)}>
@@ -75,9 +79,14 @@ const Members = () => {
           const userObj = m.user || {};
           const isOwner = currentWorkspace?.owner?._id === userObj._id || currentWorkspace?.owner === userObj._id;
           return (
-            <Card key={userObj._id || m.user} className="p-4 flex items-center justify-between gap-3">
+            <Card
+              key={userObj._id || m.user}
+              hover
+              onClick={() => setSelectedProfileMember(m)}
+              className="p-4 flex items-center justify-between gap-3 cursor-pointer group"
+            >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-extrabold text-sm shrink-0 overflow-hidden border border-planner-border">
+                <div className="w-10 h-10 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-extrabold text-sm shrink-0 overflow-hidden border border-planner-border/50 group-hover:scale-105 transition-transform">
                   {userObj.avatar ? (
                     <img src={userObj.avatar} alt={userObj.name} className="w-full h-full object-cover" />
                   ) : userObj.name ? (
@@ -87,12 +96,14 @@ const Members = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-planner-text truncate">{userObj.name || 'User'}</p>
+                  <p className="text-sm font-bold text-planner-text truncate group-hover:text-planner-primary transition-colors">
+                    {userObj.name || 'User'}
+                  </p>
                   <p className="text-xs text-planner-muted truncate">{userObj.email}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                 {isOwner ? (
                   <Badge variant="primary">Owner</Badge>
                 ) : (
@@ -122,6 +133,76 @@ const Members = () => {
           );
         })}
       </div>
+
+      {/* Member Profile Modal */}
+      {selectedProfileMember && (
+        <Modal
+          isOpen={Boolean(selectedProfileMember)}
+          onClose={() => setSelectedProfileMember(null)}
+          title="Member Profile Details 👤"
+        >
+          {(() => {
+            const memberUser = selectedProfileMember.user || {};
+            const isOwner =
+              currentWorkspace?.owner?._id === memberUser._id || currentWorkspace?.owner === memberUser._id;
+
+            return (
+              <div className="space-y-5">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-planner-bg/60 border border-planner-border/50">
+                  <div className="w-16 h-16 rounded-full bg-planner-primary/20 text-planner-primary flex items-center justify-center font-extrabold text-2xl shrink-0 overflow-hidden border border-planner-primary/30">
+                    {memberUser.avatar ? (
+                      <img src={memberUser.avatar} alt={memberUser.name} className="w-full h-full object-cover" />
+                    ) : memberUser.name ? (
+                      memberUser.name.charAt(0).toUpperCase()
+                    ) : (
+                      'U'
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-extrabold text-planner-text truncate">{memberUser.name || 'Team Member'}</h3>
+                    <p className="text-xs text-planner-muted flex items-center gap-1 mt-0.5">
+                      <Mail className="w-3.5 h-3.5 text-planner-primary" /> {memberUser.email}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge variant={isOwner ? 'primary' : 'info'}>
+                        {isOwner ? 'Workspace Owner' : `Role: ${selectedProfileMember.role || 'Member'}`}
+                      </Badge>
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Active Teammate
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-xs font-black uppercase text-planner-muted tracking-wider">Member Actions & Information</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-planner-card border border-planner-border/50 space-y-1">
+                      <span className="font-bold text-planner-muted block">Workspace ID</span>
+                      <span className="font-mono text-planner-text text-[11px] truncate block">{currentWorkspaceId}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-planner-card border border-planner-border/50 space-y-1">
+                      <span className="font-bold text-planner-muted block">Direct Contact</span>
+                      <a
+                        href={`mailto:${memberUser.email}`}
+                        className="text-planner-primary font-bold hover:underline inline-flex items-center gap-1"
+                      >
+                        <Mail className="w-3.5 h-3.5" /> Send Email
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button variant="outline" onClick={() => setSelectedProfileMember(null)}>
+                    Close Profile
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+        </Modal>
+      )}
 
       {/* Invite Member Modal */}
       <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Team Member ✉️">

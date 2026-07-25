@@ -7,10 +7,14 @@ export const useSocket = (workspaceId, onEvent) => {
   useEffect(() => {
     if (!workspaceId) return;
 
-    // Connect to backend socket server
-    const socket = io(window.location.origin.replace(/^http/, 'ws'), {
-      transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5
+    // Target socket server (localhost:5000 in dev, window.location.origin in prod)
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 
+      (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+    const socket = io(socketUrl, {
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000
     });
 
     socketRef.current = socket;
@@ -20,10 +24,15 @@ export const useSocket = (workspaceId, onEvent) => {
     });
 
     if (onEvent) {
-      socket.on('chat_message', (data) => onEvent('chat_message', data));
-      socket.on('chat_reaction', (data) => onEvent('chat_reaction', data));
-      socket.on('task_updated', (data) => onEvent('task_updated', data));
-      socket.on('task_created', (data) => onEvent('task_created', data));
+      const handleChatMessage = (data) => onEvent('chat_message', data);
+      const handleChatReaction = (data) => onEvent('chat_reaction', data);
+      const handleTaskUpdated = (data) => onEvent('task_updated', data);
+      const handleTaskCreated = (data) => onEvent('task_created', data);
+
+      socket.on('chat_message', handleChatMessage);
+      socket.on('chat_reaction', handleChatReaction);
+      socket.on('task_updated', handleTaskUpdated);
+      socket.on('task_created', handleTaskCreated);
     }
 
     return () => {

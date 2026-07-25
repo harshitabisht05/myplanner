@@ -173,21 +173,12 @@ const CalendarPage = () => {
     setIsDeletingAllTasks(true);
 
     try {
-      const singleDayTasks = selectedDayTasks.filter((t) => !t.isRecurringDaily);
-      const recurringTasks = selectedDayTasks.filter((t) => t.isRecurringDaily && !t.completed);
-
-      // 1. Delete single-day tasks from database
-      if (singleDayTasks.length > 0) {
-        await Promise.all(singleDayTasks.map((t) => taskApi.deleteTask(t._id)));
-      }
-
-      // 2. Toggle recurring tasks as completed/cleared for this target date
-      if (recurringTasks.length > 0) {
-        await Promise.all(recurringTasks.map((t) => taskApi.toggleTaskComplete(t._id, selectedDateStr)));
-      }
+      const count = selectedDayTasks.length;
+      // Remove/exclude all tasks for this particular date only
+      await Promise.all(selectedDayTasks.map((t) => taskApi.deleteTask(t._id, { date: selectedDateStr })));
 
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      showSuccess(`Cleared tasks for ${selectedDateStr}! 🗑️`);
+      showSuccess(`Cleared ${count} task${count > 1 ? 's' : ''} for ${selectedDateStr}! 🗑️`);
       setIsDeleteAllTasksOpen(false);
     } catch (err) {
       showError(err.response?.data?.message || err.message || 'Failed to clear tasks');
