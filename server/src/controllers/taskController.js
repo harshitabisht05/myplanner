@@ -77,14 +77,14 @@ exports.getTasks = async (req, res, next) => {
     // Map tasks to compute date-specific completed status & effective due date for recurring tasks
     let tasks = rawTasks
       .filter((t) => {
-        if (t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(targetDate)) {
+        if (view === 'today' && t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(targetDate)) {
           return false;
         }
         return true;
       })
       .map((t) => {
         const obj = t.toObject();
-        if (obj.isRecurringDaily) {
+        if (obj.isRecurringDaily && view === 'today') {
           obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
           obj.dueDate = targetDate;
         }

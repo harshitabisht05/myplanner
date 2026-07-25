@@ -52,7 +52,6 @@ const workspaceNavItems = [
   { name: 'Team Calendar', path: '/workspace/calendar', icon: CalendarIcon, gtaName: 'CREW SCHEDULE', strangeName: 'TIMELINE' },
   { name: 'Files', path: '/workspace/files', icon: Folder, gtaName: 'INTEL FILES', strangeName: 'DOCUMENT VAULT' },
   { name: 'Activity', path: '/workspace/activity', icon: ActivityIcon, gtaName: 'LOG AUDIT', strangeName: 'SIGNAL LOGS' },
-  { name: 'Chat', path: '/workspace/chat', icon: MessageSquare, gtaName: 'RADIO COMM', strangeName: 'WALKIE-TALKIE' },
   { name: 'Workspace Settings', path: '/workspace/settings', icon: Settings, gtaName: 'HQ OPTIONS', strangeName: 'HUB SETTINGS' },
 ];
 

@@ -28,7 +28,7 @@ const Input = forwardRef(
             className={`w-full bg-planner-bg/60 dark:bg-planner-card text-planner-text text-sm rounded-2xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-planner-primary/40 focus:border-planner-primary placeholder:text-planner-muted/50 min-h-[44px] sm:min-h-[40px] ${
               LeftIcon ? 'pl-10' : 'pl-4'
             } ${RightIcon ? 'pr-10' : 'pr-4'} py-2.5 ${
-              error ? 'border-rose-400 focus:ring-rose-400/40 focus:border-rose-500' : 'border-planner-border'
+              error ? 'border-rose-400 focus:ring-rose-400/40 focus:border-rose-500' : 'border-planner-border/50'
             } ${className}`}
             {...props}
           />

@@ -32,7 +32,6 @@ const workspaceItems = [
   { name: 'Workspace Overview', path: '/workspace', icon: Users },
   { name: 'Kanban Board', path: '/workspace/kanban', icon: Kanban },
   { name: 'Projects & Gantt', path: '/workspace/projects', icon: Layers },
-  { name: 'Team Chat & DMs', path: '/workspace/chat', icon: MessageSquare },
   { name: 'Document Vault', path: '/workspace/files', icon: Folder },
   { name: 'Audit Log', path: '/workspace/activity', icon: Activity },
   { name: 'Workspace Settings', path: '/workspace/settings', icon: Settings }
