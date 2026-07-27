@@ -6,13 +6,15 @@ import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import IconButton from '../components/common/IconButton';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import Skeleton from '../components/common/Skeleton';
 import ErrorMessage from '../components/common/ErrorMessage';
-import EmptyState from '../components/common/EmptyState';
 import TaskModal from '../components/modals/TaskModal';
-import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import DeleteTaskModal from '../components/modals/DeleteTaskModal';
+import ConfirmationDialog from '../components/common/ConfirmationDialog';
+import { Sun, Star, Plus, Sunrise, Sunset, Moon, Shield, ChevronLeft, ChevronRight, Edit2, Trash2, Clock, Sparkles } from 'lucide-react';
 import { getLocalDateStr } from '../utils/dateUtils';
 
 const Today = () => {
@@ -27,6 +29,12 @@ const Today = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [defaultTimeBlock, setDefaultTimeBlock] = useState('none');
+
+  const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [isClearCompletedOpen, setIsClearCompletedOpen] = useState(false);
+  const [isClearingCompleted, setIsClearingCompleted] = useState(false);
 
   const handlePrevDay = () => {
     const d = new Date(selectedDate + 'T00:00:00');
@@ -51,6 +59,7 @@ const Today = () => {
   });
 
   const tasks = data?.tasks || [];
+  const hasCompletedTasks = tasks.some((t) => t.completed);
 
   const top3Tasks = tasks.filter((t) => t.isTop3);
   const morningTasks = tasks.filter((t) => t.timeBlock === 'morning');
@@ -58,6 +67,7 @@ const Today = () => {
   const eveningTasks = tasks.filter((t) => t.timeBlock === 'evening');
   const nightTasks = tasks.filter((t) => t.timeBlock === 'night');
   const midnightTasks = tasks.filter((t) => t.timeBlock === 'midnight');
+  const untimedTasks = tasks.filter((t) => !t.timeBlock || t.timeBlock === 'none');
 
   // Toggle complete mutation with Optimistic Updates
   const toggleCompleteMutation = useMutation({
@@ -124,6 +134,81 @@ const Today = () => {
     }
   };
 
+  const handleDeleteConfirm = async (mode = 'single') => {
+    if (!deleteConfirmTask) return;
+    setIsDeleting(true);
+    const taskIdToDelete = deleteConfirmTask._id;
+    try {
+      const params = mode === 'all' ? { deleteAll: 'true', date: selectedDate } : { date: selectedDate };
+      await taskApi.deleteTask(taskIdToDelete, params);
+      
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.filter((t) => t._id !== taskIdToDelete)
+        };
+      });
+
+      showSuccess(mode === 'all' ? 'Entire task series deleted!' : 'Task deleted for today!');
+      setDeleteConfirmTask(null);
+    } catch (err) {
+      showError(err.message || 'Failed to delete task');
+    } finally {
+      setIsDeleting(false);
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    }
+  };
+
+  const handleClearCompletedConfirm = async () => {
+    setIsClearingCompleted(true);
+    try {
+      await taskApi.clearCompleted({ date: selectedDate, view: 'today' });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showSuccess('Completed tasks cleared! 🧹');
+      setIsClearCompletedOpen(false);
+    } catch (err) {
+      showError(err.message || 'Failed to clear completed tasks');
+    } finally {
+      setIsClearingCompleted(false);
+    }
+  };
+
+  const renderTaskItem = (task) => (
+    <div
+      key={task._id}
+      className={`p-3 rounded-2xl border flex items-center justify-between gap-2 transition-all ${
+        task.completed && isGta
+          ? 'gta-mission-passed'
+          : 'bg-planner-bg/60 border-planner-border hover:border-planner-primary/40'
+      }`}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Checkbox
+          checked={task.completed}
+          onChange={() => toggleCompleteMutation.mutate(task._id)}
+        />
+        <span
+          onClick={() => handleOpenEditTask(task)}
+          className={`text-xs sm:text-sm font-semibold truncate cursor-pointer hover:text-planner-primary transition-colors ${
+            task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
+          }`}
+          title="Click to edit task"
+        >
+          {task.title}
+        </span>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <IconButton size="sm" onClick={() => handleOpenEditTask(task)} title="Edit Task">
+          <Edit2 className="w-3.5 h-3.5 text-planner-muted hover:text-planner-primary" />
+        </IconButton>
+        <IconButton size="sm" variant="danger" onClick={() => setDeleteConfirmTask(task)} title="Delete Task">
+          <Trash2 className="w-3.5 h-3.5" />
+        </IconButton>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -140,9 +225,21 @@ const Today = () => {
         }
         icon={isGta ? Shield : Sun}
         action={
-          <Button variant="primary" onClick={() => handleOpenNewTask('none')}>
-            <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Mission' : 'Add Task'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {hasCompletedTasks && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsClearCompletedOpen(true)}
+                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" /> Clear Completed
+              </Button>
+            )}
+            <Button variant="primary" onClick={() => handleOpenNewTask('none')}>
+              <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Mission' : 'Add Task'}
+            </Button>
+          </div>
         }
       />
 
@@ -250,19 +347,28 @@ const Today = () => {
                       <div className="min-w-0">
                         <p
                           onClick={() => handleOpenEditTask(task)}
-                          className={`text-sm font-bold truncate cursor-pointer hover:text-planner-primary ${
+                          className={`text-sm font-bold truncate cursor-pointer hover:text-planner-primary transition-colors ${
                             task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
                           }`}
+                          title="Click to edit task"
                         >
                           {task.title}
                         </p>
                         {task.category && <span className="text-[10px] text-planner-muted">🏷️ {task.category}</span>}
                       </div>
                     </div>
-                    <Checkbox
-                      checked={task.completed}
-                      onChange={() => toggleCompleteMutation.mutate(task._id)}
-                    />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Checkbox
+                        checked={task.completed}
+                        onChange={() => toggleCompleteMutation.mutate(task._id)}
+                      />
+                      <IconButton size="sm" onClick={() => handleOpenEditTask(task)} title="Edit Task">
+                        <Edit2 className="w-3.5 h-3.5 text-planner-muted hover:text-planner-primary" />
+                      </IconButton>
+                      <IconButton size="sm" variant="danger" onClick={() => setDeleteConfirmTask(task)} title="Delete Task">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </IconButton>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -271,11 +377,13 @@ const Today = () => {
 
           {/* Daily Timeline Section */}
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-planner-text tracking-tight flex items-center gap-2">
-              <span>{isGta ? 'TIMELINE OPERATIONS' : 'Daily Timeline'}</span>
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-planner-text tracking-tight flex items-center gap-2">
+                <span>{isGta ? 'TIMELINE OPERATIONS' : 'Daily Timeline'}</span>
+              </h2>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${untimedTasks.length > 0 ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-5'} gap-4 sm:gap-6`}>
               {/* Morning Timeline */}
               <Card className={isGta ? 'gta-hud-card' : ''}>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
@@ -296,31 +404,7 @@ const Today = () => {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {morningTasks.map((task) => (
-                      <div
-                        key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                          task.completed && isGta
-                            ? 'gta-mission-passed'
-                            : 'bg-planner-bg/60 border-planner-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Checkbox
-                            checked={task.completed}
-                            onChange={() => toggleCompleteMutation.mutate(task._id)}
-                          />
-                          <span
-                            onClick={() => handleOpenEditTask(task)}
-                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    {morningTasks.map(renderTaskItem)}
                   </div>
                 )}
               </Card>
@@ -345,31 +429,7 @@ const Today = () => {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {afternoonTasks.map((task) => (
-                      <div
-                        key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                          task.completed && isGta
-                            ? 'gta-mission-passed'
-                            : 'bg-planner-bg/60 border-planner-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Checkbox
-                            checked={task.completed}
-                            onChange={() => toggleCompleteMutation.mutate(task._id)}
-                          />
-                          <span
-                            onClick={() => handleOpenEditTask(task)}
-                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    {afternoonTasks.map(renderTaskItem)}
                   </div>
                 )}
               </Card>
@@ -394,31 +454,7 @@ const Today = () => {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {eveningTasks.map((task) => (
-                      <div
-                        key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                          task.completed && isGta
-                            ? 'gta-mission-passed'
-                            : 'bg-planner-bg/60 border-planner-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Checkbox
-                            checked={task.completed}
-                            onChange={() => toggleCompleteMutation.mutate(task._id)}
-                          />
-                          <span
-                            onClick={() => handleOpenEditTask(task)}
-                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    {eveningTasks.map(renderTaskItem)}
                   </div>
                 )}
               </Card>
@@ -443,31 +479,7 @@ const Today = () => {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {nightTasks.map((task) => (
-                      <div
-                        key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                          task.completed && isGta
-                            ? 'gta-mission-passed'
-                            : 'bg-planner-bg/60 border-planner-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Checkbox
-                            checked={task.completed}
-                            onChange={() => toggleCompleteMutation.mutate(task._id)}
-                          />
-                          <span
-                            onClick={() => handleOpenEditTask(task)}
-                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    {nightTasks.map(renderTaskItem)}
                   </div>
                 )}
               </Card>
@@ -492,34 +504,31 @@ const Today = () => {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {midnightTasks.map((task) => (
-                      <div
-                        key={task._id}
-                        className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                          task.completed && isGta
-                            ? 'gta-mission-passed'
-                            : 'bg-planner-bg/60 border-planner-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Checkbox
-                            checked={task.completed}
-                            onChange={() => toggleCompleteMutation.mutate(task._id)}
-                          />
-                          <span
-                            onClick={() => handleOpenEditTask(task)}
-                            className={`text-xs sm:text-sm font-semibold truncate cursor-pointer ${
-                              task.completed ? 'line-through text-planner-muted' : 'text-planner-text'
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    {midnightTasks.map(renderTaskItem)}
                   </div>
                 )}
               </Card>
+
+              {/* Untimed / General Tasks (if any) */}
+              {untimedTasks.length > 0 && (
+                <Card className={isGta ? 'gta-hud-card' : ''}>
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-planner-border">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-emerald-500 shrink-0" />
+                      <h3 className="font-bold text-planner-text text-sm sm:text-base">
+                        {isGta ? 'UNTIMED OPS' : 'Anytime 📌'}
+                      </h3>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenNewTask('none')}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {untimedTasks.map(renderTaskItem)}
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         </>
@@ -531,6 +540,27 @@ const Today = () => {
         onClose={() => setIsTaskModalOpen(false)}
         onSubmit={handleTaskSubmit}
         task={editingTask}
+      />
+
+      {/* Delete Task Modal with Recurring Options */}
+      <DeleteTaskModal
+        isOpen={!!deleteConfirmTask}
+        onClose={() => setDeleteConfirmTask(null)}
+        onConfirm={handleDeleteConfirm}
+        task={deleteConfirmTask}
+        date={selectedDate}
+        isLoading={isDeleting}
+      />
+
+      {/* Clear Completed Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isClearCompletedOpen}
+        onClose={() => setIsClearCompletedOpen(false)}
+        onConfirm={handleClearCompletedConfirm}
+        title="Clear Completed Tasks"
+        message="Are you sure you want to remove all completed tasks for this day?"
+        confirmText="Clear Completed"
+        isLoading={isClearingCompleted}
       />
     </div>
   );

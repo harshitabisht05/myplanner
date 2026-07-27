@@ -6,7 +6,8 @@ const {
   createTask,
   updateTask,
   toggleTaskComplete,
-  deleteTask
+  deleteTask,
+  clearCompleted
 } = require('../controllers/taskController');
 const { protect } = require('../middleware/authMiddleware');
 const validate = require('../middleware/validateMiddleware');
@@ -17,6 +18,8 @@ router.use(protect);
 router.route('/')
   .get(getTasks)
   .post(validate(taskSchema), createTask);
+
+router.delete('/completed', clearCompleted);
 
 router.route('/:id')
   .get(getTaskById)

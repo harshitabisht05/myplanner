@@ -14,11 +14,11 @@ import Select from '../components/common/Select';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import Skeleton from '../components/common/Skeleton';
-import ErrorMessage from '../components/common/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
 import TaskModal from '../components/modals/TaskModal';
+import DeleteTaskModal from '../components/modals/DeleteTaskModal';
 import ConfirmationDialog from '../components/common/ConfirmationDialog';
-import { CheckSquare, Plus, Search, Edit2, Trash2, Calendar, Star, Shield, Award } from 'lucide-react';
+import { CheckSquare, Plus, Search, Edit2, Trash2, Calendar, Star, Shield, Award, Sparkles } from 'lucide-react';
 
 const Tasks = () => {
   const [searchParams] = useSearchParams();
@@ -47,6 +47,9 @@ const Tasks = () => {
   const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [isClearCompletedOpen, setIsClearCompletedOpen] = useState(false);
+  const [isClearingCompleted, setIsClearingCompleted] = useState(false);
+
   const todayStr = getLocalDateStr();
 
   // Fetch tasks query
@@ -64,6 +67,7 @@ const Tasks = () => {
   });
 
   const tasks = data?.tasks || [];
+  const hasCompletedTasks = tasks.some((t) => t.completed);
 
   // Mutations with Optimistic Updates
   const toggleCompleteMutation = useMutation({
@@ -116,18 +120,43 @@ const Tasks = () => {
     }
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = async (mode = 'all') => {
     if (!deleteConfirmTask) return;
     setIsDeleting(true);
+    const taskIdToDelete = deleteConfirmTask._id;
     try {
-      await taskApi.deleteTask(deleteConfirmTask._id);
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      showSuccess('Task deleted!');
+      const params = mode === 'all' ? { deleteAll: 'true', date: todayStr } : { date: todayStr };
+      await taskApi.deleteTask(taskIdToDelete, params);
+      
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.filter((t) => t._id !== taskIdToDelete)
+        };
+      });
+
+      showSuccess(mode === 'all' ? 'Task permanently deleted!' : 'Task deleted for today!');
       setDeleteConfirmTask(null);
     } catch (err) {
       showError(err.message || 'Failed to delete task');
     } finally {
       setIsDeleting(false);
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    }
+  };
+
+  const handleClearCompletedConfirm = async () => {
+    setIsClearingCompleted(true);
+    try {
+      await taskApi.clearCompleted({ date: todayStr, view });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showSuccess('Completed tasks cleared! 🧹');
+      setIsClearCompletedOpen(false);
+    } catch (err) {
+      showError(err.message || 'Failed to clear completed tasks');
+    } finally {
+      setIsClearingCompleted(false);
     }
   };
 
@@ -142,34 +171,48 @@ const Tasks = () => {
         }
         icon={isGta ? Shield : CheckSquare}
         action={
-          <Button variant="primary" onClick={handleOpenCreate}>
-            <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Mission' : 'Add Task'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {hasCompletedTasks && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsClearCompletedOpen(true)}
+                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" /> Clear Completed
+              </Button>
+            )}
+            <Button variant="primary" onClick={handleOpenCreate}>
+              <Plus className="w-4 h-4 mr-1.5" /> {isGta ? 'New Mission' : 'Add Task'}
+            </Button>
+          </div>
         }
       />
 
       {/* Main View Tabs */}
-      <div className={`flex p-1.5 rounded-2xl border shadow-cozy overflow-x-auto ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
-        {[
-          { key: 'all', label: isGta ? 'All Missions' : 'All Tasks' },
-          { key: 'today', label: isGta ? "Today's Missions" : "Today's Tasks" },
-          { key: 'upcoming', label: isGta ? 'Upcoming Heists' : 'Upcoming' },
-          { key: 'completed', label: isGta ? 'Passed Missions' : 'Completed' }
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setView(tab.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              view === tab.key
-                ? isGta
-                  ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                  : 'bg-planner-primary text-white shadow-xs'
-                : 'text-planner-muted hover:text-planner-text hover:bg-planner-secondary/50'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className={`flex items-center justify-between gap-2 p-1.5 rounded-2xl border shadow-cozy overflow-x-auto ${isGta ? 'bg-slate-950 border-emerald-900/40' : 'bg-planner-card border-planner-border'}`}>
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {[
+            { key: 'all', label: isGta ? 'All Missions' : 'All Tasks' },
+            { key: 'today', label: isGta ? "Today's Missions" : "Today's Tasks" },
+            { key: 'upcoming', label: isGta ? 'Upcoming Heists' : 'Upcoming' },
+            { key: 'completed', label: isGta ? 'Passed Missions' : 'Completed' }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setView(tab.key)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                view === tab.key
+                  ? isGta
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                    : 'bg-planner-primary text-white shadow-xs'
+                  : 'text-planner-muted hover:text-planner-text hover:bg-planner-secondary/50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Filters & Search Controls Bar */}
@@ -307,15 +350,25 @@ const Tasks = () => {
         task={editingTask}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
+      {/* Delete Task Modal with Recurring Options */}
+      <DeleteTaskModal
         isOpen={!!deleteConfirmTask}
         onClose={() => setDeleteConfirmTask(null)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Task"
-        message={`Are you sure you want to delete "${deleteConfirmTask?.title}"?`}
-        confirmText="Delete Task"
+        task={deleteConfirmTask}
+        date={todayStr}
         isLoading={isDeleting}
+      />
+
+      {/* Clear Completed Tasks Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isClearCompletedOpen}
+        onClose={() => setIsClearCompletedOpen(false)}
+        onConfirm={handleClearCompletedConfirm}
+        title="Clear Completed Tasks"
+        message="Are you sure you want to remove all completed tasks from this view?"
+        confirmText="Clear Completed"
+        isLoading={isClearingCompleted}
       />
     </div>
   );

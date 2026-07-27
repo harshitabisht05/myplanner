@@ -11,11 +11,14 @@ import { notificationApi } from '../api/notificationApi';
 import { useNotifications } from '../context/NotificationContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import IconButton from '../components/common/IconButton';
 import Checkbox from '../components/common/Checkbox';
 import Badge from '../components/common/Badge';
 import ProgressBar from '../components/common/ProgressBar';
 import Skeleton from '../components/common/Skeleton';
 import TaskModal from '../components/modals/TaskModal';
+import DeleteTaskModal from '../components/modals/DeleteTaskModal';
+import ConfirmationDialog from '../components/common/ConfirmationDialog';
 import {
   Sparkles,
   CheckSquare,
@@ -33,6 +36,8 @@ import {
   Activity,
   Mail,
   Clock,
+  Edit2,
+  Trash2,
   Send,
   Download,
   Edit3,
@@ -231,6 +236,81 @@ const Home = () => {
     }
   });
 
+  const [editingTask, setEditingTask] = useState(null);
+  const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
+  const [isDeletingTask, setIsDeletingTask] = useState(false);
+  const [isClearCompletedOpen, setIsClearCompletedOpen] = useState(false);
+  const [isClearingCompleted, setIsClearingCompleted] = useState(false);
+
+  const handleOpenCreateTask = () => {
+    setEditingTask(null);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleOpenEditTask = (task) => {
+    setEditingTask(task);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleTaskSubmit = async (taskData) => {
+    try {
+      if (editingTask) {
+        await taskApi.updateTask(editingTask._id, taskData);
+        showSuccess('Task updated! ✨');
+      } else {
+        await taskApi.createTask({
+          ...taskData,
+          dueDate: taskData.dueDate || todayStr
+        });
+        showSuccess('Task created! 🌸');
+      }
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setIsTaskModalOpen(false);
+    } catch (err) {
+      showError(err.message || 'Failed to save task');
+    }
+  };
+
+  const handleDeleteConfirmTask = async (mode = 'single') => {
+    if (!deleteConfirmTask) return;
+    setIsDeletingTask(true);
+    const taskIdToDelete = deleteConfirmTask._id;
+    try {
+      const params = mode === 'all' ? { deleteAll: 'true', date: todayStr } : { date: todayStr };
+      await taskApi.deleteTask(taskIdToDelete, params);
+
+      queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+        if (!old || !Array.isArray(old.tasks)) return old;
+        return {
+          ...old,
+          tasks: old.tasks.filter((t) => t._id !== taskIdToDelete)
+        };
+      });
+
+      showSuccess(mode === 'all' ? 'Entire task series deleted!' : 'Task deleted for today!');
+      setDeleteConfirmTask(null);
+    } catch (err) {
+      showError(err.message || 'Failed to delete task');
+    } finally {
+      setIsDeletingTask(false);
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    }
+  };
+
+  const handleClearCompletedConfirm = async () => {
+    setIsClearingCompleted(true);
+    try {
+      await taskApi.clearCompleted({ date: todayStr, view: 'today' });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showSuccess('Completed tasks cleared! 🧹');
+      setIsClearCompletedOpen(false);
+    } catch (err) {
+      showError(err.message || 'Failed to clear completed tasks');
+    } finally {
+      setIsClearingCompleted(false);
+    }
+  };
+
 
 
   // Mood update mutation
@@ -393,8 +473,18 @@ const Home = () => {
                   <p className="text-xs text-planner-muted">{completedTasksCount} of {totalTasksCount} completed</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 self-end sm:self-auto">
-                <Button variant="ghost" size="sm" onClick={() => setIsTaskModalOpen(true)}>
+              <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+                {completedTasksCount > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsClearCompletedOpen(true)}
+                    className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 text-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Clear Completed
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" onClick={handleOpenCreateTask}>
                   <Plus className="w-4 h-4 mr-1" /> Add
                 </Button>
                 <Link to="/tasks">
@@ -470,6 +560,12 @@ const Home = () => {
                     <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto pt-1 sm:pt-0 flex-wrap">
                       {task.isTop3 && <Badge variant="primary">{isStrange ? 'CRITICAL CASE' : isGta ? 'MAIN MISSION' : 'Top 3'}</Badge>}
                       <Badge variant={task.priority}>{task.priority}</Badge>
+                      <IconButton size="sm" onClick={() => handleOpenEditTask(task)} title="Edit Task">
+                        <Edit2 className="w-3.5 h-3.5 text-planner-muted hover:text-planner-primary" />
+                      </IconButton>
+                      <IconButton size="sm" variant="danger" onClick={() => setDeleteConfirmTask(task)} title="Delete Task">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </IconButton>
                     </div>
                   </div>
                 ))}
@@ -676,20 +772,33 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Task Creation Modal */}
+      {/* Task Creation & Editing Modal */}
       <TaskModal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
-        onSubmit={async (taskData) => {
-          try {
-            await taskApi.createTask(taskData);
-            queryClient.invalidateQueries({ queryKey: ['tasks'] });
-            showSuccess('Task added! 🌸');
-            setIsTaskModalOpen(false);
-          } catch (err) {
-            showError(err.message || 'Failed to create task');
-          }
-        }}
+        onSubmit={handleTaskSubmit}
+        task={editingTask}
+      />
+
+      {/* Delete Task Modal with Recurring Options */}
+      <DeleteTaskModal
+        isOpen={!!deleteConfirmTask}
+        onClose={() => setDeleteConfirmTask(null)}
+        onConfirm={handleDeleteConfirmTask}
+        task={deleteConfirmTask}
+        date={todayStr}
+        isLoading={isDeletingTask}
+      />
+
+      {/* Clear Completed Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isClearCompletedOpen}
+        onClose={() => setIsClearCompletedOpen(false)}
+        onConfirm={handleClearCompletedConfirm}
+        title="Clear Completed Tasks"
+        message="Are you sure you want to clear all completed tasks for today?"
+        confirmText="Clear Completed"
+        isLoading={isClearingCompleted}
       />
     </div>
   );

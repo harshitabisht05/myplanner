@@ -77,14 +77,14 @@ exports.getTasks = async (req, res, next) => {
     // Map tasks to compute date-specific completed status & effective due date for recurring tasks
     let tasks = rawTasks
       .filter((t) => {
-        if (view === 'today' && t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(targetDate)) {
+        if ((view === 'today' || date) && t.isRecurringDaily && Array.isArray(t.excludedDates) && t.excludedDates.includes(targetDate)) {
           return false;
         }
         return true;
       })
       .map((t) => {
         const obj = t.toObject();
-        if (obj.isRecurringDaily && view === 'today') {
+        if (obj.isRecurringDaily && (view === 'today' || date)) {
           obj.completed = Array.isArray(obj.completedDates) && obj.completedDates.includes(targetDate);
           obj.dueDate = targetDate;
         }
@@ -336,6 +336,62 @@ exports.deleteTask = async (req, res, next) => {
 
     await Task.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     res.status(200).json({ success: true, message: 'Task deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @route DELETE /api/tasks/completed
+exports.clearCompleted = async (req, res, next) => {
+  try {
+    const { date, view } = req.query;
+    const targetDate = date || getRequestLocalDate(req);
+    const userId = req.user._id;
+
+    if (view === 'today' || date) {
+      const completedTasks = await Task.find({ user: userId });
+      let deletedCount = 0;
+
+      for (const task of completedTasks) {
+        if (task.isRecurringDaily) {
+          const isCompletedOnDate = Array.isArray(task.completedDates) && task.completedDates.includes(targetDate);
+          if (isCompletedOnDate) {
+            task.completedDates = task.completedDates.filter((d) => d !== targetDate);
+            if (!Array.isArray(task.excludedDates)) task.excludedDates = [];
+            if (!task.excludedDates.includes(targetDate)) {
+              task.excludedDates.push(targetDate);
+            }
+            await task.save();
+            deletedCount++;
+          }
+        } else if (task.completed || task.dueDate === targetDate) {
+          if (task.completed) {
+            await Task.deleteOne({ _id: task._id });
+            deletedCount++;
+          }
+        }
+      }
+
+      return res.status(200).json({ success: true, message: `Cleared ${deletedCount} completed tasks`, count: deletedCount });
+    } else {
+      const nonRecurringResult = await Task.deleteMany({ user: userId, completed: true, isRecurringDaily: { $ne: true } });
+      let count = nonRecurringResult.deletedCount || 0;
+
+      const recurringTasks = await Task.find({ user: userId, isRecurringDaily: true });
+      for (const task of recurringTasks) {
+        if (Array.isArray(task.completedDates) && task.completedDates.length > 0) {
+          if (!Array.isArray(task.excludedDates)) task.excludedDates = [];
+          for (const d of task.completedDates) {
+            if (!task.excludedDates.includes(d)) task.excludedDates.push(d);
+          }
+          task.completedDates = [];
+          await task.save();
+          count++;
+        }
+      }
+
+      return res.status(200).json({ success: true, message: `Cleared ${count} completed tasks`, count });
+    }
   } catch (error) {
     next(error);
   }

@@ -24,5 +24,9 @@ export const taskApi = {
   deleteTask: async (id, params = {}) => {
     const res = await axiosClient.delete(`/tasks/${id}`, { params });
     return res.data;
+  },
+  clearCompleted: async (params = {}) => {
+    const res = await axiosClient.delete('/tasks/completed', { params });
+    return res.data;
   }
 };
