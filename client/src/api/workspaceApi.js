@@ -111,32 +111,6 @@ export const workspaceApi = {
     return res.data;
   },
 
-  // Chat
-  getChannels: async (workspaceId) => {
-    const res = await api.get(`/workspaces/${workspaceId}/chat/channels`);
-    return res.data;
-  },
-  createChannel: async (workspaceId, data) => {
-    const res = await api.post(`/workspaces/${workspaceId}/chat/channels`, data);
-    return res.data;
-  },
-  getMessages: async (workspaceId, params = {}) => {
-    const res = await api.get(`/workspaces/${workspaceId}/chat/messages`, { params });
-    return res.data;
-  },
-  sendMessage: async (workspaceId, data) => {
-    const res = await api.post(`/workspaces/${workspaceId}/chat/messages`, data);
-    return res.data;
-  },
-  addReaction: async (workspaceId, messageId, data) => {
-    const res = await api.post(`/workspaces/${workspaceId}/chat/messages/${messageId}/reactions`, data);
-    return res.data;
-  },
-  togglePin: async (workspaceId, messageId) => {
-    const res = await api.put(`/workspaces/${workspaceId}/chat/messages/${messageId}/pin`);
-    return res.data;
-  },
-
   // Files
   getFiles: async (workspaceId, params = {}) => {
     const res = await api.get(`/workspaces/${workspaceId}/files`, { params });

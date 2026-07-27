@@ -25,7 +25,6 @@ const workspaceRoutes = require('./routes/workspaceRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const workspaceTaskRoutes = require('./routes/workspaceTaskRoutes');
 const sprintRoutes = require('./routes/sprintRoutes');
-const chatRoutes = require('./routes/chatRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 
@@ -79,7 +78,6 @@ app.use((req, res, next) => {
 workspaceRoutes.use('/:workspaceId/projects', projectRoutes);
 workspaceRoutes.use('/:workspaceId/tasks', workspaceTaskRoutes);
 workspaceRoutes.use('/:workspaceId/sprints', sprintRoutes);
-workspaceRoutes.use('/:workspaceId/chat', chatRoutes);
 workspaceRoutes.use('/:workspaceId/files', fileRoutes);
 workspaceRoutes.use('/:workspaceId/activity', activityRoutes);
 

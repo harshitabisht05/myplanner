@@ -49,7 +49,6 @@ const CommandPalette = () => {
         { label: 'Focus Timer & Soundscapes', icon: Timer, action: () => navigate('/focus') },
         { label: 'Workspace Home', icon: Users, action: () => { setMode('workspace'); navigate('/workspace'); } },
         { label: 'Kanban Board', icon: Kanban, action: () => { setMode('workspace'); navigate('/workspace/kanban'); } },
-        { label: 'Team Chat & DMs', icon: MessageSquare, action: () => { setMode('workspace'); navigate('/workspace/chat'); } },
         { label: 'Document Vault & Files', icon: Folder, action: () => { setMode('workspace'); navigate('/workspace/files'); } },
         { label: 'Personal Settings', icon: Settings, action: () => navigate('/settings') }
       ]

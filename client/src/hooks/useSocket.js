@@ -24,13 +24,9 @@ export const useSocket = (workspaceId, onEvent) => {
     });
 
     if (onEvent) {
-      const handleChatMessage = (data) => onEvent('chat_message', data);
-      const handleChatReaction = (data) => onEvent('chat_reaction', data);
       const handleTaskUpdated = (data) => onEvent('task_updated', data);
       const handleTaskCreated = (data) => onEvent('task_created', data);
 
-      socket.on('chat_message', handleChatMessage);
-      socket.on('chat_reaction', handleChatReaction);
       socket.on('task_updated', handleTaskUpdated);
       socket.on('task_created', handleTaskCreated);
     }

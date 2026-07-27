@@ -24,7 +24,6 @@ import Members from './pages/workspace/Members';
 import TeamCalendar from './pages/workspace/TeamCalendar';
 import FilesManager from './pages/workspace/FilesManager';
 import ActivityTimeline from './pages/workspace/ActivityTimeline';
-import TeamChat from './pages/workspace/TeamChat';
 import WorkspaceSettings from './pages/workspace/WorkspaceSettings';
 import AcceptInvite from './pages/AcceptInvite';
 
@@ -128,7 +127,6 @@ const App = () => {
         <Route path="workspace/calendar" element={<TeamCalendar />} />
         <Route path="workspace/files" element={<FilesManager />} />
         <Route path="workspace/activity" element={<ActivityTimeline />} />
-        <Route path="workspace/chat" element={<TeamChat />} />
         <Route path="workspace/settings" element={<WorkspaceSettings />} />
       </Route>
 

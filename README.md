@@ -32,7 +32,6 @@ A modern, aesthetic, and feature-packed personal digital planner and team collab
 * **📊 HQ Overview & Quick Stats**: Real-time project statistics, active sprints, and recent team activity.
 * **📋 Kanban Board**: Drag-and-drop or status-filtered Kanban columns (`Backlog`, `To Do`, `In Progress`, `Review`, `Testing`, `Done`).
 * **🚀 Projects & Gantt Charts**: Track multi-stage team projects with timeline visualizations, progress bars, and due dates.
-* **💬 Real-Time Team Chat & Channels**: Socket.io real-time chat supporting workspace channels, direct messages, and unread counters.
 * **📂 Document Vault & Files**: File upload and management for sharing project documents and assets securely.
 * **📜 Activity Audit Logs**: Full historical audit trail tracking workspace actions, project updates, and file uploads.
 * **👥 Workspace Invites & Roles**: Invite teammates via secure links and manage role permissions (`Owner`, `Admin`, `Member`).
@@ -137,13 +136,13 @@ myplanner/
 │   │   ├── context/            # Auth, Theme, Workspace, Focus, Toast & Notification contexts
 │   │   ├── hooks/              # Socket.io & custom utility hooks
 │   │   ├── pages/              # App routes (Home, Today, Tasks, Calendar, Focus, etc.)
-│   │   │   └── workspace/      # Workspace pages (HQ, Kanban, Projects, Chat, Files, etc.)
+│   │   │   └── workspace/      # Workspace pages (HQ, Kanban, Projects, Files, etc.)
 │   │   └── utils/              # Date formatters & helpers
 │   └── package.json
 ├── server/                     # Backend Express API Server
 │   ├── src/
 │   │   ├── config/             # Database setup (db.js)
-│   │   ├── controllers/        # Controllers (task, habit, workspace, chat, notification, etc.)
+│   │   ├── controllers/        # Controllers (task, habit, workspace, notification, etc.)
 │   │   ├── middleware/         # Auth, Workspace permissions & Error middlewares
 │   │   ├── models/             # Mongoose schemas (Task, User, Workspace, WorkspaceTask, etc.)
 │   │   ├── routes/             # Express API routers

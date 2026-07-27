@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const Workspace = require('../models/Workspace');
 const User = require('../models/User');
-const Channel = require('../models/Channel');
 const Project = require('../models/Project');
 const WorkspaceTask = require('../models/WorkspaceTask');
 const Sprint = require('../models/Sprint');
@@ -61,16 +60,6 @@ exports.createWorkspace = async (req, res, next) => {
       members: [{ user: req.user._id, role: 'owner', joinedAt: new Date() }]
     });
 
-    // Auto-create default #general channel
-    await Channel.create({
-      workspace: workspace._id,
-      name: 'general',
-      description: 'General discussion channel',
-      isPrivate: false,
-      members: [req.user._id],
-      createdBy: req.user._id
-    });
-
     // Auto-create default sample project
     const defaultProject = await Project.create({
       workspace: workspace._id,
@@ -89,7 +78,7 @@ exports.createWorkspace = async (req, res, next) => {
       workspace: workspace._id,
       project: defaultProject._id,
       title: 'Welcome to your Workspace 🎉',
-      description: 'Explore Kanban board, Sprints, Team Chat, Files, and Team Calendar.',
+      description: 'Explore Kanban board, Sprints, Files, and Team Calendar.',
       status: 'in_progress',
       priority: 'high',
       assignees: [req.user._id],
@@ -160,7 +149,6 @@ exports.deleteWorkspace = async (req, res, next) => {
     await Project.deleteMany({ workspace: workspace._id });
     await WorkspaceTask.deleteMany({ workspace: workspace._id });
     await Sprint.deleteMany({ workspace: workspace._id });
-    await Channel.deleteMany({ workspace: workspace._id });
     await Activity.deleteMany({ workspace: workspace._id });
 
     res.status(200).json({ success: true, message: 'Workspace deleted successfully' });
@@ -283,12 +271,6 @@ exports.acceptInvite = async (req, res, next) => {
         joinedAt: new Date()
       });
       await workspace.save();
-
-      // Add user to default public channels in this workspace
-      await Channel.updateMany(
-        { workspace: workspace._id, isPrivate: false },
-        { $addToSet: { members: req.user._id } }
-      );
     }
 
     invite.status = 'accepted';
